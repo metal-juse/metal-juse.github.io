@@ -24,7 +24,7 @@ Example:
 </div>
 ```
 
-<div id="example">
+<div id="example" class="markdown-body px-3 my-5">
 	<div data-model>
 		input: <input data-value type="text" placeholder="enter value here">
 		<input data-value="link:values" type="button" value="enter">

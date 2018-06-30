@@ -18,7 +18,7 @@ Example:
 </div>
 ```
 
-<div id="example">
+<div id="example" class="markdown-body px-3 my-5">
 	input: <input data-value data-event="enter:#clear" type="text" placeholder="enter value here"><br>
 	list: <ul data-value="list:"><li>%{}</li></ul>
 	<span data-value=";*:hidden">-- blank --</span>

@@ -20,7 +20,7 @@ Example:
 </div>
 ```
 
-<div id="example">
+<div id="example" class="markdown-body px-3 my-5">
 	foo: <input data-value="#foo" data-event="enter:#clear" type="text" placeholder="enter foo here"><br>
 	bar: <input data-value="#bar" data-event="enter:#clear" type="text" placeholder="enter bar here"><br>
 	baz: <input data-value="#baz" data-event="enter:#clear" type="text" placeholder="enter baz here"><br>

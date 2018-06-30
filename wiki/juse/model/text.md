@@ -13,7 +13,7 @@ Example:
 </div>
 ```
 
-<div id="example">
+<div id="example" class="markdown-body px-3 my-5">
 	input: <input data-value type="text" placeholder="enter value here"><br>
 	value: [%{; -- blank -- }]
 </div>
