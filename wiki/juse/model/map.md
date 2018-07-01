@@ -20,7 +20,7 @@ Example:
 </div>
 ```
 
-<div id="example" class="markdown-body px-3 my-5">
+<div id="example">
 	foo: <input data-value="#foo" data-event="enter:#clear" type="text" placeholder="enter foo here"><br>
 	bar: <input data-value="#bar" data-event="enter:#clear" type="text" placeholder="enter bar here"><br>
 	baz: <input data-value="#baz" data-event="enter:#clear" type="text" placeholder="enter baz here"><br>
@@ -28,5 +28,6 @@ Example:
 	<span data-value=";*:hidden">-- blank --</span>
 </div>
 
+<link href="/css/example.css" rel="stylesheet"/>
 <script src="../../../juse.js" data-app="example.model@app;"></script>
 <script>juse("app.context", ["juse/model"]);</script>

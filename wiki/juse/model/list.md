@@ -18,11 +18,12 @@ Example:
 </div>
 ```
 
-<div id="example" class="markdown-body px-3 my-5">
+<div id="example">
 	input: <input data-value data-event="enter:#clear" type="text" placeholder="enter value here"><br>
 	list: <ul data-value="list:"><li>%{}</li></ul>
 	<span data-value=";*:hidden">-- blank --</span>
 </div>
 
+<link href="/css/example.css" rel="stylesheet"/>
 <script src="../../../juse.js" data-app="example.model@app;"></script>
 <script>juse("app.context", ["juse/model"]);</script>

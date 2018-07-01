@@ -17,10 +17,11 @@ Example:
 </div>
 ```
 
-<div id="example" class="markdown-body px-3 my-5">
+<div id="example">
 	input: <input data-value type="text" placeholder="enter value here"><br>
 	value: [<span data-value="; -- blank -- "></span>]
 </div>
 
+<link href="/css/example.css" rel="stylesheet"/>
 <script src="../../../juse.js" data-app="example.model@app;"></script>
 <script>juse("app.context", ["juse/model"]);</script>

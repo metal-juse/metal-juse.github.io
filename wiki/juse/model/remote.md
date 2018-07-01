@@ -24,7 +24,7 @@ Example:
 </div>
 ```
 
-<div id="example" class="markdown-body px-3 my-5">
+<div id="example">
 	<div data-model>
 		input: <input data-value type="text" placeholder="enter value here">
 		<input data-value="link:values" type="button" value="enter">
@@ -35,5 +35,6 @@ Example:
 	<span data-value="values;*:hidden">-- blank --</span>
 </div>
 
+<link href="/css/example.css" rel="stylesheet"/>
 <script src="../../../juse.js" data-app="example.model@app;"></script>
 <script>juse("app.context", ["juse/model", "juse/resource"]);</script>
