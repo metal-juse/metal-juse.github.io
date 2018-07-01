@@ -1,7 +1,7 @@
 juse(".context", ["juse/resource", "juse/text"], function ui(){
 	var $view, $array = [];
 
-	this.juse(["widget", "tile", "shell"]);
+	this.juse(["widget", "tile"]);
 
 	this.juse(".classifier", function view($scope){
 		/** @follow juse/app/load **/
