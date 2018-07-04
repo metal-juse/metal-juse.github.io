@@ -37,4 +37,4 @@ Example:
 
 <link href="/css/example.css" rel="stylesheet"/>
 <script src="../../../juse.js" data-app="example.model@app;"></script>
-<script>juse("app.context", ["juse/model", "juse/resource"]);</script>
+<script>juse("app.context", ["juse/model", "juse/resource"], {map:{"*.json":"data:"}});</script>

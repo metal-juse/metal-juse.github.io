@@ -1,11 +1,11 @@
 juse(".context", function text(){
 
-	this.juse(["eval"], function replace($eval, $scope){
+	this.juse(["teval"], function replace($teval, $scope){
 		var $replaceFormat = /\$\{([^\}]+)\}/g;
 		var $testFormat = /\$\{([^\}]+)\}/;
 
 		return function replace(text, dataset){
-			$eval = $eval || juse.lookup("eval", $scope);
+			$teval = $teval || juse.lookup("teval", $scope);
 			var scope = this;
 			var args = arguments;
 			if (!text || typeof(text) != "string" || !$testFormat.test(text)) return text;
@@ -15,16 +15,15 @@ juse(".context", function text(){
 				if (idx) {
 					if (idx in args) value = args[idx];
 				} else {
-					value = $eval.call(scope, spec, dataset) || value;
+					value = $teval.call(scope, spec, dataset) || value;
 				}
 				return value;
 			});
 		};
 	});
 
-	this.juse(["map", "replace"], function eval($map, $replace, $scope){
-		return function eval(spec, dataset) {
-			$replace = $replace || juse.lookup("replace", $scope);
+	this.juse(["map", "replace"], function teval($map, $replace, $scope){
+		return function teval(spec, dataset) {
 			var ref = juse.toRef(spec);
 			var value = juse.filter(ref, this, dataset);
 			value = dataset === undefined ? value || juse.lookup(ref, this) : value;

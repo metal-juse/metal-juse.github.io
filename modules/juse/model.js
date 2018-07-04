@@ -135,7 +135,7 @@ juse(".context", ["juse/remote", "juse/service", "juse/ui", "juse/valid", "juse/
 		}
 
 		function notifyMessage(input, messages) {
-			$dom.toggleStyle(input.node, "error", !!messages);
+			$dom.toggleClass(input.node, "error", !!messages);
 			if (!notifyModel(getModel("messages"), messages, input) && messages) {
 				juse.log("error", messages);
 			}
@@ -149,8 +149,8 @@ juse(".context", ["juse/remote", "juse/service", "juse/ui", "juse/valid", "juse/
 		}
 
 		function updateModel(model, value, input) {
-			if (model && model.binder.updateModel) {
-				model.binder.updateModel(model, value, input);
+			if (model && model.binder.update) {
+				model.binder.update(model, value, input);
 				return true;
 			}
 		}
@@ -178,8 +178,8 @@ juse(".context", ["juse/remote", "juse/service", "juse/ui", "juse/valid", "juse/
 		}
 
 		function renderTile(tile, value, input) {
-			if (tile && tile.binder.renderTile && tile !== input) {
-				tile.binder.renderTile(tile, value, input);
+			if (tile && tile.binder.render && tile !== input) {
+				tile.binder.render(tile, value, input);
 			}
 		}
 

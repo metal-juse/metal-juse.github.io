@@ -1,11 +1,11 @@
-juse(".binder", ["dom", "widget", "model", "eval"], function input($dom, $widget, $model, $eval){
+juse(".binder", ["dom", "widget", "model", "teval"], function input($dom, $widget, $model, $teval){
 	return juse.seal(
 		function input(tile){
 			tile.valid = juse.toRef($dom.data(tile.node, "data-valid", null));
 			tile.event = juse.toRef($dom.data(tile.node, "data-event", null));
 			$widget.bindEvent(tile.scope, tile.node, {kind:juse.memberValue(tile.event, "kind")||inputEvent(tile)}, fireInput, tile);
 		}
-		,renderTile,clear
+		,render,clear
 	);
 
 	function fireInput(tile) {
@@ -30,8 +30,8 @@ juse(".binder", ["dom", "widget", "model", "eval"], function input($dom, $widget
 		}
 	}
 
-	function renderTile(tile, value, input) {
-		value = (tile==input) ? value : $eval.call(tile.scope, tile.spec, tile.model.value);
+	function render(tile, value, input) {
+		value = (tile==input) ? value : $teval.call(tile.scope, tile.spec, tile.model.value);
 		switch (tile.node.type) {
 		case "button": break;
 		case "reset": break;
@@ -41,7 +41,7 @@ juse(".binder", ["dom", "widget", "model", "eval"], function input($dom, $widget
 	}
 
 	function clear(tile, value) {
-		renderTile(tile, null, tile);
+		render(tile, null, tile);
 		$model.notifyInput(tile, value);
 	}
 });

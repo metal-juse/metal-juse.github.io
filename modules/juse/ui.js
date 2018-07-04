@@ -43,7 +43,7 @@ juse(".context", ["juse/resource", "juse/text"], function ui(){
 			data,
 			textNode,
 			forTextNodes,
-			toggleStyle
+			toggleClass
 		);
 
 		function moveContent(a, b) {
@@ -142,7 +142,7 @@ juse(".context", ["juse/resource", "juse/text"], function ui(){
 			nodes && $array.filter.call(nodes, textNode).forEach(callback, scope);
 		}
 
-		function toggleStyle(node, name, toggle) {
+		function toggleClass(node, name, toggle) {
 			var names = node.className ? node.className.split(" ") : [];
 			var index = names.indexOf(name);
 			if (toggle && index < 0) {

@@ -1,4 +1,4 @@
-juse(".binder", ["model", "eval"], function text($model, $eval){
+juse(".binder", ["model", "teval"], function text($model, $teval){
 	var $replaceFormat = /%\{([^\}]*)\}/g;
 
 	return juse.seal(
@@ -10,14 +10,14 @@ juse(".binder", ["model", "eval"], function text($model, $eval){
 				return "";
 			});
 		}
-		,renderTile
+		,render
 	);
 
-	function renderTile(tile, value, input) {
+	function render(tile, value, input) {
 		tile.node.nodeValue = tile.content.replace($replaceFormat, function(match, spec) {
 			spec = juse.toRef(spec, tile.model.spec, true);
 			var value = !spec.name ? tile.model.value : $model.getModelValue(spec.name);
-			return $eval.call(tile.scope, spec, value) || "";
+			return $teval.call(tile.scope, spec, value) || "";
 		});
 	}
 });

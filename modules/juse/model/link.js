@@ -5,7 +5,7 @@ juse(".binder", ["dom", "widget", "model"], function link($dom, $widget, $model)
 			tile.event = juse.toRef($dom.data(tile.node, "data-event", null));
 			$widget.bindEvent(tile.scope, tile.node, {kind:juse.memberValue(tile.event, "kind")}, fireInput, tile);
 		}
-		,notify,renderTile
+		,notify,render
 	);
 
 	function fireInput(input) {
@@ -26,20 +26,20 @@ juse(".binder", ["dom", "widget", "model"], function link($dom, $widget, $model)
 			if (input.model.spec) {
 				$model.notifyModel(input.model, null, input);
 			} else {
-				renderTile(input, value, input);
+				render(input, value, input);
 				resetLink(input.link, input, value);
 			}
 		}
 	}
 
-	function renderTile(tile, value, input) {
+	function render(tile, value, input) {
 		if (tile.model.spec && input) {
 			tile.node.disabled = !!value;
 		} else if (input) {
 			if (tile.link.linkTile && tile.link.linkTile != tile) {
-				$dom.toggleStyle(tile.link.linkTile.node, "selected");
+				$dom.toggleClass(tile.link.linkTile.node, "selected");
 			}
-			$dom.toggleStyle(tile.node, "selected", !!value);
+			$dom.toggleClass(tile.node, "selected", !!value);
 		}
 	}
 

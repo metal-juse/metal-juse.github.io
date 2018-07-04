@@ -4,10 +4,10 @@ juse(".binder", ["dom", "model"], function map($dom, $model){
 			tile.content = $dom.moveContent(tile.node);
 			tile.models = [];
 		}
-		,updateModel,renderTile
+		,update,render
 	);
 
-	function updateModel(model, value, input) {
+	function update(model, value, input) {
 		var key = input && input.spec.name+"#"+input.spec.member;
 		model.value = model.value || {};
 		if (!key) {
@@ -19,7 +19,7 @@ juse(".binder", ["dom", "model"], function map($dom, $model){
 		}
 	}
 
-	function renderTile(tile, value, input) {
+	function render(tile, value, input) {
 		var key = input && input.spec.name+"#"+input.spec.member;
 		var child = key && tile.models[key];
 		if (value) {
@@ -36,6 +36,6 @@ juse(".binder", ["dom", "model"], function map($dom, $model){
 			delete tile.models[key];
 		}
 		tile.node.hidden = !tile.models.length;
-		$dom.toggleStyle(tile.node, "hidden", tile.node.hidden);
+		$dom.toggleClass(tile.node, "hidden", tile.node.hidden);
 	}
 });

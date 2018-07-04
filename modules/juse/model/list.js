@@ -4,10 +4,10 @@ juse(".binder", ["dom", "model"], function list($dom, $model){
 			tile.content = $dom.moveContent(tile.node);
 			tile.models = [];
 		}
-		,updateModel,renderTile
+		,update,render
 	);
 
-	function updateModel(model, value, input) {
+	function update(model, value, input) {
 		var index = model.index;
 		if (input && index >= 0) {
 			if (input.spec.member) {
@@ -21,11 +21,11 @@ juse(".binder", ["dom", "model"], function list($dom, $model){
 			model.value = model.value || [];
 			model.value.push(value);
 		} else {
-			model.value = value;
+			model.value = value || null;
 		}
 	}
 
-	function renderTile(tile, value, input) {
+	function render(tile, value, input) {
 		var index = tile.model.index;
 		if (input && index >= 0) {
 			if (!input.spec.member) {
@@ -43,13 +43,13 @@ juse(".binder", ["dom", "model"], function list($dom, $model){
 				$dom.removeContent(tile.models[index].nodes);
 			}
 			if (tile.models.length) tile.models = [];
-			if (value) {
-				for (index = 0; index < value.length; index++) {
-					tile.models.push($model.renderChild(tile, value[index]));
+			if (tile.model.value) {
+				for (index = 0; index < tile.model.value.length; index++) {
+					tile.models.push($model.renderChild(tile, tile.model.value[index]));
 				}
 			}
 		}
 		tile.node.hidden = !tile.models.length;
-		$dom.toggleStyle(tile.node, "hidden", tile.node.hidden);
+		$dom.toggleClass(tile.node, "hidden", tile.node.hidden);
 	}
 });
