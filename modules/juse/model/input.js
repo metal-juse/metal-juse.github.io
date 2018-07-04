@@ -3,13 +3,15 @@ juse(".binder", ["dom", "widget", "model", "teval"], function input($dom, $widge
 		function input(tile){
 			tile.valid = juse.toRef($dom.data(tile.node, "data-valid", null));
 			tile.event = juse.toRef($dom.data(tile.node, "data-event", null));
-			$widget.bindEvent(tile.scope, tile.node, {kind:juse.memberValue(tile.event, "kind")||inputEvent(tile)}, fireInput, tile);
+			var event = juse.toRef(":", tile.event, true);
+			event.kind = event.kind || inputEvent(tile);
+			$widget.bindEvent(tile.scope, tile.node, event, fireEvent, tile);
 		}
 		,render,clear
 	);
 
-	function fireInput(tile) {
-		$model.fireInput(tile, valueOf(tile));
+	function fireEvent(tile) {
+		$model.fireEvent(tile, valueOf(tile));
 	}
 
 	function inputEvent(tile) {

@@ -2,18 +2,14 @@ juse(".binder", ["dom", "widget", "model", "request"], function remote($dom, $wi
 	return juse.seal(
 		function remote(tile){
 			tile.event = juse.toRef($dom.data(tile.node, "data-event", null));
-			$widget.bindEvent(tile.scope, tile.node, {kind:juse.memberValue(tile.event, "kind")}, fireInput, tile);
+			$widget.bindEvent(tile.scope, tile.node, juse.toRef(":", tile.event, true), fireEvent, tile);
 			load(tile);
 		}
 		,notify,load
 	);
 
-	function fireInput(input) {
-		$model.fireInput(input, valueOf(input));
-	}
-
-	function valueOf(input) {
-		return input.model.value;
+	function fireEvent(tile) {
+		$model.fireEvent(tile, tile.model.value);
 	}
 
 	function notify(input, value) {

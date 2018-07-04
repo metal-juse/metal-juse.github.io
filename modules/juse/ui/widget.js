@@ -1,6 +1,9 @@
 juse(".classifier", ["dom"], function widget($dom){
 
-	var $eventKeys = ["click","dblclick","mousedown","mouseenter","mouseleave","mousemove","mouseover","mouseout","mouseup","input","change","enter"];
+	var $eventKeys = ["click","dblclick","mousedown","mouseenter","mouseleave","mousemove","mouseover","mouseout","mouseup","input","change","keyup","keydown","keypress"];
+	var $eventMap = {
+		enter: juse.toRef("keyup:13")
+	};
 
 	return juse.seal(function widget(node, scope) {
 		node = $dom.call(this, node);
@@ -23,10 +26,10 @@ juse(".classifier", ["dom"], function widget($dom){
 	}
 
 	function applyBindings(scope, node, base) {
-		$dom.filterNodes(node, "[data-event]").forEach(applyEventBinding, {scope:scope, base:base});
+		$dom.filterNodes(node, "[data-event]").forEach(applyBinding, {scope:scope, base:base});
 	}
 
-	function applyEventBinding(node) {
+	function applyBinding(node) {
 		var spec = $dom.data(node, "data-event", null);
 		while (spec) {
 			var ref = juse.toRef(spec, this.base);
@@ -41,13 +44,13 @@ juse(".classifier", ["dom"], function widget($dom){
 	function bindEvent(scope, node, spec, action, target) {
 		var event = juse.toRef(spec);
 		if (event) {
-			var kind = event.kind || $eventKeys[0];
+			var map = eventMap(event);
+			var kind = map && map.kind || event.kind || $eventKeys[0];
 			var i = $eventKeys.indexOf(kind);
 			if (i >= 0) {
 				action = action || juse.lookup(event, scope);
 				if (juse.typeOf(action, "function")) {
 					var args = {action:action, target:target, event:event};
-					if (kind == "enter") kind = "keyup";
 					node.addEventListener(kind, fire.bind(args));
 					return true;
 				}
@@ -56,8 +59,13 @@ juse(".classifier", ["dom"], function widget($dom){
 	}
 
 	function fire(event) {
-		if (this.event.kind == "enter" && event.keyCode != 13) return;
+		var map = eventMap(this.event);
+		if (map && map.name != event.keyCode) return;
 		if (this.target) this.action.call(null, this.target, event);
 		else this.action.call(null, event);
+	}
+
+	function eventMap(event) {
+		return $eventMap[event.kind];
 	}
 });

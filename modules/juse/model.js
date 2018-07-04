@@ -39,7 +39,7 @@ juse(".context", ["juse/remote", "juse/service", "juse/ui", "juse/valid", "juse/
 			var models = $context.cacheEntry("models");
 			Object.keys(models).map(juse.valueOf, models).forEach(renderDefault);
 		},
-		renderChild, renderModel, fireInput, notifyInput, addTile, getModel, getModelValue, notifyModel, resolveEvent, rejectEvent);
+		renderChild, renderModel, fireEvent, notifyInput, addTile, getModel, getModelValue, notifyModel, resolveEvent, rejectEvent);
 
 		function makeModels(node) {
 			$dom.filterNodes(node, "[data-model]").forEach(makeModel, this);
@@ -97,16 +97,16 @@ juse(".context", ["juse/remote", "juse/service", "juse/ui", "juse/valid", "juse/
 
 		function nodeEquals(tile) { this.tile = tile; return this.node == tile.node; }
 
-		function fireInput(input, value) {
+		function fireEvent(input, value) {
 			var success = validateModel(input, value);
 			if (success && input.event && (input.event.name||input.event.member)) {
-				fireEvent(input, value);
+				notifyEvent(input, value);
 			} else {
 				notifyInput(input, value);
 			}
 		}
 
-		function fireEvent(input, value) {
+		function notifyEvent(input, value) {
 			var args = {input:input};
 			var binder = input.binder[input.event.member];
 			if (juse.typeOf(binder, "function")) {

@@ -3,17 +3,13 @@ juse(".binder", ["dom", "widget", "model"], function link($dom, $widget, $model)
 		function link(tile){
 			tile.link = $model.getModel(tile.spec.name, true);
 			tile.event = juse.toRef($dom.data(tile.node, "data-event", null));
-			$widget.bindEvent(tile.scope, tile.node, {kind:juse.memberValue(tile.event, "kind")}, fireInput, tile);
+			$widget.bindEvent(tile.scope, tile.node, juse.toRef(":", tile.event, true), fireEvent, tile);
 		}
 		,notify,render
 	);
 
-	function fireInput(input) {
-		$model.fireInput(setIndex(input), valueOf(input));
-	}
-
-	function valueOf(input) {
-		return (input.link.linkTile == input) ? null : input.model.value;
+	function fireEvent(tile) {
+		$model.fireEvent(setIndex(tile), (tile.link.linkTile == tile) ? null : tile.model.value);
 	}
 
 	function notify(input, value) {
