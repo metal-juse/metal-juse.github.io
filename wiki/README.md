@@ -7,7 +7,13 @@
 * There are different kinds of modules.
 * Context is a module that contains other modules.
 
-# Modules:
+# Modules
 
 * [juse](juse)
+* [input@juse/model](juse/model/input)
+* [link@juse/model](juse/model/link)
+* [list@juse/model](juse/model/list)
+* [map@juse/model](juse/model/map)
+* [remote@juse/model](juse/model/remote)
+* [text@juse/model](juse/model/text)
 * [value@juse/model](juse/model/value)
