@@ -1,4 +1,4 @@
-# `root`
+# root
 
 `root` is the default context module that contains all other contexts, as well as modules without explicit context.
 
