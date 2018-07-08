@@ -25,5 +25,5 @@ Example:
 </div>
 
 <link href="/css/example.css" rel="stylesheet"/>
-<script src="../../../juse.js" data-app="example.model@app;"></script>
+<script src="../../../juse-up.js" data-app="example.model@app;"></script>
 <script>juse("app.context", ["juse/model"]);</script>
