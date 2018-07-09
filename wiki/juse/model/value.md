@@ -11,17 +11,21 @@ Tile binding specs:
 Example:
 
 ```
+<link href="http://metal-juse.github.io/css/example.css" rel="stylesheet"/>
+<script src="http://metal-juse.github.io/juse-up.min.js" data-app="example.model@app;"></script>
+<script>juse("app.context", ["juse/model"]);</script>
+
 <div id="example">
 	input: <input data-value type="text" placeholder="enter value here"><br>
 	value: [<span data-value="; -- blank -- "></span>]
 </div>
 ```
 
+<link href="http://metal-juse.github.io/css/example.css" rel="stylesheet"/>
+<script src="http://metal-juse.github.io/juse-up.min.js" data-app="example.model@app;"></script>
+<script>juse("app.context", ["juse/model"]);</script>
+
 <div id="example">
 	input: <input data-value type="text" placeholder="enter value here"><br>
 	value: [<span data-value="; -- blank -- "></span>]
 </div>
-
-<link href="/css/example.css" rel="stylesheet"/>
-<script src="../../../juse-up.js" data-app="example.model@app;"></script>
-<script>juse("app.context", ["juse/model"]);</script>

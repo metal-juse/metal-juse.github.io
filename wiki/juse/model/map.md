@@ -11,6 +11,10 @@ Tile binding specs:
 Example:
 
 ```
+<link href="http://metal-juse.github.io/css/example.css" rel="stylesheet"/>
+<script src="http://metal-juse.github.io/juse-up.min.js" data-app="example.model@app;"></script>
+<script>juse("app.context", ["juse/model"]);</script>
+
 <div id="example">
 	foo: <input data-value="#foo" data-event="enter:#clear" type="text" placeholder="enter foo here"><br>
 	bar: <input data-value="#bar" data-event="enter:#clear" type="text" placeholder="enter bar here"><br>
@@ -20,6 +24,10 @@ Example:
 </div>
 ```
 
+<link href="http://metal-juse.github.io/css/example.css" rel="stylesheet"/>
+<script src="http://metal-juse.github.io/juse-up.min.js" data-app="example.model@app;"></script>
+<script>juse("app.context", ["juse/model"]);</script>
+
 <div id="example">
 	foo: <input data-value="#foo" data-event="enter:#clear" type="text" placeholder="enter foo here"><br>
 	bar: <input data-value="#bar" data-event="enter:#clear" type="text" placeholder="enter bar here"><br>
@@ -27,7 +35,3 @@ Example:
 	map: <ul data-value="map:"><li>%{}</li></ul>
 	<span data-value=";*:hidden">-- blank --</span>
 </div>
-
-<link href="/css/example.css" rel="stylesheet"/>
-<script src="../../../juse-up.js" data-app="example.model@app;"></script>
-<script>juse("app.context", ["juse/model"]);</script>
