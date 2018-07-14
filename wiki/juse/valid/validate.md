@@ -1,6 +1,6 @@
-# validate.classifier@juse/valid
+# validate@juse/valid
 
-Module to evaluate given validation rules.
+Module to evaluate validation rules.
 
 Example:
 

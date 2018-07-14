@@ -2,8 +2,8 @@
 
 ## Highlights
 
-* Context `juse/valid` contains modules to register and fire validation rules (validators).
-* Module `validator` is a classifier to register validators.
+* Context `juse/valid` contains modules to register and evaluate validation rules.
+* Module `validator` is a classifier to register validation rules.
 * Module `validate` fires validators to evaluate validation rules.
 
 ## Modules

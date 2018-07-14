@@ -1,6 +1,6 @@
 # validator.classifier@juse/valid
 
-Classifier to register validators.
+Classifier to register validation rules.
 
 Example:
 
