@@ -1,7 +1,10 @@
-# Highlights @juse/remote
+# juse/remote.context
 
-* Modules for remote access and requests.
+## Highlights
 
-# Modules @juse/remote
+* Context `juse/remote` contains modules for remote access and requests.
+* Module `request` uses XMLHttpRequest to access remote resource.
 
-* [request@juse/remote](juse/remote/request)
+## Modules
+
+* [request@juse/remote](../juse/remote/request)

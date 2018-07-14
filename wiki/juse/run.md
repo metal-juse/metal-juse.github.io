@@ -1,9 +1,14 @@
-# Highlights @juse/run
+# juse/run.context
 
-* Modules for well behaving runtime behavior.
+## Highlights
 
-# Modules @juse/run
+* Context `juse/run` contains modules that manage execution flow.
+* Module `try` flatterns try/catch block so error is returned not thrown.
+* Module `async` executes callback asynchronously.
+* Module `promise` implements the Promises/A+ spec.
 
-* [async@juse/run](juse/run/async)
-* [try@juse/run](juse/run/try)
-* [promise@juse/run](juse/run/promise)
+## Modules
+
+* [try@juse/run](../juse/run/try)
+* [async@juse/run](../juse/run/async)
+* [promise@juse/run](../juse/run/promise)

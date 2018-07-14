@@ -1,7 +1,11 @@
-# Highlights @juse/service
+# juse/service.context
 
-* Modules for responding to events.
+## Highlights
 
-# Modules @juse/service
+* Context `juse/service` contains modules to handle events.
+* Module `provider` is a classifier that registers event handlers.
+* Module member `provider#fire` is a function to fire event.
 
-* [provider@juse/service](juse/service/provider)
+## Modules
+
+* [provider@juse/service](../juse/service/provider)

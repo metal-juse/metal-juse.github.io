@@ -1,9 +1,14 @@
-# Highlights @juse/text
+# juse/text.context
 
-* Modules for text mapping/transforming/replacement.
+## Highlights
 
-# Modules @juse/text
+* Context `juse/text` contains modules from text mapping/transforming/replacement.
+* Module `replace` replaces text with macros.
+* Module `map` creates text mapping.
+* Module `teval` evaluates text with macros.
 
-* [teval@juse/text](juse/text/teval)
-* [replace@juse/text](juse/text/replace)
-* [map@juse/text](juse/text/map)
+## Modules
+
+* [replace@juse/text](../juse/text/replace)
+* [map@juse/text](../juse/text/map)
+* [teval@juse/text](../juse/text/teval)
