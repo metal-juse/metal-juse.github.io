@@ -1,4 +1,4 @@
-# list@juse/model
+# list@[juse/model](../../juse/model)
 
 Binder that manages list value tile:
 * inits tile from binding specs and tile node content

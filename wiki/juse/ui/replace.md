@@ -1,4 +1,4 @@
-# replace@juse/ui
+# replace@[juse/ui](../../juse/ui)
 
 Replaces macros in DOM textual node values.
 

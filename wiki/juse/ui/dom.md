@@ -1,4 +1,4 @@
-# dom.classifier@juse/ui
+# dom.classifier@[juse/ui](../../juse/ui)
 
 Classifier to group DOM related functions.
 

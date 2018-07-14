@@ -1,4 +1,4 @@
-# value@juse/model
+# value@[juse/model](../../juse/model)
 
 Binder that manages value tile:
 * inits tile from binding specs

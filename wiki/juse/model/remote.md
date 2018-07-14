@@ -1,4 +1,4 @@
-# remote@juse/model
+# remote@[juse/model](../../juse/model)
 
 Binder that manages remote value tile:
 * inits tile from binding specs

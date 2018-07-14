@@ -1,4 +1,4 @@
-# link@juse/model
+# link@[juse/model](../../juse/model)
 
 Binder that manages link value tile:
 * inits tile from binding specs

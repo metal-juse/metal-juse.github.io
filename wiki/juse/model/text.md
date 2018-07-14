@@ -1,4 +1,4 @@
-# text@juse/model
+# text@[juse/model](../../juse/model)
 
 Binder that manages text tile:
 * inits tile from text binding specs %{spec}

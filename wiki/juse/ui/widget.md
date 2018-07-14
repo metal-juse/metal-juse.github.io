@@ -1,4 +1,4 @@
-# widget.classifier@juse/ui
+# widget.classifier@[juse/ui](../../juse/ui)
 
 Classifier that binds DOM events to event handlers.
 

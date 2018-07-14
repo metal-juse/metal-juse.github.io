@@ -1,4 +1,4 @@
-# tile.classifier@juse/ui
+# tile.classifier@[juse/ui](../../juse/ui)
 
 Classifier to replace DOM template references.
 

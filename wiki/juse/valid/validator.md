@@ -1,4 +1,4 @@
-# validator.classifier@juse/valid
+# validator.classifier@[juse/valid](../../juse/valid)
 
 Classifier to register validation rules.
 

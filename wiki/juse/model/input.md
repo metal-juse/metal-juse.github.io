@@ -1,4 +1,4 @@
-# input@juse/model
+# input@[juse/model](../../juse/model)
 
 Binder that manages input value tile:
 * inits tile from binding specs

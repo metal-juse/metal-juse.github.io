@@ -1,4 +1,4 @@
-# map@juse/model
+# map@[juse/model](../../juse/model)
 
 Binder that manages map value tile:
 * inits tile from binding specs and tile node content
