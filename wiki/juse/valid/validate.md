@@ -1,4 +1,4 @@
-# validate@[juse/valid](..)
+# validate@[juse/valid](../../juse/valid)
 
 Module to evaluate validation rules.
 
