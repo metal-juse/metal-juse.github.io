@@ -8,6 +8,8 @@
 
 ## Modules
 
+* [validator@juse/valid](../juse/valid/validator)
+* [validate@juse/valid](../juse/valid/validate)
 * [validator]@juse/valid
 * [validate][]@juse/valid
 
