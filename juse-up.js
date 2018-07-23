@@ -116,7 +116,7 @@
 				function cacheLookup(name, member) {
 					var cache = this.cacheEntry(name);
 					for (var name in cache) {
-						var value = memberValue(cache, name, member);
+						var value = memberValue(cache, [name, member]);
 						if (value) return value;
 					}
 				}
@@ -129,10 +129,13 @@
 
 			this.juse("juse/context.classifier", ["cache"], function context($cache){
 				$cache.call(this.context, initContext({
-					map: { "*": "modules:" }
+					map: { "*": "modules:" },
+					roots: [ "juse", "jx" ]
 				}));
+				copyTo(this.context, {replace:replace, property:property});
 				return function context(value){
 					$cache.call(this, initContext(value));
+					copyTo(this, {replace:replace, property:property});
 					return {};
 				};
 
@@ -214,7 +217,7 @@
 			function lookup(spec, scope) {
 				var ref = toRef(spec);
 				if (ref) {
-					return ref.name ? memberValue(getModuleValue(resolve(ref, scope)), ref.member) :
+					return ref.name ? memberValue(getModuleValue(resolve(ref, scope)), [ref.member]) :
 						scope.context.cacheLookup("properties", ref.member) || scope.meta[ref.member];
 				}
 			}
@@ -225,11 +228,28 @@
 				var module = getModule(scope && scope.spec || currentApp());
 				if (value !== undefined) {
 					value = applyFilters(value, ref, "type", module);
-					value = applyFilters(memberValue(value, ref.member), ref, "pipe", module);
+					value = applyFilters(memberValue(value, [ref.member]), ref, "pipe", module);
 				} else {
 					value = filterRefValue.call(module, resolve(ref, scope));
 				}
 				return value;
+			}
+
+			function property(spec, value) {
+				spec = toRef(spec);
+				var property = this.cacheValue("properties", spec.name, spec.member ? {} : value);
+				if (spec.member) property = property[spec.member] = property[spec.member] || value;
+				return property;
+			}
+
+			var $replaceFormat = /\$\{([^\}]+)\}/g;
+			var $testFormat = /\$\{([^\}]+)\}/;
+			function replace(text, base) {
+				var context = this;
+				if (!text || typeof(text) != "string" || !$testFormat.test(text)) return text;
+				return text.replace($replaceFormat, function(match, spec) {
+					return context.property(toRef(spec, base)) || match;
+				});
 			}
 		});
 	}
@@ -321,17 +341,32 @@
 	/** @member module */
 	function getContext(ref, context) {
 		var name = typeOf(ref, "object") ? ref.context||context : ref;
-		return name ? memberValue($boot.context, "modules", name) : $boot.context;
+		return name ? memberValue($boot.context, ["modules", name]) : $boot.context;
+	}
+
+	/** @member module */
+	function findModule(ref) {
+		var args = {ref:ref};
+		return getModule(ref) || $boot.buffer.some(matchModule, args) && args.module;
+	}
+
+	function matchModule(module) {
+		this.module = module;
+		return Object.keys(this.ref).every(refKeyMatches, this);
+	}
+
+	function refKeyMatches(key) {
+		return this.ref[key] === this.module[key];
 	}
 
 	/** @member module */
 	function getModule(ref, i, a, context) {
-		return (ref.type == "context") ? getContext(ref.name) : memberValue(getContext(ref, context), "modules", getModuleName(ref));
+		return (ref.type == "context") ? getContext(ref.name) : memberValue(getContext(ref, context), ["modules", getModuleName(ref)]);
 	}
 
 	/** @member module */
 	function getModuleValue(ref) {
-		return memberValue(getModule(ref), "value");
+		return memberValue(getModule(ref), ["value"]);
 	}
 
 	/** @member module */
@@ -356,7 +391,11 @@
 
 	/** @member resolve */
 	function resolveRef(spec) {
-		return remap(spec, this);
+		var ref = remap(spec, this);
+		if (ref.value) {
+			ref.value = getContext(this).scope.replace(ref.value, this);
+		}
+		return ref;
 	}
 
 	/** @member resolve */
@@ -367,7 +406,7 @@
 	/** @member resolve */
 	function remap(spec, module, mapOnly) {
 		var ref = toRef({}, spec);
-		if (!ref.name) return;
+		if (!ref.name) return ref;
 		if (!module) return ref;
 		var target = !mapOnly && getModule(ref, null, null, module.context);
 		var map = getRefMap(ref, module, true);
@@ -398,12 +437,12 @@
 	function getRefMap(ref, module, remapOnly) {
 		var refKey = typeOf(ref, "object") ? getModuleName(ref, ref.type) : ref;
 		var moduleKey = getModuleName(module, module.type);
-		var remap = memberValue(getContext($boot.app), "cache", "remap", moduleKey, refKey)
-			|| memberValue(getContext(module), "cache", "remap", moduleKey, refKey)
+		var remap = memberValue(getContext($boot.app), ["cache", "remap", moduleKey, refKey])
+			|| memberValue(getContext(module), ["cache", "remap", moduleKey, refKey])
 		return remapOnly ? remap : remap
-			|| memberValue(getContext($boot.app), "cache", "map", refKey)
-			|| memberValue(getContext(module), "cache", "map", refKey)
-			|| memberValue(getContext(), "cache", "map", refKey)
+			|| memberValue(getContext($boot.app), ["cache", "map", refKey])
+			|| memberValue(getContext(module), ["cache", "map", refKey])
+			|| memberValue(getContext(), ["cache", "map", refKey])
 			|| module.name && contextRefMaps(module, refKey);
 	}
 
@@ -415,7 +454,7 @@
 
 	/** @member resolve */
 	function contextRefMap(ref) {
-		return this.value = memberValue(getModule(ref), "cache", "map", this.refKey);
+		return this.value = memberValue(getModule(ref), ["cache", "map", this.refKey]);
 	}
 
 	/** @member resolve */
@@ -431,7 +470,7 @@
 		if (!module) return;
 		var value = applyFilters(module.value, module.def.spec, "pipe", module);
 		if (ref.member && ref.member != module.member) {
-			value = memberValue(value, ref.member);
+			value = memberValue(value, [ref.member]);
 		}
 		return applyFilters(value, ref, "pipe", this);
 	}
@@ -602,13 +641,14 @@
 	/** @member flush */
 	function flushModule(module) {
 		if (module.flushState == $flushStates.READY || module.flushState == $flushStates.FLUSH) {
+			var refs = module.refs.map(findModule).filter(memberValue);
 			if (module.flushState == $flushStates.READY) {
-				if (!module.refs.map(getModule).every(isReady)) return;
+				if (!refs.every(isReady)) return;
 				module.flushState = $flushStates.FLUSH;
-				module.refs.map(getModule).forEach(flushModule);
+				refs.forEach(flushModule);
 			}
 			if (module.flushState == $flushStates.DONE) return;
-			if (!module.refs.map(getModule).every(isFlushed)) return;
+			if (!refs.every(isFlushed)) return;
 			if (!getContext(module).refs.map(getModule).every(allFlushed)) return;
 			try {
 				initModule(module);
@@ -685,15 +725,15 @@
 
 	/** @member request */
 	function failRequest(event) {
-		var module = getModule(toRef(getSpec(event.target)));
+		var module = findModule(toRef(getSpec(event.target)));
 		if (isPending(module)) {
-			if (typeOf(module.value, "string") && event.type == "load") {
-				if (external(module)) {
+			if (event.type == "load") {
+				if (module.type == "css") {
+					module.refs = [];
+					module.flushState = $flushStates.DONE;
+				} else if (typeOf(module.value, "string") && external(module)) {
 					module.flushState = $flushStates.DEFINE;
 				}
-			} else if (module.type == "css") {
-				module.refs = [];
-				module.flushState = $flushStates.DONE;
 			} else {
 				failModule(module, null, null, Error("response " + event.type));
 			}
@@ -757,6 +797,10 @@
 		return $boot.currentApp||$boot.app;
 	}
 
+	function corePackage(name) {
+		return $boot.context.cache.roots.indexOf(name.split("/")[0]) >= 0;
+	}
+
 	/** @member ref */
 	function toPath(spec) {
 		var ref = toRef(spec);
@@ -765,8 +809,8 @@
 			var context = getContext(ref);
 			var name = getModuleName(ref, "js");
 			name = context.kind ? [context.name, name].join("/") : name;
-			var base = (name.indexOf("juse/") == 0 || $boot.doc) ? "" : ".";
-			path = name.indexOf("juse/") == 0 ? $boot.jusePath : $boot.appPath;
+			var base = (corePackage(name) || $boot.doc) ? "" : ".";
+			path = corePackage(name) ? $boot.jusePath : $boot.appPath;
 			path = [base, path, ref.kind, name].filter(memberValue).join("/");
 		}
 		return path;
@@ -877,26 +921,28 @@
 
 	/** @member util */
 	function external(ref) {
-		return typeOf(ref.value, "string") && ($boot.doc && $boot.doc.getElementById(ref.member||ref.name) || $boot.global[ref.member||ref.name]);
+		return typeOf(ref.value, "string") && ($boot.doc && $boot.doc.getElementById(ref.member||ref.name) || memberValue($boot.global, ref.member||ref.name));
 	}
 
 	/** @member util */
-	function memberValue(value, name) {
-		return spot(value, name, arguments);
+	function memberValue(value, names) {
+		return spot(value, names);
 	}
 
 	/** @member util */
-	function memberName(value, name) {
-		return spot(value, name, arguments, true);
+	function memberName(value, names) {
+		return spot(value, names, true);
 	}
 
 	/** @member util */
-	function spot(value, name, args, nameOnly) {
-		if (typeOf(name, "string") && name) {
-			for (var i = 1; i < args.length; i++) {
-				if (!value) break;
-				name = args[i];
-				value = (name in value) ? value[name] : (name = null);
+	function spot(value, names, nameOnly) {
+		var name;
+		names = typeOf(names, "string") ? names.split(".") : names;
+		if (names) {
+			for (var i = 0; i < names.length; i++) {
+				name = names[i];
+				if (!typeOf(name, "string") || !value) break;
+				value = !typeOf(value, "string") && (name in value) ? value[name] : (name = null);
 			}
 		}
 		return nameOnly ? typeOf(name, "string") && name : value;
@@ -1272,7 +1318,7 @@ juse("juse/text.context", function text(){
 			var map = juse.filter(ref.value, this) || $map(ref.value);
 			if (map) {
 				value = (juse.typeOf(value, "array") && !value.length || juse.typeOf(value, "object") && !Object.keys(value).length) ? null : value;
-				var value2 = juse.memberName(map, value) ? map[value]
+				var value2 = juse.memberName(map, [value]) ? juse.memberValue(map, [value])
 						: (value && "*" in map) ? map["*"]
 								: (!value && "" in map) ? map[""] : value;
 				if (value2 !== value) value = $replace.call(this, value2, value);
@@ -1595,7 +1641,7 @@ juse("juse/valid.context", ["juse/text"], function valid($text, $context){
 			for (spec = juse.toRef(spec); spec; spec = juse.toRef(spec.value)) {
 				var name = spec.kind || spec.name;
 				var validator = $context.cacheValue("validators", name);
-				var message = juse.typeOf(validator, "function") && validator.call(this, value, ref);
+				var message = juse.typeOf(validator, "function") && validator.call(this, spec, value, ref);
 				messages = addMessage(messages, message);
 			}
 			return messages;
@@ -1611,7 +1657,7 @@ juse("juse/valid.context", ["juse/text"], function valid($text, $context){
 	});
 
 	this.juse("required.validator", ["replace"], function required($replace){
-		return function required(value, ref) {
+		return function required(spec, value, ref) {
 			return value ? "" : $replace(juse.lookup("#required.message", this) || "required: ${0}", juse.toSpec(ref));
 		};
 	});
