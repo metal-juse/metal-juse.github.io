@@ -19,4 +19,4 @@
 * [juse/valid](juse/valid)
 
 # Ext Contexts
-* [jx/jquery](jx/query)
+* [jx/jquery](jx/jquery)
