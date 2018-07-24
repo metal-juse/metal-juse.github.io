@@ -10,7 +10,7 @@ Example:
 
 ```
 <link href="http://metal-juse.github.io/css/example.css" rel="stylesheet"/>
-<script src="http://metal-juse.github.io/juse-up.min.js" data-app="example.model@app;"></script>
+<script src="http://metal-juse.github.io/juse-up.min.js" data-app="example.datatable@app;"></script>
 <script>juse("app.context", ["jx/jquery"], function(){
 	this.juse(["datatable@jx/jquery"]);
 });</script>
@@ -26,12 +26,12 @@ Example:
 			<tr><td>111</td><td>222</td><td>333</td></tr>
 		</tbody>
 		<tfoot><tr><td colspan="3" style="text-align:center;">Footer</td></tr></tfoot>
-	</table
+	</table>
 </div>
 ```
 
 <link href="http://metal-juse.github.io/css/example.css" rel="stylesheet"/>
-<script src="http://metal-juse.github.io/juse-up.min.js" data-app="example.model@app;"></script>
+<script src="http://metal-juse.github.io/juse-up.min.js" data-app="example.datatable@app;"></script>
 <script>juse("app.context", ["jx/jquery"], function(){
 	this.juse(["datatable@jx/jquery"]);
 });</script>
@@ -47,5 +47,5 @@ Example:
 			<tr><td>111</td><td>222</td><td>333</td></tr>
 		</tbody>
 		<tfoot><tr><td colspan="3" style="text-align:center;">Footer</td></tr></tfoot>
-	</table
+	</table>
 </div>
