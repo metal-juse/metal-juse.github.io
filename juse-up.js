@@ -100,25 +100,17 @@
 			});
 
 			this.juse("juse/cache.classifier", function cache(){
-				return function cache(value){
-					getModule(this.spec).cache = copyTo({}, value);
-					this.cacheEntry = cacheEntry;
-					this.cacheValue = cacheValue;
-					this.cacheLookup = cacheLookup;
-				};
+				return seal(function cache(value){
+					copyTo(getModule(this.spec).cache, value);
+				}, {scope:function scope(){
+					getModule(this.spec).cache = {};
+					copyTo(this, {cacheEntry:cacheEntry, cacheValue:cacheValue});
+				}});
 
 				function cacheValue(name, member, value) {
 					var cache = this.cacheEntry(name);
 					if (value !== undefined) cache[member] = cache[member] || value;
 					return cache[member];
-				}
-
-				function cacheLookup(name, member) {
-					var cache = this.cacheEntry(name);
-					for (var name in cache) {
-						var value = memberValue(cache, [name, member]);
-						if (value) return value;
-					}
 				}
 
 				function cacheEntry(name) {
@@ -128,16 +120,20 @@
 			});
 
 			this.juse("juse/context.classifier", ["cache"], function context($cache){
+				scope.call(this.context);
 				$cache.call(this.context, initContext({
 					map: { "*": "modules:" },
 					roots: [ "juse", "jx" ]
 				}));
-				copyTo(this.context, {replace:replace, property:property});
-				return function context(value){
+				return seal(function context(value){
 					$cache.call(this, initContext(value));
-					copyTo(this, {replace:replace, property:property});
 					return {};
-				};
+				}, {scope:scope});
+
+				function scope() {
+					$cache.scope.call(this);
+					copyTo(this, {replace:replace, property:property});
+				}
 
 				function initContext(value) {
 					if (value && value.map) initContextMap(value.map);
@@ -195,9 +191,7 @@
 				initClassifier(getModule(toRef("juse/context")).scope);
 				initClassifier(getModule(toRef("juse/follower")).scope);
 
-				return function classifier(){
-					initClassifier(this);
-				};
+				return seal(function classifier(){}, {scope:function scope(){ initClassifier(this); }});
 
 				function initClassifier(scope) {
 					scope.context.cacheValue("map", slicePath(scope.spec.name, -1, 1), scope.spec);
@@ -215,10 +209,10 @@
 			}
 
 			function lookup(spec, scope) {
-				var ref = toRef(spec);
+				var ref = spec && toRef({}, spec);
 				if (ref) {
 					return ref.name ? memberValue(getModuleValue(resolve(ref, scope)), [ref.member]) :
-						scope.context.cacheLookup("properties", ref.member) || scope.meta[ref.member];
+						scope.context.property(toRef(ref, scope.spec)) || scope.meta[ref.member];
 				}
 			}
 
@@ -483,12 +477,13 @@
 	}
 
 	/** @member filter */
-	function applyFilters(value, ref, key, module) {
-		return resolveFilters(ref, key, module).map(getModuleValue).reduce(applyFilter, {scope:module.scope, value:value}).value;
+	function applyFilters(value, ref, key, module, member) {
+		return resolveFilters(ref, key, module).map(getModuleValue).reduce(applyFilter, {scope:module.scope, value:value, member:member}).value;
 	}
 
 	/** @member filter */
 	function applyFilter(args, filter) {
+		filter = memberValue(filter, args.member);
 		args.value = typeOf(filter, "function") && filter.call(args.scope, args.value) || args.value;
 		return args;
 	}
@@ -666,17 +661,13 @@
 			module.modules = {};
 		}
 		initScope(module);
-		module.value = typeOf(module.value, "string") ? external(module) :
-			typeOf(module.def.args.value, "function") ? module.def.value_ : module.def.args.value;
 		initValue(module);
 	}
 
 	/** @member flush */
 	function initValue(module) {
-		var filter;
-		if (module.value) {
-			filter = module.value = applyFilters(module.value, module.def.spec, "type", module);
-		}
+		module.value = typeOf(module.value, "string") ? external(module) :
+			typeOf(module.def.args.value, "function") ? module.def.value_ : module.def.args.value;
 		if (typeOf(module.def.args.value, "function")) {
 			var values = module.def.refs.map(filterRefValue, module);
 			values.push(module.scope);
@@ -684,9 +675,7 @@
 			module.value = module.def.args.value.apply(module.scope, values) || module.value;
 			delete module.scope.value;
 		}
-		if (!filter) {
-			module.value = applyFilters(module.value, module.def.spec, "type", module);
-		}
+		module.value = applyFilters(module.value, module.def.spec, "type", module);
 	}
 
 	/** @member flush */
@@ -700,6 +689,7 @@
 				scope.context.cacheValue("map", slicePath(scope.spec.name, -1, 1), scope.spec);
 			}
 		}
+		applyFilters(module.value, module.def.spec, "type", module, "scope");
 	}
 
 	/** @member request */

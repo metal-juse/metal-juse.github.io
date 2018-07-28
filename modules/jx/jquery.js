@@ -1,3 +1,4 @@
 juse(".context", function jquery(){
-	this.juse(["jquery#jQuery; https://code.jquery.com/jquery-3.3.1.min.js"]);
+	this.property("jquery#home", "https://code.jquery.com");
+	this.juse(["jquery#jQuery; ${jquery#home}/jquery-3.3.1.min.js"]);
 });
