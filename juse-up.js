@@ -5,6 +5,7 @@
 
 	var $defArgKeys = ["spec", "refs", "value"];
 	var $baseKeys = ["kind", "context"];
+	var $appKeys = ["kind", "name", "type", "member", "context"];
 	var $refKeys = ["kind", "name", "type", "member", "context", "pipe", "value"];
 	var $refFormatKeys = [""].concat($refKeys);
 	var $refFormat = /(?:\s*([^.#@|;\s]*)\s*:)?\s*([^.#@|;]*)(?:\.([^#@|;\s]*))?(?:#([^@|;\s]*))?(?:@([^|;\s]*))?(?:\s*\|\s*([^;\s]*))?(?:\s*;\s*([\S\s]*))?/;
@@ -15,10 +16,7 @@
 	var $flushStates = enums(["BUFFER", "LOAD", "DEFINE", "RESOLVE", "READY", "FLUSH", "DONE", "ERROR"]);
 	var $logKeys = enums(["error", "warn", "info", "debug"]);
 	var $boot = {
-		buffer: [],
-		flushCount: 0,
-		moduleCount: 0,
-		fn: function(){},
+		buffer: [], flushCount: 0, moduleCount: 0,
 		global: this.document ? this : this.global||this
 	};
 
@@ -59,7 +57,7 @@
 	/** @member boot */
 	function loadApp() {
 		/** @provide juse/app/load **/
-		var app = toRef(currentHash(), currentApp());
+		var app = copyTo({}, toRef(currentHash(), currentApp()), $appKeys);
 		var context = toRef(app.context||"");
 		app.context = context.name || app.context;
 		$boot.appPath = context.kind || toRef($boot.app.context||"").kind;
@@ -313,7 +311,7 @@
 
 	/** @member define */
 	function getMetaSpec(meta, value) {
-		var values = typeOf(value, "function") && $fnFormat.exec($boot.fn.toString.call(value));
+		var values = typeOf(value, "function") && $fnFormat.exec($boot.global.juse.toString.call(value));
 		copyTo(meta, values, $fnFormatKeys);
 		value = meta.value;
 		delete meta.value;
@@ -787,7 +785,7 @@
 		return $boot.currentApp||$boot.app;
 	}
 
-	function corePackage(name) {
+	function juseRoot(name) {
 		return $boot.context.cache.roots.indexOf(name.split("/")[0]) >= 0;
 	}
 
@@ -799,8 +797,8 @@
 			var context = getContext(ref);
 			var name = getModuleName(ref, "js");
 			name = context.kind ? [context.name, name].join("/") : name;
-			var base = (corePackage(name) || $boot.doc) ? "" : ".";
-			path = corePackage(name) ? $boot.jusePath : $boot.appPath;
+			var base = (juseRoot(name) || $boot.doc) ? "" : ".";
+			path = juseRoot(name) ? $boot.jusePath : $boot.appPath;
 			path = [base, path, ref.kind, name].filter(memberValue).join("/");
 		}
 		return path;
@@ -861,7 +859,7 @@
 
 	/** @member util */
 	function copyValues(to, from) {
-		var name = typeOf(from, "function") && $fnFormat.exec($boot.fn.toString.call(from))[1];
+		var name = typeOf(from, "function") && $fnFormat.exec($boot.global.juse.toString.call(from))[1];
 		name ? (to[name] = from) : copyTo(to, from);
 	}
 
