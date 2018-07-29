@@ -5,7 +5,6 @@
 
 	var $defArgKeys = ["spec", "refs", "value"];
 	var $baseKeys = ["kind", "context"];
-	var $appKeys = ["kind", "name", "type", "member", "context"];
 	var $refKeys = ["kind", "name", "type", "member", "context", "pipe", "value"];
 	var $refFormatKeys = [""].concat($refKeys);
 	var $refFormat = /(?:\s*([^.#@|;\s]*)\s*:)?\s*([^.#@|;]*)(?:\.([^#@|;\s]*))?(?:#([^@|;\s]*))?(?:@([^|;\s]*))?(?:\s*\|\s*([^;\s]*))?(?:\s*;\s*([\S\s]*))?/;
@@ -57,7 +56,7 @@
 	/** @member boot */
 	function loadApp() {
 		/** @provide juse/app/load **/
-		var app = copyTo({}, toRef(currentHash(), currentApp()), $appKeys);
+		var app = toRef(currentHash(), currentApp());
 		var context = toRef(app.context||"");
 		app.context = context.name || app.context;
 		$boot.appPath = context.kind || toRef($boot.app.context||"").kind;
