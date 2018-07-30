@@ -60,6 +60,8 @@
 		var context = toRef(app.context||"");
 		app.context = context.name || app.context;
 		$boot.appPath = context.kind || toRef($boot.app.context||"").kind;
+		copyTo(getContext().scope.cacheEntry("properties"), map(app.value));
+		delete app.value;
 		getContext().scope.juse([toRef(app.context, ".context")], function(){
 			getContext().scope.juse([app, "follower"], function($app, $follower){
 				if ($follower.notify("juse/app/load", app)) {
@@ -81,6 +83,7 @@
 			this.juse(function juse(){
 				return seal(this.context.juse,
 					{global: $boot.global,
+					map:map,
 					toRef:toRef,
 					toPath:toPath,
 					toSpec:toSpec,
@@ -840,6 +843,14 @@
 		return (retain ? selected : parts).join(delim);
 	}
 
+	function map(spec){
+		var map = {};
+		for (var ref = juse.toRef(spec); ref && ref.name; ref = juse.toRef(ref.value)) {
+			map[ref.kind||""] = ref.name;
+		}
+		return map;
+	}
+
 	/** @member util */
 	function enums(names) {
 		for (var i = 0; i < names.length; i++) {
@@ -938,6 +949,9 @@
 	/** @member util */
 	function log(value) {
 		if (typeof(console) == "undefined") return;
+		var property = memberValue(getContext(), ["scope", "property"]);
+		var dev = property && getContext().scope.property("app-mode") == "dev";
+		if (!dev) return;
 		if (typeof(value) == "string") {
 			var i = $logKeys.indexOf(value);
 			var log = (i<0) ? console.log : console[$logKeys[i]];
@@ -1297,12 +1311,12 @@ juse("juse/text.context", function text(){
 		};
 	});
 
-	this.juse("teval", ["map", "replace"], function teval($map, $replace, $scope){
+	this.juse("teval", ["replace"], function teval($replace, $scope){
 		return function teval(spec, dataset) {
 			var ref = juse.toRef(spec);
 			var value = juse.filter(ref, this, dataset);
 			value = dataset === undefined ? value || juse.lookup(ref, this) : value;
-			var map = juse.filter(ref.value, this) || $map(ref.value);
+			var map = juse.filter(ref.value, this) || juse.map(ref.value);
 			if (map) {
 				value = (juse.typeOf(value, "array") && !value.length || juse.typeOf(value, "object") && !Object.keys(value).length) ? null : value;
 				var value2 = juse.memberName(map, [value]) ? juse.memberValue(map, [value])
@@ -1506,7 +1520,7 @@ juse("juse/ui.context", ["juse/resource", "juse/text"], function ui(){
 		}
 	});
 
-	this.juse("tile.classifier", ["dom", "replace", "map"], function tile($dom, $replace, $map){
+	this.juse("tile.classifier", ["dom", "replace"], function tile($dom, $replace){
 
 		return function tile(node, dataset){
 			node = $dom.call(this, node);
@@ -1534,7 +1548,7 @@ juse("juse/ui.context", ["juse/resource", "juse/text"], function ui(){
 			} else if (this.tiles[ref.name]) {
 				tile = this.tiles[ref.name];
 			} else if (tile) {
-				makeTile(tile, this.dataset||$map(ref.value), this.scope, tag);
+				makeTile(tile, this.dataset||juse.map(ref.value), this.scope, tag);
 			}
 			$dom.replaceContent(tag, tile);
 		}
