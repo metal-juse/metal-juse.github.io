@@ -58,7 +58,7 @@
 		/** @provide juse/app/load **/
 		var app = toRef(currentHash(), currentApp());
 		var context = toRef(app.context||"");
-		app.context = context.name || app.context;
+		app.context = context.name || app.context || "";
 		$boot.appPath = context.kind || toRef($boot.app.context||"").kind;
 		copyTo(getContext().scope.cacheEntry("properties"), map(app.value));
 		delete app.value;
@@ -666,8 +666,8 @@
 
 	/** @member flush */
 	function initValue(module) {
-		module.value = typeOf(module.value, "string") ? external(module) :
-			typeOf(module.def.args.value, "function") ? module.def.value_ : module.def.args.value;
+		module.value = external(module) ||
+			(typeOf(module.def.args.value, "function") ? module.def.value_ : module.def.args.value);
 		if (typeOf(module.def.args.value, "function")) {
 			var values = module.def.refs.map(filterRefValue, module);
 			values.push(module.scope);
@@ -721,7 +721,7 @@
 				if (module.type == "css") {
 					module.refs = [];
 					module.flushState = $flushStates.DONE;
-				} else if (typeOf(module.value, "string") && external(module)) {
+				} else if (external(module)) {
 					module.flushState = $flushStates.DEFINE;
 				}
 			} else {
@@ -919,7 +919,7 @@
 
 	/** @member util */
 	function external(ref) {
-		return typeOf(ref.value, "string") && ($boot.doc && $boot.doc.getElementById(ref.member||ref.name) || memberValue($boot.global, ref.member||ref.name));
+		return $boot.doc && $boot.doc.getElementById(ref.member||ref.name) || memberValue($boot.global, ref.member||ref.name);
 	}
 
 	/** @member util */
