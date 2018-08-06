@@ -24,18 +24,8 @@ Members:
 * filter
 * ...
 
-# juse/cache
-
-Classifier to enhance module with cache store.
-
-# juse/context
-
-Classifier to init and cache context settings.
-
-# juse/follower
-
-Classifier to register/notify follower modules to respond to context based events.
-
-# juse/classifier
-
-Classifier to mark modules as classifiers so other module may refer to a classifier by its short name.
+## Modules
+* [juse/cache](juse/cache)
+* [juse/context](juse/context)
+* [juse/follower](juse/follower)
+* [juse/classifier](juse/classifier)
