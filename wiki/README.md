@@ -1,6 +1,6 @@
 # Highlights
 
-* `juse` is an [AMD][] inspired JavaScript framework to manage and load modules and dependencies.
+* `juse` is an [AMD][] inspired JavaScript framework to load and manage modules and dependencies.
     - Module is a name-value pair.
     - Module is the smallest unit of code that can be encapsulated in one file.
     - Modules can also be concatenated into one file and minified.
