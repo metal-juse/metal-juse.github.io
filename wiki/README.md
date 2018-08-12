@@ -6,17 +6,20 @@
     - Modules can also be concatenated into one file and minified.
     - Modules can depend on one another.
 
-* `juse` supports module grouping, configuration and stereotype in module definitions.
-* `juse` provides framework modules as services to assist with all aspects of module definitions.
+* `juse` adds support for design features such as module grouping, configuration and stereotype in module definitions.
+* `juse` provides framework modules as services to assist with the design features in module definitions.
 * `juse` also provides framework modules as API abstraction of system resources such as DOM and XMLHttpRequest.
 * `juse` supports easy integration with external classic frameworks such as [jQuery][].
 
-# Design Details
+# Design Features
 
 * Module Definition and Dependencies
-    - `juse` follows the [AMD][] approach to define modules and dependencies.
-    - Module is identified by its ref spec, in the format of `kind:name.type#member@context|pipe;value`
-    - Module ref spec can be partial in module definition, and the framework resolves the full spec based on configuration and usage convention.
+    - `juse` follows the [AMD][] style to define modules and dependencies.
+        + `define(spec, [specs], value)`
+    - Module definition consists of module spec, dependency specs and module value initializer.
+    - Module spec has the following format:
+        + `kind:name.type#member@context|pipe;value`
+    - Module spec can be partial, and the framework resolves the full spec based on configuration and usage convention.
 
 * Module Grouping and Configuration
     - Context is a special module that groups other modules.
