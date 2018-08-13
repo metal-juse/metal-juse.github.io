@@ -23,6 +23,7 @@
 	return function boot(){
 		if ($boot.global.juse) return;
 		$boot.global.juse = juse;
+		$boot.global.define = $boot.global.define || juse;
 		$boot.doc = $boot.global.document;
 		if ($boot.doc) {
 			$boot.async = !!$boot.doc.currentScript;
@@ -50,6 +51,7 @@
 	/** @member boot */
 	function done() {
 		if ($boot.doc) log($boot);
+		else log($boot.jusePath, $boot.app);
 		log("--done--");
 	}
 
