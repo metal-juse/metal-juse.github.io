@@ -187,7 +187,7 @@
 				}
 			});
 
-			this.juse("juse/classifier.classifier", ["follower"], function classifier($follower){
+			this.juse("juse/classifier.classifier", function classifier(){
 				initClassifier(this);
 				initClassifier(getModule(toRef("juse/cache")).scope);
 				initClassifier(getModule(toRef("juse/context")).scope);
@@ -198,7 +198,6 @@
 				function initClassifier(scope) {
 					scope.context.cacheValue("map", slicePath(scope.spec.name, -1, 1), scope.spec);
 					scope.contextOf = contextOf;
-					$follower.call(scope);
 				}
 
 				function contextOf(spec) {
@@ -357,7 +356,7 @@
 
 	/** @member module */
 	function getModule(ref, i, a, context) {
-		return (ref.type == "context") ? getContext(ref.name) : memberValue(getContext(ref, context), ["modules", getModuleName(ref)]);
+		return (ref.type == "context") ? getContext(ref.name) : typeOf(getModuleName(ref), "string") && memberValue(getContext(ref, context), ["modules", getModuleName(ref)]);
 	}
 
 	/** @member module */
@@ -684,7 +683,7 @@
 	function initScope(module) {
 		var scope = module.scope = {spec:copyTo({}, module.def, $refKeys), meta:copyTo({}, module.def.meta), log:log};
 		if (module.type == "context") {
-			module.scope.juse = juse;
+			module.scope.define = module.scope.juse = juse;
 		} else {
 			module.scope.context = getContext(module).scope;
 			if (scope.context.cacheValue && slicePath(scope.spec.name, -1, 1)) {
@@ -1345,7 +1344,7 @@ juse("juse/text.context", function text(){
 juse("juse/ui.context", ["juse/resource", "juse/text"], function ui(){
 	var $view, $array = [];
 
-	this.juse("view.classifier", function view($scope){
+	this.juse("view.classifier.follower", function view($scope){
 		this.meta.follow = "juse/app/load";
 		return juse.seal(
 			function view(){
@@ -1697,7 +1696,7 @@ juse("juse/model.context", ["juse/remote", "juse/service", "juse/ui", "juse/vali
 		return model;
 	}
 
-	this.juse("model.classifier", ["dom", "tile", "provider", "validate"], function model($dom, $tile, $provider, $validate, $scope){
+	this.juse("model.classifier.follower", ["dom", "tile", "provider", "validate"], function model($dom, $tile, $provider, $validate, $scope){
 		this.meta.follow = "juse/app/load";
 		return juse.seal(function model(node) {
 			node = $dom.call(this, node);

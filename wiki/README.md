@@ -6,7 +6,7 @@
     - Modules can also be concatenated into one file and minified.
     - Modules can depend on one another.
 
-* `juse` adds additional features on top of the base API to support module design such as module grouping, configuration and stereotype in module definitions.
+* `juse` adds additional features on top of the base [AMD][] API to support modular design such as module stereotype and grouping.
 * `juse` provides core framework modules as services to assist with the additional design features in module definitions.
 * `juse` makes it easy to separate common reusable patterns from application modules into its own framework modules.
 * `juse` also provides framework modules as API abstraction of system resources such as DOM and XMLHttpRequest.
@@ -23,12 +23,43 @@
     - Module spec/specs can be partial, and the framework resolves the full spec based on configuration and usage convention.
     - Module value initializer can be a simple value, or a callback that returns a value.
 
-* Module Grouping and Configuration
-    - Context is a special module that groups other modules.
+Example: The following code defines module `world` with value `WORLD!`, and module `hello`, which depends on `world`, with its value deriving from `world`. The sample code then displays value of `hello` with replacement variable `${hello}`.
+
+```
+<link href="http://metal-juse.github.io/css/example.css" rel="stylesheet"/>
+<script src="http://metal-juse.github.io/juse-up.min.js" data-app="example|replace@juse/ui"></script>
+<script>
+define("world", "WORLD!");
+define("hello", ["world"], function($world){ return "hello " + $world; });
+</script>
+
+<div id="example">module hello: ${hello}</div>
+```
+
+<link href="http://metal-juse.github.io/css/example.css" rel="stylesheet"/>
+<script src="http://metal-juse.github.io/juse-up.min.js" data-app="example|replace@juse/ui"></script>
+<script>
+define("world", "WORLD!");
+define("hello", ["world"], function($world){ return "hello " + $world; });
+</script>
+
+<div id="example">module hello: ${hello}</div>
 
 * Module Stereotype
-    - Module can have stereotypes that indicate common module behaviors.
-    - Stereotype itself is defined as a module.
+    - Module stereotype may exchange predefined state with a module during module initialization.
+    - Module spec token `.type` indicates module stereotype.
+    - `juse` provides some useful stereotype modules, and application may create its own stereotype modules.
+
+Example: The following code defines module ----.
+
+```
+define("----", "----");
+```
+
+* Module Grouping
+    - Context module is a special module that groups logically related modules.
+    - Every defined module is part of a context module, either a named context, or the default/root context.
+    - All context modules are part of the default/root module.
 
 * Module Loading and Initialization
 
