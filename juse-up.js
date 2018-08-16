@@ -1355,7 +1355,8 @@ juse("juse/ui.context", ["juse/resource", "juse/text"], function ui(){
 				var value = juse.lookup(ref);
 				if (juse.typeOf(value, "html", true)) {
 					$view.setAttribute("data-view", juse.toSpec(ref));
-					if ($view.lastElementChild) {
+					if ($view == value.parentNode) {
+					} else if ($view.lastElementChild) {
 						$view.replaceChild(value, $view.lastElementChild);
 					} else {
 						$view.appendChild(value);
