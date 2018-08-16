@@ -30,6 +30,7 @@ Example:
 </div>
 ```
 
+<section>
 <link href="http://metal-juse.github.io/css/example.css" rel="stylesheet"/>
 <script src="http://metal-juse.github.io/juse-up.min.js" data-app="example.datatable@app;"></script>
 <script>juse("app.context", ["jx/jquery"], function(){
@@ -49,3 +50,4 @@ Example:
 		<tfoot><tr><td colspan="3" style="text-align:center;">Footer</td></tr></tfoot>
 	</table>
 </div>
+</section>

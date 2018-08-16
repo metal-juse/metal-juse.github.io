@@ -24,6 +24,7 @@ Example:
 </div>
 ```
 
+<section>
 <link href="http://metal-juse.github.io/css/example.css" rel="stylesheet"/>
 <script src="http://metal-juse.github.io/juse-up.min.js" data-app="example.model@app;"></script>
 <script>juse("app.context", ["juse/model"]);</script>
@@ -35,3 +36,4 @@ Example:
 	map: <ul data-value="map:"><li>%{}</li></ul>
 	<span data-value=";*:hidden">-- blank --</span>
 </div>
+</section>

@@ -28,6 +28,7 @@ Example:
 </div>
 ```
 
+<section>
 <link href="http://metal-juse.github.io/css/example.css" rel="stylesheet"/>
 <script src="http://metal-juse.github.io/juse-up.min.js" data-app="example.model@app;"></script>
 <script>juse("app.context", ["juse/model", "juse/resource"], {map:{"*.json":"data:"}});</script>
@@ -42,3 +43,4 @@ Example:
 	list: <ul data-value="list:values"><li data-value="link:">%{}</li></ul>
 	<span data-value="values;*:hidden">-- blank --</span>
 </div>
+</section>

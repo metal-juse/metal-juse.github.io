@@ -14,55 +14,9 @@
 
 # Design Features
 
-* Module Definition and Dependencies
-    - `juse` follows the base [AMD][] API to define modules and dependencies.
-        + `define(spec, specs, value)`
-    - Module definition consists of module spec, dependency specs and module value initializer.
-    - Module spec has the following extended format, where the `name` token represents the base [AMD][] module id.
-        + `kind:name.type#member@context|pipe;value`
-    - Module spec/specs can be partial, and the framework resolves the full spec based on configuration and usage convention.
-    - Module value initializer can be a simple value, or a callback that returns a value.
-
-Example:
-
-```
-<link href="http://metal-juse.github.io/css/example.css" rel="stylesheet"/>
-<script src="http://metal-juse.github.io/juse-up.min.js" data-app="example|replace@juse/ui"></script>
-<script>
-define("world", "WORLD!");
-define("hello", ["world"], function($world){ return "hello " + $world; });
-</script>
-
-<div id="example">module hello: ${hello}</div>
-```
-
-The example defines module `world` with value `WORLD!`, and module `hello`, which depends on `world`, with value deriving from `world`. The value of `hello` is then displayed with replacement variable `${hello}`.
-
-<link href="http://metal-juse.github.io/css/example.css" rel="stylesheet"/>
-<script src="http://metal-juse.github.io/juse-up.min.js" data-app="example|replace@juse/ui"></script>
-<script>
-define("world", "WORLD!");
-define("hello", ["world"], function($world){ return "hello " + $world; });
-</script>
-
-<div id="example">module hello: ${hello}</div>
-
-* Module Stereotype
-    - Module stereotype may exchange predefined state with a module during module initialization.
-    - Module spec token `.type` indicates module stereotype.
-    - `juse` provides some useful stereotype modules, and application may create its own stereotype modules.
-
-Example: The following code defines module ----.
-
-```
-define("----", "----");
-```
-
-* Module Grouping
-    - Context module is a special module that groups logically related modules.
-    - Every defined module is part of a context module, either a named context, or the default/root context.
-    - All context modules are part of the default/root module.
-
+* Module Definition and Dependencies [>>](design/define)
+* Module Stereotype [>>](design/stereotype)
+* Module Grouping and Context [>>](design/context)
 * Module Loading and Initialization
 
 # Contexts
