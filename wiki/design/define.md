@@ -23,6 +23,8 @@ define("hello", ["world"], function($world){ return "hello " + $world; });
 
 In the example, module `world` is defined with value `WORLD!`, and module `hello` with value deriving from `world`. The value of `hello` is then rendered by replacement variable `${hello}`.
 
+Live result:
+
 <section>
 <link href="http://metal-juse.github.io/css/example.css" rel="stylesheet"/>
 <script src="http://metal-juse.github.io/juse-up.min.js" data-app="example|replace@juse/ui"></script>
