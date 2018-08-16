@@ -1342,7 +1342,7 @@ juse("juse/text.context", function text(){
 });
 
 juse("juse/ui.context", ["juse/resource", "juse/text"], function ui(){
-	var $view, $array = [];
+	var $view, $dom, $array = [];
 
 	this.juse("view.classifier.follower", function view($scope){
 		this.meta.follow = "juse/app/load";
@@ -1355,7 +1355,7 @@ juse("juse/ui.context", ["juse/resource", "juse/text"], function ui(){
 				var value = juse.lookup(ref);
 				if (juse.typeOf(value, "html", true)) {
 					$view.setAttribute("data-view", juse.toSpec(ref));
-					if ($view == value.parentNode) {
+					if ($dom.closest(value, $view)) {
 					} else if ($view.lastElementChild) {
 						$view.replaceChild(value, $view.lastElementChild);
 					} else {
@@ -1368,7 +1368,6 @@ juse("juse/ui.context", ["juse/resource", "juse/text"], function ui(){
 	});
 
 	this.juse("dom.classifier", ["html"], function dom($html){
-		var $dom;
 		return $dom = juse.seal(function dom(value, clone){
 			return juse.typeOf(value, "string") ? $html.call(this, value) : clone ? value.cloneNode(true) : value;
 		}, {
@@ -1455,7 +1454,7 @@ juse("juse/ui.context", ["juse/resource", "juse/text"], function ui(){
 
 		function matches(node) {
 			if (node.nodeType == $dom.ELEMENT_NODE) {
-				var matched = node.matches ? node.matches(this.selectors) : node.parentNode.querySelector(this.selectors) == node;
+				var matched = (typeof(this.selectors) != "string") ? node === this.selectors : node.matches ? node.matches(this.selectors) : node.parentNode.querySelector(this.selectors) == node;
 				return this.node = matched && node;
 			}
 		}
