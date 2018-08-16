@@ -23,7 +23,7 @@
     - Module spec/specs can be partial, and the framework resolves the full spec based on configuration and usage convention.
     - Module value initializer can be a simple value, or a callback that returns a value.
 
-Example: The following code defines module `world` with value `WORLD!`, and module `hello`, which depends on `world`, with its value deriving from `world`. The sample code then displays value of `hello` with replacement variable `${hello}`.
+Example:
 
 ```
 <link href="http://metal-juse.github.io/css/example.css" rel="stylesheet"/>
@@ -35,6 +35,8 @@ define("hello", ["world"], function($world){ return "hello " + $world; });
 
 <div id="example">module hello: ${hello}</div>
 ```
+
+The example defines module `world` with value `WORLD!`, and module `hello`, which depends on `world`, with value deriving from `world`. The value of `hello` is then displayed with replacement variable `${hello}`.
 
 <link href="http://metal-juse.github.io/css/example.css" rel="stylesheet"/>
 <script src="http://metal-juse.github.io/juse-up.min.js" data-app="example|replace@juse/ui"></script>
