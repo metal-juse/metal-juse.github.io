@@ -1,5 +1,6 @@
 #example,
-.example {
+.example,
+body > div:not[class] {
 	font-size: 16px;
 	max-width: 1012px;
 	margin-right: auto;
