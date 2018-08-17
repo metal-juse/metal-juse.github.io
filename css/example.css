@@ -16,6 +16,8 @@ body > div:not([class]) {
 	display: table
 }
 
+.my-5 { margin-bottom: 0px; }
+
 .selected {
 	background-color: yellow;
 }
