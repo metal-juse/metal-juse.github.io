@@ -12,13 +12,11 @@ Example:
 
 ```
 <link href="http://metal-juse.github.io/css/example.css" rel="stylesheet"/>
-<script src="http://metal-juse.github.io/juse-up.min.js" data-app="example|replace@juse/ui"></script>
+<script src="http://metal-juse.github.io/juse-up.min.js" data-app="hello"></script>
 <script>
 define("world", "WORLD!");
 define("hello", ["world"], function($world){ return "hello " + $world; });
 </script>
-
-<div id="example">module hello: ${hello}</div>
 ```
 
 In the example, module `world` is defined with value `WORLD!`, and module `hello` with value deriving from `world`. The value of `hello` is then rendered by replacement variable `${hello}`.
@@ -27,13 +25,11 @@ Live result:
 
 <section>
 <link href="http://metal-juse.github.io/css/example.css" rel="stylesheet"/>
-<script src="http://metal-juse.github.io/juse-up.min.js" data-app="example|replace@juse/ui"></script>
+<script src="http://metal-juse.github.io/juse-up.min.js" data-app="hello"></script>
 <script>
 define("world", "WORLD!");
 define("hello", ["world"], function($world){ return "hello " + $world; });
 </script>
-
-<div id="example">module hello: ${hello}</div>
 </section>
 
 [AMD]: https://github.com/amdjs/amdjs-api/wiki/AMD

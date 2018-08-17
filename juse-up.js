@@ -41,6 +41,7 @@
 		log("--boot--");
 		defineRoot();
 		if ($boot.doc) {
+			juse(["juse/ui"]);
 			$boot.global.addEventListener("hashchange", loadApp);
 			$boot.global.addEventListener("load", loadApp);
 		} else {
@@ -980,6 +981,7 @@ juse("juse/resource.context", function resource(){
 
 	this.juse("html.classifier", function html(){
 		return function html(value, name){
+			if (typeof value != "string") return value;
 			var div = juse.global.document.createElement(name||"div");
 			div.innerHTML = value;
 			return div;
@@ -1344,7 +1346,7 @@ juse("juse/text.context", function text(){
 juse("juse/ui.context", ["juse/resource", "juse/text"], function ui(){
 	var $view, $dom, $array = [];
 
-	this.juse("view.classifier.follower", function view($scope){
+	this.juse("view.classifier.follower", ["html"], function view($html, $scope){
 		this.meta.follow = "juse/app/load";
 		return juse.seal(
 			function view(){
@@ -1352,7 +1354,7 @@ juse("juse/ui.context", ["juse/resource", "juse/text"], function ui(){
 			},
 			{follow: function follow(event, ref) {
 				$view = $view || juse.global.document.body.querySelector("[data-view]") || juse.global.document.body;
-				var value = juse.lookup(ref);
+				var value = $html(juse.lookup(ref));
 				if (juse.typeOf(value, "html", true)) {
 					$view.setAttribute("data-view", juse.toSpec(ref));
 					if ($dom.closest(value, $view)) {

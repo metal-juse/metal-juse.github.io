@@ -8,24 +8,20 @@ Example:
 
 ```
 <link href="http://metal-juse.github.io/css/example.css" rel="stylesheet"/>
-<script src="http://metal-juse.github.io/juse-up.min.js" data-app="example|replace@juse/ui"></script>
+<script src="http://metal-juse.github.io/juse-up.min.js" data-app="hello"></script>
 <script>
 define("world", "WORLD!");
 define("hello", ["world"], function($world){ return "hello " + $world; });
 </script>
-
-<div id="example">module hello: ${hello}</div>
 ```
 
 In the example, ....
 
 <section>
 <link href="http://metal-juse.github.io/css/example.css" rel="stylesheet"/>
-<script src="http://metal-juse.github.io/juse-up.min.js" data-app="example|replace@juse/ui"></script>
+<script src="http://metal-juse.github.io/juse-up.min.js" data-app="hello"></script>
 <script>
 define("world", "WORLD!");
 define("hello", ["world"], function($world){ return "hello " + $world; });
 </script>
-
-<div id="example">module hello: ${hello}</div>
 </section>
