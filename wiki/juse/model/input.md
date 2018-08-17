@@ -23,6 +23,8 @@ Example:
 </div>
 ```
 
+Live result:
+
 <section>
 <link href="http://metal-juse.github.io/css/example.css" rel="stylesheet"/>
 <script src="http://metal-juse.github.io/juse-up.min.js" data-app="example.model@app;"></script>

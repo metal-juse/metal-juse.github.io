@@ -19,7 +19,7 @@ define("hello", ["world"], function($world){ return "hello " + $world; });
 </script>
 ```
 
-In the example, module `world` is defined with value `WORLD!`, and module `hello` with value deriving from `world`. The value of `hello` is then rendered by replacement variable `${hello}`.
+In the example, module `world` is defined with value `WORLD!`, and module `hello` with value deriving from `world`. The value of `hello` is then rendered as app.
 
 Live result:
 
