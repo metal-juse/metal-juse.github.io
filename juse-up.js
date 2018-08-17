@@ -41,7 +41,6 @@
 		log("--boot--");
 		defineRoot();
 		if ($boot.doc) {
-			juse(["juse/ui"]);
 			$boot.global.addEventListener("hashchange", loadApp);
 			$boot.global.addEventListener("load", loadApp);
 		} else {
@@ -65,6 +64,7 @@
 		$boot.appPath = context.kind || toRef($boot.app.context||"").kind;
 		copyTo(getContext().scope.cacheEntry("properties"), map(app.value));
 		delete app.value;
+		if ($boot.doc) juse(["juse/ui"]);
 		getContext().scope.juse([toRef(app.context, ".context")], function(){
 			getContext().scope.juse([app, "follower"], function($app, $follower){
 				if ($follower.notify("juse/app/load", app)) {
