@@ -1,3 +1,5 @@
+.my-5 { margin-bottom: 0px !important; }
+
 #example,
 .example,
 body > div:not([class]) {
@@ -15,8 +17,6 @@ body > div:not([class]) {
 .example table {
 	display: table
 }
-
-.my-5 { margin-bottom: 0px !important; }
 
 .selected {
 	background-color: yellow;

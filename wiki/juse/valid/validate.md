@@ -4,7 +4,7 @@ Module to evaluate validation rules.
 
 Example:
 
-```
+```html
 juse(["validate"], function mymodule($validate, $scope){
 	...
 	var messages = $validate.call($scope, "myvalidator", null, "myvalue");
