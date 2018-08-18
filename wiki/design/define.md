@@ -24,7 +24,7 @@ In the example, module `world` is defined with value `WORLD!`, and module `hello
 Live result:
 
 <section>
-<link href="http://metal-juse.github.io/css/example.css" rel="stylesheet"/>
+<link href="define.css" rel="stylesheet"/>
 <script src="http://metal-juse.github.io/juse-up.min.js" data-app="hello"></script>
 <script>
 define("world", "WORLD!");
