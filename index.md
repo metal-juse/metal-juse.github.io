@@ -2,4 +2,5 @@
 
 `juse` is an AMD inspired JavaScript framework to load and manage modules and dependencies.
 
-[wiki](wiki)
+* [home](https://github.com/metal-juse/metal-juse.github.io)
+* [wiki](wiki)
