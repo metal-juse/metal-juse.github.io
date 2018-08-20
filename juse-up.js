@@ -102,7 +102,7 @@
 				});
 			});
 
-			this.juse("juse/cache.classifier", function cache(){
+			this.juse("juse/cache.filter", function cache(){
 				return seal(function cache(value){
 					copyTo(getModule(this.spec).cache, value);
 				}, {scope:function scope(){
@@ -122,10 +122,10 @@
 				}
 			});
 
-			this.juse("juse/context.classifier", ["cache"], function context($cache){
+			this.juse("juse/context.filter", ["cache"], function context($cache){
 				scope.call(this.context);
 				$cache.call(this.context, initContext({
-					map: { "*": "modules:" },
+					map: { "*": "modules:", "context": this.spec },
 					roots: [ "juse", "jx" ]
 				}));
 				return seal(function context(value){
@@ -149,7 +149,15 @@
 				}
 			});
 
-			this.juse("juse/follower.classifier", function follower($scope){
+			this.juse("juse/contextAware.classifier", function contextAware(){
+				return function contextAware(){ this.contextOf = contextOf; };
+
+				function contextOf(spec) {
+					return getContext(toRef(spec)).scope;
+				}
+			});
+
+			this.juse("juse/follower.contextAware", function follower($scope){
 				return juse.seal(function follower(){
 					addFollowers.call(this, this.meta.follow);
 				}, {notify:notify});
@@ -185,24 +193,6 @@
 							$scope.log("error", ex);
 						}
 					}
-				}
-			});
-
-			this.juse("juse/classifier.classifier", function classifier(){
-				initClassifier(this);
-				initClassifier(getModule(toRef("juse/cache")).scope);
-				initClassifier(getModule(toRef("juse/context")).scope);
-				initClassifier(getModule(toRef("juse/follower")).scope);
-
-				return seal(function classifier(){}, {scope:function scope(){ initClassifier(this); }});
-
-				function initClassifier(scope) {
-					scope.context.cacheValue("map", slicePath(scope.spec.name, -1, 1), scope.spec);
-					scope.contextOf = contextOf;
-				}
-
-				function contextOf(spec) {
-					return getContext(toRef(spec)).scope;
 				}
 			});
 
@@ -967,19 +957,19 @@
 
 juse("juse/resource.context", function resource(){
 
-	this.juse("properties.classifier", function properties(){
+	this.juse("properties.filter", function properties(){
 		return function properties(value){
 			this.context.cacheValue("properties", this.spec.name, value);
 		};
 	});
 
-	this.juse("json.classifier", function json(){
+	this.juse("json.filter", function json(){
 		return function json(value){
 			return JSON.parse(value);
 		};
 	});
 
-	this.juse("html.classifier", function html(){
+	this.juse("html.filter", function html(){
 		return function html(value, name){
 			if (typeof value != "string") return value;
 			var div = juse.global.document.createElement(name||"div");
@@ -1024,7 +1014,7 @@ juse("juse/run.context", function run(){
 
 	});
 
-	this.juse("promise.classifier", ["try", "async"], function promise($try, $async){
+	this.juse("promise", ["try", "async"], function promise($try, $async){
 
 		var $outer, $error = {};
 
@@ -1249,7 +1239,7 @@ juse("juse/remote.context", ["run"], function remote(){
 
 juse("juse/service.context", ["juse/run"], function service(){
 
-	this.juse("provider.classifier", ["promise", "follower"], function provider($promise, $follower, $scope){
+	this.juse("provider.contextAware", ["promise", "follower"], function provider($promise, $follower, $scope){
 		return juse.seal(function provider(){
 			addProviders.call(this, this.meta.provide);
 		}, {fire:fire});
@@ -1369,7 +1359,7 @@ juse("juse/ui.context", ["juse/resource", "juse/text"], function ui(){
 		);
 	});
 
-	this.juse("dom.classifier", ["html"], function dom($html){
+	this.juse("dom.filter", ["html"], function dom($html){
 		return $dom = juse.seal(function dom(value, clone){
 			return juse.typeOf(value, "string") ? $html.call(this, value) : clone ? value.cloneNode(true) : value;
 		}, {
@@ -1523,7 +1513,7 @@ juse("juse/ui.context", ["juse/resource", "juse/text"], function ui(){
 		}
 	});
 
-	this.juse("tile.classifier", ["dom", "replace"], function tile($dom, $replace){
+	this.juse("tile.filter", ["dom", "replace"], function tile($dom, $replace){
 
 		return function tile(node, dataset){
 			node = $dom.call(this, node);
@@ -1558,7 +1548,7 @@ juse("juse/ui.context", ["juse/resource", "juse/text"], function ui(){
 
 	});
 
-	this.juse("widget.classifier", ["dom"], function widget($dom){
+	this.juse("widget.filter", ["dom"], function widget($dom){
 
 		var $eventKeys = ["click","dblclick","mousedown","mouseenter","mouseleave","mousemove","mouseover","mouseout","mouseup","input","change","keyup","keydown","keypress"];
 		var $eventMap = {
@@ -1698,7 +1688,7 @@ juse("juse/model.context", ["juse/remote", "juse/service", "juse/ui", "juse/vali
 		return model;
 	}
 
-	this.juse("model.classifier.follower", ["dom", "tile", "provider", "validate"], function model($dom, $tile, $provider, $validate, $scope){
+	this.juse("model.filter.follower", ["dom", "tile", "provider", "validate"], function model($dom, $tile, $provider, $validate, $scope){
 		this.meta.follow = "juse/app/load";
 		return juse.seal(function model(node) {
 			node = $dom.call(this, node);
