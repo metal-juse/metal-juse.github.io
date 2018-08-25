@@ -23,7 +23,7 @@ define("hello", "hello juse!");
 The example code is executed in this page, and produces the following result.
 
 <section>
-<link href="bootstrap.css" rel="stylesheet"/>
+<link href="boot.css" rel="stylesheet"/>
 <script src="http://metal-juse.github.io/juse-up.min.js" data-app="hello"></script>
 <script>
 define("hello", "hello juse!");
