@@ -20,7 +20,9 @@ define("hello", "hello juse!");
 </script>
 ```
 
-The example code is executed in this page, and produces the following result.
+At line 2 is the script tag loading the bootstrapping `juse` script and declaring the main module `hello`, and at line 4 is the global function `define` defines the main module `hello`.
+
+The example code is executed in this page, and it produces the following result.
 
 <section>
 <link href="boot.css" rel="stylesheet"/>
