@@ -802,6 +802,7 @@
 	function toRef(spec, base, keys) {
 		if (typeOf(spec, "string")) spec = copyTo({}, $refFormat.exec(spec), $refFormatKeys);
 		if (typeOf(base, "string")) base = copyTo({}, $refFormat.exec(base), $refFormatKeys);
+		if (!typeOf(base, "object")) base = null;
 		keys = typeOf(keys, "array") && keys || keys && spec && Object.keys(spec) || $refKeys;
 		spec = copyTo(spec, base, keys, true);
 		if (spec && spec.name) spec.name = spec.name.trim();
