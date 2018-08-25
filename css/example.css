@@ -21,3 +21,22 @@ body > div:not([class]) {
 .selected {
 	background-color: yellow;
 }
+
+/*---- line numbers ----*/
+pre { counter-reset: line; }
+
+span:nth-child(1),
+span:nth-child(7),
+span:nth-child(13),
+span:nth-child(14),
+span:nth-child(20),
+span:nth-child(37)
+{ counter-increment: line; }
+
+span:nth-child(1):before,
+span:nth-child(7):before,
+span:nth-child(13):before,
+span:nth-child(14):before,
+span:nth-child(20):before,
+span:nth-child(37):before
+{ content: counter(line) ": "; -webkit-user-select: none; }

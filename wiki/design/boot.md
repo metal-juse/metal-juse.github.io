@@ -25,7 +25,7 @@ At line 2 is the script tag loading the bootstrapping `juse` script and declarin
 The example code is executed in this page, and it produces the following result.
 
 <section>
-<link href="boot.css" rel="stylesheet"/>
+<link href="http://metal-juse.github.io/css/example.css" rel="stylesheet"/>
 <script src="http://metal-juse.github.io/juse-up.min.js" data-app="hello"></script>
 <script>
 define("hello", "hello juse!");

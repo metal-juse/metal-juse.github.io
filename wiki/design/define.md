@@ -1,5 +1,9 @@
 # [<<](..) Module Definition and Dependencies
 
+* Module is a name-value pair.
+* Module is the smallest unit of code that can be encapsulated in one file.
+* Modules can also be concatenated into one file and minified.
+* Modules can depend on one another.
 * `juse` follows the base [AMD][] API to define modules and dependencies.
     * `define(spec, specs, value)`
 * Module definition consists of module spec, dependency specs and module value initializer.
@@ -24,7 +28,7 @@ In the example, module `world` is defined with value `WORLD!`, and module `hello
 Live result:
 
 <section>
-<link href="define.css" rel="stylesheet"/>
+<link href="http://metal-juse.github.io/css/example.css" rel="stylesheet"/>
 <script src="http://metal-juse.github.io/juse-up.min.js" data-app="hello"></script>
 <script>
 define("world", "WORLD!");
@@ -32,4 +36,4 @@ define("hello", ["world"], function($world){ return "hello " + $world; });
 </script>
 </section>
 
-[AMD]: https://github.com/amdjs/amdjs-api/wiki/AMD
+[AMD]: https://github.com/amdjs/amdjs-api/wiki/AMD (Asynchronous Module Definition)
