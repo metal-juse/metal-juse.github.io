@@ -23,9 +23,9 @@ define("hello", ["world"], function($world){ return "hello " + $world; });
 </script>
 ```
 
-In the example, module `world` is defined with value `WORLD!`, and module `hello` with value deriving from `world`. The value of `hello` is then rendered as app.
+At line 4, module `world` is defined with value `WORLD!`. At line 5, module `hello` is defined with value deriving from `world`. The value of `hello` is then added to the document body as the main module.
 
-Live result:
+The code is executed right here in this page, producing the following result.
 
 <section>
 <link href="http://metal-juse.github.io/css/example.css" rel="stylesheet"/>
