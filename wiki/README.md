@@ -10,11 +10,11 @@
 
 # Design Features
 
+* App Bootstrapping [>>](design/boot)
 * Module Definition and Dependencies [>>](design/define)
 * Module Initialization [>>](design/init)
 * Module Stereotype [>>](design/stereotype)
 * Module Grouping and Context [>>](design/context)
-* App Bootstrapping [>>](design/boot)
 
 # Core Contexts
 
