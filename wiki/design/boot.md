@@ -16,12 +16,12 @@ Example:
 <link href="http://metal-juse.github.io/css/example.css" rel="stylesheet"/>
 <script src="http://metal-juse.github.io/juse-up.min.js" data-app="hello"></script>
 <script>
-define("hello", "hello juse!");
+define("hello", "Hello World!");
 </script>
 ```
 
-At line 2 is the script tag loading the `juse` bootstrap script and declaring the main module `hello`.
-At line 4 is the global function `define` defining the main module `hello`.
+At line 2, the script tag loads the `juse` bootstrap script and declares the main module `hello`.
+At line 4, the global function `define` defines the main module `hello`.
 
 The code is executed right here in this page, producing the following result.
 
@@ -29,7 +29,7 @@ The code is executed right here in this page, producing the following result.
 <link href="http://metal-juse.github.io/css/example.css" rel="stylesheet"/>
 <script src="http://metal-juse.github.io/juse-up.min.js" data-app="hello"></script>
 <script>
-define("hello", "hello juse!");
+define("hello", "Hello World!");
 </script>
 </section>
 

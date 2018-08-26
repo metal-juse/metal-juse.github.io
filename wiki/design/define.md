@@ -18,8 +18,8 @@ Example:
 <link href="http://metal-juse.github.io/css/example.css" rel="stylesheet"/>
 <script src="http://metal-juse.github.io/juse-up.min.js" data-app="hello"></script>
 <script>
-define("world", "WORLD!");
-define("hello", ["world"], function($world){ return "hello " + $world; });
+define("world", "World!");
+define("hello", ["world"], function($world){ return "Hello " + $world; });
 </script>
 ```
 
@@ -31,8 +31,8 @@ The code is executed right here in this page, producing the following result.
 <link href="http://metal-juse.github.io/css/example.css" rel="stylesheet"/>
 <script src="http://metal-juse.github.io/juse-up.min.js" data-app="hello"></script>
 <script>
-define("world", "WORLD!");
-define("hello", ["world"], function($world){ return "hello " + $world; });
+define("world", "World!");
+define("hello", ["world"], function($world){ return "Hello " + $world; });
 </script>
 </section>
 
