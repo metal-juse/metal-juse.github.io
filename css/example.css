@@ -39,4 +39,10 @@ span:nth-child(13):before,
 span:nth-child(14):before,
 span:nth-child(20):before,
 span:nth-child(37):before
-{ content: counter(line) ": "; -webkit-user-select: none; }
+{
+	content: counter(line) ": ";
+	-webkit-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
+}
