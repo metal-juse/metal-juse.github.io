@@ -24,6 +24,7 @@ At line 2, the script tag loads the `juse` bootstrap script and declares the mai
 At line 4, the global function `define` defines the main module `hello`.
 
 The code is executed right here in this page, producing the following result.
+The code can also be copy/pasted into a standalone html file, then opened in a browser with the same result.
 
 <section>
 <link href="http://metal-juse.github.io/css/example.css" rel="stylesheet"/>
