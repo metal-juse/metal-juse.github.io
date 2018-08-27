@@ -23,12 +23,11 @@ define("hello", ["world"], function($world){ return "Hello " + $world; });
 </script>
 ```
 
-At line 4, module `world` is defined with value `WORLD!`.
+At line 4, module `world` is defined with value `World!`.
 
-At line 5, module `hello` is defined with value deriving from `world`.
-The value of `hello` is then added to the document body as the main module.
+At line 5, the main module `hello` is defined with value deriving from `world`, and its value is then added to the document body.
 
-The code is executed right here in this page with the following result.
+The code is executed right here in this page, with the value of `hello` added to the bottom of the page.
 The code can also be copy/pasted into a standalone html file, and then can be opened in a browser with the same result.
 
 <section>

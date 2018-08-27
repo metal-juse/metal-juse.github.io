@@ -22,9 +22,9 @@ define("hello", "Hello World!");
 
 At line 2, the script tag loads the **juse** bootstrap script and declares the **main** module `hello`.
 
-At line 4, the global function `define` defines the **main** module `hello`.
+At line 4, the **main** module `hello` is defined via the global function `define`, and its value is then added to the document body.
 
-The code is executed right here in this page with the following result.
+The code is executed right here in this page, with the value of `hello` added to the bottom of the page.
 The code can also be copy/pasted into a standalone html file, and then can be opened in a browser with the same result.
 
 <section>
