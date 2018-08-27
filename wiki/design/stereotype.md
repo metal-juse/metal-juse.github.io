@@ -2,7 +2,7 @@
 
 * Module stereotype may exchange predefined state with a module during module initialization.
 * Module spec token `.type` indicates module stereotype.
-* `juse` provides some useful stereotype modules, and application may create its own stereotype modules.
+* **juse** provides some useful stereotype modules, and application may create its own stereotype modules.
 
 Example:
 
