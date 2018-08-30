@@ -6,7 +6,7 @@
 * Modules can depend on one another.
 * **juse** follows the base [AMD][] API to define modules and dependencies.
     * `define(spec, specs, value)`
-* Module definition consists of module spec, dependency specs and module value initializer.
+* Module definition consists of **module spec**, **dependency specs** and **module value initializer**.
 * Module spec has the following extended format, where the `name` token represents the base [AMD][] module id.
     * `kind:name.type#member@context|pipe;value`
 * Module spec/specs can be partial, and the framework resolves the full spec based on configuration and usage convention.
@@ -25,10 +25,10 @@ define("hello", ["world"], function($world){ return "Hello " + $world; });
 
 At line 4, module `world` is defined with value `World!`.
 
-At line 5, the main module `hello` is defined with value deriving from `world`, and its value is then added to the document body.
+At line 5, the **main** module `hello` is defined with value deriving from `world`, and its value is then added to the document body.
 
-The code is executed right here in this page, with the value of `hello` added to the bottom of the page.
-The code can also be copy/pasted into a standalone html file, and then can be opened in a browser with the same result.
+The code can be copy/pasted into a standalone html file and opened in a browser.
+It is also executed right here, and the **main** module value is:
 
 <section>
 <link href="http://metal-juse.github.io/css/example.css" rel="stylesheet"/>

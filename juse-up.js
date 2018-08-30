@@ -67,14 +67,11 @@
 		if ($boot.doc) juse(["juse/ui"]);
 		getContext().scope.juse([toRef(app.context, ".context")], function(){
 			getContext().scope.juse([app, "follower"], function($app, $follower){
-				if ($follower.notify("juse/app/load", app)) {
-					currentApp(app);
-				} else if (typeOf($app, "function")) {
-					$app();
-				}
-				if (!$follower.notify("juse/app/done", app)) {
-					setTimeout(done);
-				}
+				currentApp(app);
+				var value = typeOf($app, "function") ? $app() : $app;
+				$follower.notify("juse/app/load", value);
+				$follower.notify("juse/app/done", app);
+				setTimeout(done);
 			});
 		});
 	}
@@ -182,13 +179,14 @@
 				function notify(spec, value, error) {
 					var args = {event:toRef(spec), value:value, error:error};
 					getFollowers(args.event).forEach(notifyFollower, args);
+					return args.result;
 				}
 
 				function notifyFollower(spec) {
 					var follow = lookup(spec);
 					if (typeOf(follow, "function")) {
 						try {
-							return follow(this.event, this.value, this.error);
+							this.result = this.result || follow(this.event, this.value, this.error);
 						} catch (ex) {
 							$scope.log("error", ex);
 						}
@@ -658,8 +656,7 @@
 
 	/** @member flush */
 	function initValue(module) {
-		module.value = external(module) ||
-			(typeOf(module.def.args.value, "function") ? module.def.value_ : module.def.args.value);
+		module.value = typeOf(module.def.args.value, "function") ? module.def.value_ : module.def.args.value || external(module);
 		if (typeOf(module.def.args.value, "function")) {
 			var values = module.def.refs.map(filterRefValue, module);
 			values.push(module.scope);
@@ -972,7 +969,7 @@ juse("juse/resource.context", function resource(){
 
 	this.juse("html.filter", function html(){
 		return function html(value, name){
-			if (typeof value != "string") return value;
+			if (juse.typeOf(value, "html", true)) return value;
 			var div = juse.global.document.createElement(name||"div");
 			div.innerHTML = value;
 			return div;
@@ -1343,18 +1340,14 @@ juse("juse/ui.context", ["juse/resource", "juse/text"], function ui(){
 			function view(){
 				$scope.context.cacheValue("views", this.spec.name, this.spec);
 			},
-			{follow: function follow(event, ref) {
+			{follow: function follow(event, value) {
 				$view = $view || juse.global.document.body.querySelector("[data-view]") || juse.global.document.body;
-				var value = $html(juse.lookup(ref));
-				if (juse.typeOf(value, "html", true)) {
-					$view.setAttribute("data-view", juse.toSpec(ref));
-					if ($dom.closest(value, $view)) {
-					} else if ($view.lastElementChild) {
-						$view.replaceChild(value, $view.lastElementChild);
-					} else {
-						$view.appendChild(value);
-					}
-					return true;
+				value = $html(value);
+				if ($dom.closest(value, $view)) {
+				} else if ($view.lastElementChild) {
+					$view.replaceChild(value, $view.lastElementChild);
+				} else {
+					$view.appendChild(value);
 				}
 			}}
 		);

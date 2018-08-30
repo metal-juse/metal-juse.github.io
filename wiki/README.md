@@ -12,9 +12,9 @@
 
 * App Bootstrapping [>>](design/boot)
 * Module Definition and Dependencies [>>](design/define)
+* Module Context and Grouping [>>](design/context)
 * Module Initialization [>>](design/init)
 * Module Stereotype [>>](design/stereotype)
-* Module Grouping and Context [>>](design/context)
 
 # Core Contexts
 

@@ -1,14 +1,14 @@
 # [<<](..) App Bootstrapping
 
-* One module among all app modules is the app **main** module.
-* App is bootstrapped by a script tag in the app hosting html.
+* One module among app modules is the **main** module.
+* App is bootstrapped by a script tag in the hosting html.
     * `<script src="url/to/juse.js" data-app="main"></script>`
 * The script tag loads the **juse** bootstrap script.
 * The script tag attribute `data-app` declares the **main** module.
 * The bootstrap script defines global function `define`.
-* The bootstrap script loads the **main** module, as well as all dependent modules.
+* The bootstrap script loads the **main** module, as well as dependent modules.
 * The **main** module value is then added to the document body.
-* **juse** can load module scripts asynchronously if the loading browser supports the [async][] mode.
+* **juse** loads module scripts asynchronously if the loading browser supports the [async][] mode.
 
 Example:
 
@@ -24,8 +24,8 @@ At line 2, the script tag loads the **juse** bootstrap script and declares the *
 
 At line 4, the **main** module `hello` is defined via the global function `define`, and its value is then added to the document body.
 
-The code is executed right here in this page, with the value of `hello` added to the bottom of the page.
-The code can also be copy/pasted into a standalone html file, and then can be opened in a browser with the same result.
+The code can be copy/pasted into a standalone html file and opened in a browser.
+It is also executed right here, and the **main** module value is:
 
 <section>
 <link href="http://metal-juse.github.io/css/example.css" rel="stylesheet"/>
