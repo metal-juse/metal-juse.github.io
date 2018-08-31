@@ -10,11 +10,11 @@ Example:
 <link href="http://metal-juse.github.io/css/example.css" rel="stylesheet"/>
 <script src="http://metal-juse.github.io/juse-up.min.js" data-app="hello@app"></script>
 <script>
-define("common.context" function(){
+define("common.context", function(){
 	this.define("world", "World!");
 });
-define("app.context", function(){
-	this.define("hello", ["world"], function($world){ return "hello " + $world; });
+define("app.context", ["common"], function(){
+	this.define("hello", ["world@common"], function($world){ return "hello " + $world; });
 });
 </script>
 ```
@@ -30,10 +30,10 @@ It is also executed right here, and the **main** module value is:
 <link href="http://metal-juse.github.io/css/example.css" rel="stylesheet"/>
 <script src="http://metal-juse.github.io/juse-up.min.js" data-app="hello@app"></script>
 <script>
-define("common.context" function(){
-	this.define("world", "Common World!");
+define("common.context", function(){
+	this.define("world", "World!");
 });
-define("app.context", function(){
+define("app.context", ["common"], function(){
 	this.define("hello", ["world@common"], function($world){ return "hello " + $world; });
 });
 </script>
