@@ -2,9 +2,9 @@
 
 * Module is a name-value pair.
 * Module is the smallest unit of code that can be encapsulated in one file.
-* Modules can also be concatenated into one file and minified.
-* Modules can depend on one another.
-* **juse** follows the base [AMD][] API to define modules and dependencies.
+* Modules can also be concatenated into a singular file and minified.
+* Modules may depend on one another.
+* **juse** follows the base [AMD][] API to define modules and their dependencies.
     * `define(spec, specs, value)`
 * Module definition consists of **module spec**, **dependency specs** and **module value initializer**.
 * Module spec has the following extended format, where the `name` token represents the base [AMD][] module id.

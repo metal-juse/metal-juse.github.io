@@ -5,9 +5,9 @@
     * `<script src="url/to/juse.js" data-app="main"></script>`
 * The script tag loads the **juse** bootstrap script.
 * The script tag attribute `data-app` declares the **main** module.
-* The bootstrap script defines global function `define`.
 * The bootstrap script loads the **main** module, as well as dependent modules.
 * The **main** module value is then added to the document body.
+* The bootstrap script defines the [AMD][] compliant global function `define`.
 * **juse** loads module scripts asynchronously if the loading browser supports the [async][] mode.
 
 Example:
@@ -35,4 +35,5 @@ define("hello", "Hello World!");
 </script>
 </section>
 
-[async]: https://www.w3schools.com/tags/att_script_async.asp
+[AMD]:		https://github.com/amdjs/amdjs-api/wiki/AMD (Asynchronous Module Definition)
+[async]:	https://www.w3schools.com/tags/att_script_async.asp
