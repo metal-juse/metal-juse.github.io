@@ -70,8 +70,9 @@
 				currentApp(app);
 				var value = typeOf($app, "function") ? $app() : $app;
 				$follower.notify("juse/app/load", value);
-				$follower.notify("juse/app/done", app);
-				setTimeout(done);
+				if (!$follower.notify("juse/app/done", app)) {
+					setTimeout(done);
+				}
 			});
 		});
 	}
