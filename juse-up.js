@@ -64,9 +64,8 @@
 		$boot.appPath = context.kind || toRef($boot.app.context||"").kind;
 		copyTo(getContext().scope.cacheEntry("properties"), map(app.value));
 		delete app.value;
-		if ($boot.doc) juse(["juse/ui"]);
 		getContext().scope.juse([toRef(app.context, ".context")], function(){
-			getContext().scope.juse([app, "follower"], function($app, $follower){
+			getContext().scope.juse([app, "follower@juse/service"], function($app, $follower){
 				currentApp(app);
 				var value = typeOf($app, "function") ? $app() : $app;
 				$follower.notify("juse/app/load", value);
@@ -155,46 +154,6 @@
 				}
 			});
 
-			this.juse("juse/follower.contextAware", function follower($scope){
-				return juse.seal(function follower(){
-					addFollowers.call(this, this.meta.follow);
-				}, {notify:notify});
-
-				function addFollowers(spec) {
-					if (typeOf(spec, "array")) {
-						spec.forEach(addFollower, this);
-					} else if (typeOf(spec, "string")) {
-						addFollower.call(this, spec);
-					}
-				}
-
-				function getFollowers(event) {
-					return $scope.contextOf(event).cacheValue("followers", event.name, []);
-				}
-
-				function addFollower(spec) {
-					var event = toRef(spec||this.spec);
-					getFollowers(event).push(toRef(event.value||"#follow", this.spec));
-				}
-
-				function notify(spec, value, error) {
-					var args = {event:toRef(spec), value:value, error:error};
-					getFollowers(args.event).forEach(notifyFollower, args);
-					return args.result;
-				}
-
-				function notifyFollower(spec) {
-					var follow = lookup(spec);
-					if (typeOf(follow, "function")) {
-						try {
-							this.result = this.result || follow(this.event, this.value, this.error);
-						} catch (ex) {
-							$scope.log("error", ex);
-						}
-					}
-				}
-			});
-
 			function resolve(spec, scope) {
 				return remap(spec, getModule(scope && scope.spec || currentApp()));
 			}
@@ -237,6 +196,8 @@
 				});
 			}
 		});
+
+		juse($boot.doc ? ["juse/ui", "juse/service"] : ["juse/service"]);
 	}
 
 	/** @member define */
@@ -1238,6 +1199,46 @@ juse("juse/remote.context", ["run"], function remote(){
 
 juse("juse/service.context", ["juse/run"], function service(){
 
+	this.juse("follower.contextAware", function follower($scope){
+		return juse.seal(function follower(){
+			addFollowers.call(this, this.meta.follow);
+		}, {notify:notify});
+
+		function addFollowers(spec) {
+			if (juse.typeOf(spec, "array")) {
+				spec.forEach(addFollower, this);
+			} else if (juse.typeOf(spec, "string")) {
+				addFollower.call(this, spec);
+			}
+		}
+
+		function getFollowers(event) {
+			return $scope.contextOf(event).cacheValue("followers", event.name, []);
+		}
+
+		function addFollower(spec) {
+			var event = juse.toRef(spec||this.spec);
+			getFollowers(event).push(juse.toRef(event.value||"#follow", this.spec));
+		}
+
+		function notify(spec, value, error) {
+			var args = {event:juse.toRef(spec), value:value, error:error};
+			getFollowers(args.event).forEach(notifyFollower, args);
+			return args.result;
+		}
+
+		function notifyFollower(spec) {
+			var follow = juse.lookup(spec);
+			if (juse.typeOf(follow, "function")) {
+				try {
+					this.result = this.result || follow(this.event, this.value, this.error);
+				} catch (ex) {
+					$scope.log("error", ex);
+				}
+			}
+		}
+	});
+
 	this.juse("provider.contextAware", ["promise", "follower"], function provider($promise, $follower, $scope){
 		return juse.seal(function provider(){
 			addProviders.call(this, this.meta.provide);
@@ -1332,7 +1333,7 @@ juse("juse/text.context", function text(){
 
 });
 
-juse("juse/ui.context", ["juse/resource", "juse/text"], function ui(){
+juse("juse/ui.context", ["juse/resource", "juse/text", "juse/service"], function ui(){
 	var $view, $dom, $array = [];
 
 	this.juse("view.classifier.follower", ["html"], function view($html, $scope){
