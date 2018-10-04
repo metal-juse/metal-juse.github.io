@@ -3,8 +3,8 @@
  */
 (function(){
 
-	var $defArgKeys = ["spec", "refs", "value"];
-	var $baseKeys = ["kind", "context"];
+	var $defKeys = ["spec", "refs", "value"];
+	var $kindKeys = ["kind", "context"], $contextKeys = ["context"];
 	var $refKeys = ["kind", "name", "type", "member", "context", "pipe", "value"];
 	var $refFormatKeys = [""].concat($refKeys);
 	var $refFormat = /(?:\s*([^.#@|;\s]*)\s*:)?\s*([^.#@|;]*)(?:\.([^#@|;\s]*))?(?:#([^@|;\s]*))?(?:@([^|;\s]*))?(?:\s*\|\s*([^;\s]*))?(?:\s*;\s*([\S\s]*))?/;
@@ -81,8 +81,8 @@
 		juse(".context", function root(){
 
 			this.juse(function juse(){
-				return seal(this.context.juse,
-					{global: $boot.global,
+				return seal(this.context.juse, {
+					global: $boot.global,
 					map:map,
 					toRef:toRef,
 					toPath:toPath,
@@ -99,7 +99,7 @@
 				});
 			});
 
-			this.juse("juse/cache.filter", function cache(){
+			this.juse("juse/cache", function cache(){
 				return seal(function cache(value){
 					copyTo(getModule(this.spec).cache, value);
 				}, {scope:function scope(){
@@ -119,7 +119,7 @@
 				}
 			});
 
-			this.juse("juse/context.filter", ["cache"], function context($cache){
+			this.juse("juse/context", ["cache"], function context($cache){
 				scope.call(this.context);
 				$cache.call(this.context, initContext({
 					map: { "*": "modules:", "context": this.spec },
@@ -146,7 +146,7 @@
 				}
 			});
 
-			this.juse("juse/contextAware.classifier", function contextAware(){
+			this.juse("juse/contextAware", function contextAware(){
 				return function contextAware(){ this.contextOf = contextOf; };
 
 				function contextOf(spec) {
@@ -251,7 +251,7 @@
 
 	/** @member define */
 	function getDefArgs(args, count) {
-		if (count < $defArgKeys.length) {
+		if (count < $defKeys.length) {
 			if (typeOf(args[0], "array")) {
 				args.unshift("");
 			} else if (count < 2) {
@@ -260,7 +260,7 @@
 				args.splice(1, 0, null);
 			}
 		}
-		return copyTo({}, args, $defArgKeys);
+		return copyTo({}, args, $defKeys);
 	}
 
 	/** @member define */
@@ -352,8 +352,7 @@
 	/** @member resolve */
 	function remap(spec, module, mapOnly) {
 		var ref = toRef({}, spec);
-		if (!ref.name) return ref;
-		if (!module) return ref;
+		if (!ref.name || !module) return ref;
 		var target = !mapOnly && getModule(ref, null, null, module.context);
 		var map = getRefMap(ref, module, true);
 		if (map || !target || target == module) {
@@ -367,13 +366,9 @@
 		if (ref.type && ref.type != module.type) {
 			copyTo(ref, getRefMap(getModuleName("*", ref.type), module));
 		}
-		if (module != $boot.context && ref.context || ref.name.indexOf("juse/")==0) {
-			copyTo(ref, getRefMap("*", module));
-		}
-		if (ref.name.indexOf("juse/")!=0) {
-			copyTo(ref, module, $baseKeys);
-		}
-		if (module != $boot.context && ref.context || module.type == "context") {
+		copyTo(ref, module, (ref.type == module.type) ? $kindKeys : $contextKeys);
+		copyTo(ref, getContext(module), $kindKeys);
+		if (ref.context || module.type == "context" || juseRoot(ref.name)) {
 			copyTo(ref, getRefMap("*", module));
 		}
 		return ref;
@@ -618,7 +613,7 @@
 
 	/** @member flush */
 	function initValue(module) {
-		module.value = typeOf(module.def.args.value, "function") ? module.def.value_ : module.def.args.value || external(module);
+		module.value = (typeOf(module.def.args.value, "function") ? module.def.value_ : module.def.args.value) || external(module);
 		if (typeOf(module.def.args.value, "function")) {
 			var values = module.def.refs.map(filterRefValue, module);
 			values.push(module.scope);
@@ -739,7 +734,7 @@
 	}
 
 	function juseRoot(name) {
-		return $boot.context.cache.roots.indexOf(name.split("/")[0]) >= 0;
+		return !$boot.context.cache || $boot.context.cache.roots.indexOf(name.split("/")[0]) >= 0;
 	}
 
 	/** @member ref */
@@ -917,19 +912,19 @@
 
 juse("juse/resource.context", function resource(){
 
-	this.juse("properties.filter", function properties(){
+	this.juse("properties", function properties(){
 		return function properties(value){
 			this.context.cacheValue("properties", this.spec.name, value);
 		};
 	});
 
-	this.juse("json.filter", function json(){
+	this.juse("json", function json(){
 		return function json(value){
 			return JSON.parse(value);
 		};
 	});
 
-	this.juse("html.filter", function html(){
+	this.juse("html", function html(){
 		return function html(value, name){
 			if (juse.typeOf(value, "html", true)) return value;
 			var div = juse.global.document.createElement(name||"div");
@@ -1336,7 +1331,7 @@ juse("juse/text.context", function text(){
 juse("juse/ui.context", ["juse/resource", "juse/text", "juse/service"], function ui(){
 	var $view, $dom, $array = [];
 
-	this.juse("view.classifier.follower", ["html"], function view($html, $scope){
+	this.juse("view.follower", ["html"], function view($html, $scope){
 		this.meta.follow = "juse/app/load";
 		return juse.seal(
 			function view(){
@@ -1355,7 +1350,7 @@ juse("juse/ui.context", ["juse/resource", "juse/text", "juse/service"], function
 		);
 	});
 
-	this.juse("dom.filter", ["html"], function dom($html){
+	this.juse("dom", ["html"], function dom($html){
 		return $dom = juse.seal(function dom(value, clone){
 			return juse.typeOf(value, "string") ? $html.call(this, value) : clone ? value.cloneNode(true) : value;
 		}, {
@@ -1509,7 +1504,7 @@ juse("juse/ui.context", ["juse/resource", "juse/text", "juse/service"], function
 		}
 	});
 
-	this.juse("tile.filter", ["dom", "replace"], function tile($dom, $replace){
+	this.juse("tile", ["dom", "replace"], function tile($dom, $replace){
 
 		return function tile(node, dataset){
 			node = $dom.call(this, node);
@@ -1544,7 +1539,7 @@ juse("juse/ui.context", ["juse/resource", "juse/text", "juse/service"], function
 
 	});
 
-	this.juse("widget.filter", ["dom"], function widget($dom){
+	this.juse("widget", ["dom"], function widget($dom){
 
 		var $eventKeys = ["click","dblclick","mousedown","mouseenter","mouseleave","mousemove","mouseover","mouseout","mouseup","input","change","keyup","keydown","keypress"];
 		var $eventMap = {
@@ -1619,7 +1614,7 @@ juse("juse/ui.context", ["juse/resource", "juse/text", "juse/service"], function
 
 juse("juse/valid.context", ["juse/text"], function valid($text, $context){
 
-	this.juse("validator.classifier", function validator(){
+	this.juse("validator", function validator(){
 		return function validator(value){
 			$context.cacheValue("validators", this.spec.name, value);
 		};
@@ -1657,7 +1652,7 @@ juse("juse/valid.context", ["juse/text"], function valid($text, $context){
 juse("juse/model.context", ["juse/remote", "juse/service", "juse/ui", "juse/valid", "juse/text"], function model(){
 	var $modelKeys = ["kind","name"], $context = this;
 
-	this.juse("binder.classifier", function binder(){
+	this.juse("binder", function binder(){
 		return function binder(){
 			$context.cacheValue("binders", this.spec.name, this.spec);
 		};
@@ -1684,7 +1679,7 @@ juse("juse/model.context", ["juse/remote", "juse/service", "juse/ui", "juse/vali
 		return model;
 	}
 
-	this.juse("model.filter.follower", ["dom", "tile", "provider", "validate"], function model($dom, $tile, $provider, $validate, $scope){
+	this.juse("model.follower", ["dom", "tile", "provider", "validate"], function model($dom, $tile, $provider, $validate, $scope){
 		this.meta.follow = "juse/app/load";
 		return juse.seal(function model(node) {
 			node = $dom.call(this, node);
