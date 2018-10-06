@@ -770,7 +770,7 @@
 			var value = ref[$refKeys[i]];
 			var delim = $refDelims[i];
 			if (value || typeof(value) == "string" && delim) {
-				if (i) parts.push(delim, value);
+				if (i>1) parts.push(delim, value);
 				else parts.push(value, delim);
 			}
 		}
