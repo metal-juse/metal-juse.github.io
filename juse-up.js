@@ -58,11 +58,12 @@
 	/** @member boot */
 	function loadApp() {
 		/** @provide juse/app/load **/
+		var $map = getModuleValue(toRef("map@juse/text"));
 		var app = toRef(currentHash(), currentApp());
 		var context = toRef(app.context||"");
 		app.context = context.name || app.context || "";
 		$boot.appPath = context.kind || toRef($boot.app.context||"").kind;
-		copyTo(getContext().scope.cacheEntry("properties"), map(app.value));
+		copyTo(getContext().scope.cacheEntry("properties"), $map(app.value));
 		delete app.value;
 		getContext().scope.juse([toRef(app.context, ".context")], function(){
 			getContext().scope.juse([app, "follower@juse/service"], function($app, $follower){
@@ -83,7 +84,6 @@
 			this.juse(function juse(){
 				return seal(this.context.juse, {
 					global: $boot.global,
-					map:map,
 					toRef:toRef,
 					toPath:toPath,
 					toSpec:toSpec,
@@ -197,7 +197,7 @@
 			}
 		});
 
-		juse($boot.doc ? ["juse/ui", "juse/service"] : ["juse/service"]);
+		juse($boot.doc ? ["juse/ui", "juse/service", "juse/text"] : ["juse/service", "juse/text"]);
 	}
 
 	/** @member define */
@@ -790,14 +790,6 @@
 		return (retain ? selected : parts).join(delim);
 	}
 
-	function map(spec){
-		var map = {};
-		for (var ref = juse.toRef(spec); ref && ref.name; ref = juse.toRef(ref.value)) {
-			map[ref.kind||""] = ref.name;
-		}
-		return map;
-	}
-
 	/** @member util */
 	function enums(names) {
 		for (var i = 0; i < names.length; i++) {
@@ -1299,12 +1291,12 @@ juse("juse/text.context", function text(){
 		};
 	});
 
-	this.juse("teval", ["replace"], function teval($replace, $scope){
+	this.juse("teval", ["replace", "map"], function teval($replace, $map, $scope){
 		return function teval(spec, dataset) {
 			var ref = juse.toRef(spec);
 			var value = juse.filter(ref, this, dataset);
 			value = dataset === undefined ? value || juse.lookup(ref, this) : value;
-			var map = juse.filter(ref.value, this) || juse.map(ref.value);
+			var map = juse.filter(ref.value, this) || $map(ref.value);
 			if (map) {
 				value = (juse.typeOf(value, "array") && !value.length || juse.typeOf(value, "object") && !Object.keys(value).length) ? null : value;
 				var value2 = juse.memberName(map, [value]) ? juse.memberValue(map, [value])
@@ -1319,8 +1311,8 @@ juse("juse/text.context", function text(){
 	this.juse("map", function map(){
 		return function map(spec){
 			var map = {};
-			for (var ref = juse.toRef(spec); ref; ref = juse.toRef(ref.value)) {
-				map[ref.kind||""] = ref.name;
+			for (var ref = juse.toRef(spec); ref && ref.name; ref = juse.toRef(ref.value)) {
+				map[ref.key||""] = ref.name;
 			}
 			return map;
 		};
@@ -1504,7 +1496,7 @@ juse("juse/ui.context", ["juse/resource", "juse/text", "juse/service"], function
 		}
 	});
 
-	this.juse("tile", ["dom", "replace"], function tile($dom, $replace){
+	this.juse("tile", ["dom", "replace", "map"], function tile($dom, $replace, $map){
 
 		return function tile(node, dataset){
 			node = $dom.call(this, node);
@@ -1532,7 +1524,7 @@ juse("juse/ui.context", ["juse/resource", "juse/text", "juse/service"], function
 			} else if (this.tiles[ref.name]) {
 				tile = this.tiles[ref.name];
 			} else if (tile) {
-				makeTile(tile, this.dataset||juse.map(ref.value), this.scope, tag);
+				makeTile(tile, this.dataset||$map(ref.value), this.scope, tag);
 			}
 			$dom.replaceContent(tag, tile);
 		}
