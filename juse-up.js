@@ -5,10 +5,10 @@
 
 	var $defKeys = ["spec", "refs", "value"];
 	var $kindKeys = ["kind", "context"], $contextKeys = ["context"];
-	var $refKeys = ["kind", "name", "type", "member", "context", "pipe", "value"];
+	var $refKeys = ["key", "kind", "name", "type", "member", "context", "pipe", "value"];
 	var $refFormatKeys = [""].concat($refKeys);
-	var $refFormat = /(?:\s*([^.#@|;\s]*)\s*:)?\s*([^.#@|;]*)(?:\.([^#@|;\s]*))?(?:#([^@|;\s]*))?(?:@([^|;\s]*))?(?:\s*\|\s*([^;\s]*))?(?:\s*;\s*([\S\s]*))?/;
-	var $refDelims = [":", "", ".", "#", "@", "|", ";"];
+	var $refFormat = /(?:\s*([^.#@|;\s]*)\s*=)?(?:\s*([^.#@|;\s]*)\s*:)?\s*([^.#@|;]*)(?:\.([^#@|;\s]*))?(?:#([^@|;\s]*))?(?:@([^|;\s]*))?(?:\s*\|\s*([^;\s]*))?(?:\s*;\s*([\S\s]*))?/;
+	var $refDelims = ["=", ":", "", ".", "#", "@", "|", ";"];
 	var $fnFormatKeys = ["", "name", "value"];
 	var $fnFormat = /function\s*([\S]*?)\s*\([^)]*\)\s*{\s*(?:\/\*\*+\s*([\S\s]*?)\s*\*\*+\/)?/;
 	var $metaFormat = /^[\s*]*@([^\s]+)[ \f\r\t\v]*([^\n]*\S)?\s*/;
