@@ -1,6 +1,6 @@
 # Highlights
 
-* **juse** is an [AMD][] inspired JavaScript framework to load and manage modules and dependencies, similar to [RequireJS][].
+* **juse** is an [AMD][] inspired JavaScript framework to load and manage modules and dependencies (similar to [RequireJS][]).
 * **juse** adds additional features on top of the base [AMD][] API to support modular design such as module stereotype and grouping.
 * **juse** provides core framework modules as services to assist with the additional design features.
 * **juse** makes it easy to separate common reusable patterns from application modules into its own framework modules.
