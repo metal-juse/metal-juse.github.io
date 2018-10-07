@@ -8,7 +8,7 @@
     * `define(spec, specs, value)`
 * Module definition consists of **module spec**, **dependency specs** and **module value initializer**.
 * Module spec has the following extended format, where the `name` token represents the base [AMD][] module id.
-    * `kind:name.type#member@context|pipe;value`
+    * `key=kind:name.type#member@context|pipe;value`
 * Module spec/specs can be partial, and the framework resolves the full spec based on configuration and usage convention.
 * Module value initializer can be a simple value, or a callback that returns a value.
 
