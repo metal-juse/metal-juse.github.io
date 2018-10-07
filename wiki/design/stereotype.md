@@ -1,4 +1,4 @@
-# [<<](..) Module Stereotype
+# [<<](..) Module Stereotyping
 
 * Module stereotype may exchange predefined state with a module during module initialization.
 * Module spec token `.type` indicates module stereotype.
