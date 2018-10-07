@@ -1,5 +1,3 @@
-<meta name="google-site-verification" content="isX0TIYLrJ-jR9zOYawwXIzNDClSd4A6w5SI_seMtig" />
-
 # metal-juse.github.io
 
 **juse** is an [AMD][] inspired JavaScript framework to load and manage modules and dependencies (similar to [RequireJS][]).
