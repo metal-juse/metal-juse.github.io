@@ -1,4 +1,4 @@
-# [<<](..) Module Context and Grouping
+# [<<](..) Module Grouping by Context
 
 * **juse** supports two kinds of modules, **context** and **plain** modules.
 * Context module groups logically related plain modules and creates module namespace.
