@@ -57,8 +57,8 @@
 
 	/** @member boot */
 	function loadApp() {
-		/** @provide juse/app/load **/
-		var $map = getModuleValue(toRef("map@juse/text"));
+		/** @provide load@juse/core **/
+		var $map = getModuleValue(toRef("map@juse/core"));
 		var app = toRef(currentHash(), currentApp());
 		var context = toRef(app.context||"");
 		app.context = context.name || app.context || "";
@@ -66,11 +66,11 @@
 		copyTo(getContext().scope.cacheEntry("properties"), $map(app.value));
 		delete app.value;
 		getContext().scope.juse([toRef(app.context, ".context")], function(){
-			getContext().scope.juse([app, "follower@juse/service"], function($app, $follower){
+			getContext().scope.juse([app, "follower@juse/core"], function($app, $follower){
 				currentApp(app);
 				var value = typeOf($app, "function") ? $app() : $app;
-				$follower.notify("juse/app/load", value);
-				if (!$follower.notify("juse/app/done", app)) {
+				$follower.notify("load@juse/core", value);
+				if (!$follower.notify("done@juse/core", app)) {
 					setTimeout(done);
 				}
 			});
@@ -197,7 +197,7 @@
 			}
 		});
 
-		juse($boot.doc ? ["juse/ui", "juse/service", "juse/text"] : ["juse/service", "juse/text"]);
+		juse($boot.doc ? ["juse/ui", "juse/core"] : ["juse/core"]);
 	}
 
 	/** @member define */
@@ -1184,7 +1184,17 @@ juse("juse/remote.context", ["run"], function remote(){
 
 });
 
-juse("juse/service.context", ["juse/run"], function service(){
+juse("juse/core.context", ["juse/run"], function core(){
+
+	this.juse("map", function map(){
+		return function map(spec){
+			var map = {};
+			for (var ref = juse.toRef(spec); ref && ref.name; ref = juse.toRef(ref.value)) {
+				map[ref.key||""] = ref.name;
+			}
+			return map;
+		};
+	});
 
 	this.juse("follower.contextAware", function follower($scope){
 		return juse.seal(function follower(){
@@ -1267,7 +1277,7 @@ juse("juse/service.context", ["juse/run"], function service(){
 	});
 });
 
-juse("juse/text.context", function text(){
+juse("juse/text.context", ["juse/core"], function text(){
 
 	this.juse("replace", ["teval"], function replace($teval, $scope){
 		var $replaceFormat = /\$\{([^\}]+)\}/g;
@@ -1308,23 +1318,13 @@ juse("juse/text.context", function text(){
 		};
 	});
 
-	this.juse("map", function map(){
-		return function map(spec){
-			var map = {};
-			for (var ref = juse.toRef(spec); ref && ref.name; ref = juse.toRef(ref.value)) {
-				map[ref.key||""] = ref.name;
-			}
-			return map;
-		};
-	});
-
 });
 
-juse("juse/ui.context", ["juse/resource", "juse/text", "juse/service"], function ui(){
+juse("juse/ui.context", ["juse/resource", "juse/text", "juse/core"], function ui(){
 	var $view, $dom, $array = [];
 
 	this.juse("view.follower", ["html"], function view($html, $scope){
-		this.meta.follow = "juse/app/load";
+		this.meta.follow = "load@juse/core";
 		return juse.seal(
 			function view(){
 				$scope.context.cacheValue("views", this.spec.name, this.spec);
@@ -1641,7 +1641,7 @@ juse("juse/valid.context", ["juse/text"], function valid($text, $context){
 
 });
 
-juse("juse/model.context", ["juse/remote", "juse/service", "juse/ui", "juse/valid", "juse/text"], function model(){
+juse("juse/model.context", ["juse/remote", "juse/core", "juse/ui", "juse/valid", "juse/text"], function model(){
 	var $modelKeys = ["kind","name"], $context = this;
 
 	this.juse("binder", function binder(){
@@ -1672,7 +1672,7 @@ juse("juse/model.context", ["juse/remote", "juse/service", "juse/ui", "juse/vali
 	}
 
 	this.juse("model.follower", ["dom", "tile", "provider", "validate"], function model($dom, $tile, $provider, $validate, $scope){
-		this.meta.follow = "juse/app/load";
+		this.meta.follow = "load@juse/core";
 		return juse.seal(function model(node) {
 			node = $dom.call(this, node);
 			makeModels.call(this, node);
