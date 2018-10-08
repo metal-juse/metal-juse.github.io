@@ -19,12 +19,12 @@
 # Core Contexts
 
 * [juse](juse)
+* [juse/core](juse/core)
 * [juse/text](juse/text)
 * [juse/valid](juse/valid)
 * [juse/resource](juse/resource)
 * [juse/remote](juse/remote)
 * [juse/run](juse/run)
-* [juse/core](juse/core)
 * [juse/ui](juse/ui)
 * [juse/model](juse/model)
 
