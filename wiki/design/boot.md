@@ -1,6 +1,6 @@
 # [<<](..) App Bootstrapping
 
-* One module among app modules is the **main** module.
+* One module among app modules is the app entry point (or **main** module).
 * App is bootstrapped by a script tag in the hosting html.
     * `<script src="url/to/juse.js" data-app="main"></script>`
 * The script tag loads the **juse** bootstrap script.
