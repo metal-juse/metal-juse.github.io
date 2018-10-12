@@ -18,7 +18,7 @@ Example:
 <div id="example">
 	input: <input data-value data-event="enter:#clear" type="text" placeholder="enter value here"><br>
 	list: <ul data-value="list:"><li>%{}</li></ul>
-	<span data-value=";*:hidden">-- blank --</span>
+	<span data-value=";*=hidden">-- blank --</span>
 </div>
 ```
 
@@ -32,6 +32,6 @@ Live result:
 <div id="example">
 	input: <input data-value data-event="enter:#clear" type="text" placeholder="enter value here"><br>
 	list: <ul data-value="list:"><li>%{}</li></ul>
-	<span data-value=";*:hidden">-- blank --</span>
+	<span data-value=";*=hidden">-- blank --</span>
 </div>
 </section>

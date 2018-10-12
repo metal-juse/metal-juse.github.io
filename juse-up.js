@@ -42,8 +42,8 @@
 		loadRoot();
 		if ($boot.doc) {
 			setTimeout(loadCore);
-			$boot.global.addEventListener("hashchange", loadApp);
-			$boot.global.addEventListener("load", loadApp);
+			$boot.global.addEventListener("hashchange", bufferApp);
+			$boot.global.addEventListener("load", bufferApp);
 		} else {
 			loadCore();
 			loadApp();
@@ -55,6 +55,14 @@
 		if ($boot.doc) log($boot);
 		else log($boot.jusePath, $boot.app);
 		log("--done--");
+	}
+
+	function bufferApp() {
+		if ($boot.buffer.length || $boot.moduleCount < 6) {
+			setTimeout(bufferApp);
+		} else {
+			loadApp();
+		}
 	}
 
 	/** @member boot */

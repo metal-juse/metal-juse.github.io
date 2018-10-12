@@ -24,7 +24,7 @@ Example:
 		<input data-value="remote:values" data-event="#load" type="button" value="reload">
 	</div>
 	list: <ul data-value="list:values"><li data-value="link:">%{}</li></ul>
-	<span data-value="values;*:hidden">-- blank --</span>
+	<span data-value="values;*=hidden">-- blank --</span>
 </div>
 ```
 
@@ -43,6 +43,6 @@ Live result:
 		<input data-value="remote:values" data-event="#load" type="button" value="reload">
 	</div>
 	list: <ul data-value="list:values"><li data-value="link:">%{}</li></ul>
-	<span data-value="values;*:hidden">-- blank --</span>
+	<span data-value="values;*=hidden">-- blank --</span>
 </div>
 </section>

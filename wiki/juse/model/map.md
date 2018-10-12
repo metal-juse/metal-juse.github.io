@@ -20,7 +20,7 @@ Example:
 	bar: <input data-value="#bar" data-event="enter:#clear" type="text" placeholder="enter bar here"><br>
 	baz: <input data-value="#baz" data-event="enter:#clear" type="text" placeholder="enter baz here"><br>
 	map: <ul data-value="map:"><li>%{}</li></ul>
-	<span data-value=";*:hidden">-- blank --</span>
+	<span data-value=";*=hidden">-- blank --</span>
 </div>
 ```
 
@@ -36,6 +36,6 @@ Live result:
 	bar: <input data-value="#bar" data-event="enter:#clear" type="text" placeholder="enter bar here"><br>
 	baz: <input data-value="#baz" data-event="enter:#clear" type="text" placeholder="enter baz here"><br>
 	map: <ul data-value="map:"><li>%{}</li></ul>
-	<span data-value=";*:hidden">-- blank --</span>
+	<span data-value=";*=hidden">-- blank --</span>
 </div>
 </section>
