@@ -39,11 +39,13 @@
 		}
 
 		log("--boot--");
-		defineRoot();
+		loadRoot();
 		if ($boot.doc) {
+			setTimeout(loadCore);
 			$boot.global.addEventListener("hashchange", loadApp);
 			$boot.global.addEventListener("load", loadApp);
 		} else {
+			loadCore();
 			loadApp();
 		}
 	};
@@ -77,8 +79,12 @@
 		});
 	}
 
+	function loadCore() {
+		juse($boot.doc ? ["juse/ui", "juse/core"] : ["juse/core"]);
+	}
+
 	/** @member boot */
-	function defineRoot() {
+	function loadRoot() {
 		juse(".context", function root(){
 
 			this.juse(function juse(){
@@ -196,8 +202,6 @@
 				});
 			}
 		});
-
-		juse($boot.doc ? ["juse/ui", "juse/core"] : ["juse/core"]);
 	}
 
 	/** @member define */

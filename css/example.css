@@ -22,7 +22,7 @@ body > div:not([class]) {
 	background-color: yellow;
 }
 
-/*---- line numbers ----*/
+/*---- line numbers ----*
 pre { counter-reset: line; }
 
 span:nth-child(1),
@@ -46,3 +46,4 @@ span:nth-child(37):before
 	-ms-user-select: none;
 	user-select: none;
 }
+*/
