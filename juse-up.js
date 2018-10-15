@@ -95,6 +95,7 @@
 					toRef:toRef,
 					toPath:toPath,
 					toSpec:toSpec,
+					slicePath:slicePath,
 					resolve:resolve,
 					lookup:lookup,
 					filter:filter,
@@ -121,9 +122,9 @@
 					return cache[member];
 				}
 
-				function cacheEntry(name) {
+				function cacheEntry(name, value) {
 					var cache = getModule(this.spec).cache;
-					return cache[name] = cache[name] || {};
+					return cache[name] = cache[name] || value || {};
 				}
 			});
 
@@ -134,6 +135,7 @@
 					roots: [ "juse", "jx" ]
 				}));
 				return seal(function context(value){
+					copyTo(this.cacheEntry("properties"), memberValue(value, "properties"));
 					$cache.call(this, initContext(value));
 					return {};
 				}, {scope:scope});
@@ -189,7 +191,8 @@
 
 			function property(spec, value) {
 				spec = toRef(spec);
-				var property = this.cacheValue("properties", spec.name, spec.member ? {} : value);
+				var properties = spec.kind ? this.cacheValue("properties", spec.kind, {}) : this.cacheEntry("properties");
+				var property = properties[spec.name] = properties[spec.name] || (spec.member ? {} : value);
 				if (spec.member) property = property[spec.member] = property[spec.member] || value;
 				return property;
 			}
@@ -912,7 +915,12 @@ juse("juse/resource.context", function resource(){
 
 	this.juse("properties", function properties(){
 		return function properties(value){
-			this.context.cacheValue("properties", this.spec.name, value);
+			if (juse.memberName(value, "kind")) {
+				var kind = value.kind || juse.slicePath(this.spec.name, -1, 1);
+				juse.copyTo(this.context.cacheValue("properties", kind, {}), value);
+			} else {
+				juse.copyTo(this.context.cacheEntry("properties"), value);
+			}
 		};
 	});
 
