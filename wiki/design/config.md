@@ -11,18 +11,20 @@ Example:
 
 ```html
 <link href="http://metal-juse.github.io/css/example.css" rel="stylesheet"/>
-<script src="http://metal-juse.github.io/juse-up.min.js" data-app="example@app"></script>
+<script src="http://metal-juse.github.io/juse-up.min.js" data-app="example.html@app"></script>
 <script>
 define("app.context", ["juse/resource"], function(){
 	this.define(["config.properties"]);
 	this.property("property-1", "from property call; ");
 	
-	this.define("example", function($scope){
+	this.define("example.html", function($scope){
 		return function(){
-			return	"property-1 = " + $scope.context.property("property-1", "from default value; ") +
-					"property-2 = " + $scope.context.property("property-2", "from default value; ") +
-					"property-3 = " + $scope.context.property("property-3", "from default value; ") +
-					"property-4 = " + $scope.context.property("property-4", "from default value; ");
+			return "<ul>"
+					"<li>property-1: " + $scope.context.property("property-1", "from default value; ") + "</li>" +
+					"<li>property-2: " + $scope.context.property("property-2", "from default value; ") + "</li>" +
+					"<li>property-3: " + $scope.context.property("property-3", "from default value; ") + "</li>" +
+					"<li>property-4: " + $scope.context.property("property-4", "from default value; ") + "</li>" +
+				"</ul>";
 		}
 	});
 	
@@ -46,18 +48,20 @@ It is also executed right here, and the **main** module value is:
 
 <section>
 <link href="http://metal-juse.github.io/css/example.css" rel="stylesheet"/>
-<script src="http://metal-juse.github.io/juse-up.min.js" data-app="example@app"></script>
+<script src="http://metal-juse.github.io/juse-up.min.js" data-app="example.html@app"></script>
 <script>
 define("app.context", ["juse/resource"], function(){
 	this.define(["config.properties"]);
 	this.property("property-1", "from property call; ");
 	
-	this.define("example", function($scope){
+	this.define("example.html", function($scope){
 		return function(){
-			return	"property-1 = " + $scope.context.property("property-1", "from default value; ") +
-					"property-2 = " + $scope.context.property("property-2", "from default value; ") +
-					"property-3 = " + $scope.context.property("property-3", "from default value; ") +
-					"property-4 = " + $scope.context.property("property-4", "from default value; ");
+			return "<ul>"
+					"<li>property-1: " + $scope.context.property("property-1", "from default value; ") + "</li>" +
+					"<li>property-2: " + $scope.context.property("property-2", "from default value; ") + "</li>" +
+					"<li>property-3: " + $scope.context.property("property-3", "from default value; ") + "</li>" +
+					"<li>property-4: " + $scope.context.property("property-4", "from default value; ") + "</li>" +
+				"</ul>";
 		}
 	});
 	
