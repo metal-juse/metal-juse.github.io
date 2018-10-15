@@ -11,7 +11,7 @@ Example:
 
 ```html
 <link href="http://metal-juse.github.io/css/example.css" rel="stylesheet"/>
-<script src="http://metal-juse.github.io/juse-up.min.js" data-app="hello@app"></script>
+<script src="http://metal-juse.github.io/juse-up.min.js" data-app="example@app"></script>
 <script>
 define("app.context", ["juse/resource"], function(){
 	this.define(["config.properties"]);
@@ -37,16 +37,16 @@ define("app.context", ["juse/resource"], function(){
 </script>
 ```
 
-At line 2, the script tag loads the **juse** bootstrap script and declares the **main** module `hello`.
+At line 2, the script tag loads the **juse** bootstrap script and declares the **main** module `example`.
 
-At line 4, the **main** module `hello` is defined via the global function `define`, and its value is then added to the document body.
+At line 4, the **main** module `example` is defined via the global function `define`, and its value is then added to the document body.
 
 The code can be copy/pasted into a standalone html file and opened in a browser.
 It is also executed right here, and the **main** module value is:
 
 <section>
 <link href="http://metal-juse.github.io/css/example.css" rel="stylesheet"/>
-<script src="http://metal-juse.github.io/juse-up.min.js" data-app="hello@app"></script>
+<script src="http://metal-juse.github.io/juse-up.min.js" data-app="example@app"></script>
 <script>
 define("app.context", ["juse/resource"], function(){
 	this.define(["config.properties"]);
