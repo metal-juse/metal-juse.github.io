@@ -11,28 +11,28 @@ Example:
 
 ```html
 <link href="http://metal-juse.github.io/css/example.css" rel="stylesheet"/>
-<script src="http://metal-juse.github.io/juse-up.min.js" data-app="example.html@app"></script>
+<script src="http://metal-juse.github.io/juse-up.min.js" data-app="example@app"></script>
 <script>
 define("app.context", ["juse/resource"], function(){
 	this.define(["config.properties"]);
-	this.property("property-1", "from property call; ");
+	this.property("property-1", "from property(key, value) call; ");
 	
-	this.define("example.html", function($scope){
+	this.define("example", ["html"], function($html, $scope){
 		return function(){
-			return "<ul>"
+			return $html("<ul>" +
 					"<li>property-1: " + $scope.context.property("property-1", "from default value; ") + "</li>" +
 					"<li>property-2: " + $scope.context.property("property-2", "from default value; ") + "</li>" +
 					"<li>property-3: " + $scope.context.property("property-3", "from default value; ") + "</li>" +
 					"<li>property-4: " + $scope.context.property("property-4", "from default value; ") + "</li>" +
-				"</ul>";
+				"</ul>");
 		}
 	});
 	
 	return {
 		map: {"*.properties":"properties:"},
 		"properties": {
-			"property-1": "from context properties; ",
-			"property-2": "from context properties; "
+			"property-1": "from context properties initializer; ",
+			"property-2": "from context properties initializer; "
 		}
 	};
 });
@@ -48,28 +48,28 @@ It is also executed right here, and the **main** module value is:
 
 <section>
 <link href="http://metal-juse.github.io/css/example.css" rel="stylesheet"/>
-<script src="http://metal-juse.github.io/juse-up.min.js" data-app="example.html@app"></script>
+<script src="http://metal-juse.github.io/juse-up.min.js" data-app="example@app"></script>
 <script>
 define("app.context", ["juse/resource"], function(){
 	this.define(["config.properties"]);
-	this.property("property-1", "from property call; ");
+	this.property("property-1", "from property(key, value) call; ");
 	
-	this.define("example.html", function($scope){
+	this.define("example", ["html"], function($html, $scope){
 		return function(){
-			return "<ul>"
+			return $html("<ul>" +
 					"<li>property-1: " + $scope.context.property("property-1", "from default value; ") + "</li>" +
 					"<li>property-2: " + $scope.context.property("property-2", "from default value; ") + "</li>" +
 					"<li>property-3: " + $scope.context.property("property-3", "from default value; ") + "</li>" +
 					"<li>property-4: " + $scope.context.property("property-4", "from default value; ") + "</li>" +
-				"</ul>";
+				"</ul>");
 		}
 	});
 	
 	return {
 		map: {"*.properties":"properties:"},
 		"properties": {
-			"property-1": "from context properties; ",
-			"property-2": "from context properties; "
+			"property-1": "from context properties initializer; ",
+			"property-2": "from context properties initializer; "
 		}
 	};
 });
