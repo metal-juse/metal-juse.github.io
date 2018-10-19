@@ -1,14 +1,13 @@
 # [<<](..) App Bootstrapping
 
-* One module among app modules is the app entry point (or **main** module).
 * App is bootstrapped by a script tag in the hosting html.
     * `<script src="url/to/juse.js" data-app="main"></script>`
 * The script tag loads the **juse** bootstrap script.
-* The script tag attribute `data-app` declares the **main** module.
-* The bootstrap script loads the **main** module, as well as dependent modules.
+* The script tag attribute `data-app` declares the **main** module (the app entry point).
+* The bootstrap script loads the **main** module, as well as any dependent modules.
 * The **main** module value is then added to the document body.
 * The bootstrap script defines the [AMD][] compliant global function `define`.
-* **juse** loads module scripts asynchronously if the loading browser supports the [async][] mode.
+* **juse** loads module sources asynchronously if the loading browser supports the [async][] mode.
 
 Example:
 
