@@ -17,7 +17,6 @@ Example:
 define("app.context", ["juse/resource"], function(){
 	this.define(["config.properties"]);
 	this.property("property-1", "from calling property(key, value)");
-	
 	return {
 		map: {"*.properties":"properties:"},
 		"properties": {
@@ -38,13 +37,13 @@ define("app.context", ["juse/resource"], function(){
 </div>
 ```
 
-At line 2, the **main** module is declared as `example@app`, and its value will be filtered by `tile@juse/ui` before being applied to the document body.
+At line 2, the **main** module is declared as `example@app`, and its value will be filtered by module `tile@juse/ui`.
 
 At line 5, file `config.properties` is sourced, and at line 6, property `property-1` is defined in the context initializer callback.
 
-At lines 10-13, properties are returned as part of context initializer value.
+At lines 9-12, properties are returned as part of context initializer value.
 
-At lines 20-23, property values are accessed in the **main** module and are later added to the document body.
+At lines 19-22, property values are accessed and applied in the **main** module.
 
 The code can be copy/pasted into a standalone html file and opened in a browser.
 It is also executed right here, and the **main** module value is:
@@ -56,7 +55,6 @@ It is also executed right here, and the **main** module value is:
 define("app.context", ["juse/resource"], function(){
 	this.define(["config.properties"]);
 	this.property("property-1", "from calling property(key, value)");
-	
 	return {
 		map: {"*.properties":"properties:"},
 		"properties": {
