@@ -14,15 +14,15 @@ Example:
 <link href="http://metal-juse.github.io/css/example.css" rel="stylesheet"/>
 <script src="http://metal-juse.github.io/juse-up.min.js" data-app="example@app|tile@juse/ui"></script>
 <script>
-define("app.context", function(){
+define("app.context", ["juse/resource"], function(){
 	this.define(["config.properties"]);
-	this.property("property-1", "from property(key, value) call");
+	this.property("property-1", "from calling property(key, value)");
 	
 	return {
 		map: {"*.properties":"properties:"},
 		"properties": {
-			"property-1": "from context properties initializer",
-			"property-2": "from context properties initializer"
+			"property-1": "from context initializer",
+			"property-2": "from context initializer"
 		}
 	};
 });
@@ -53,15 +53,15 @@ It is also executed right here, and the **main** module value is:
 <link href="http://metal-juse.github.io/css/example.css" rel="stylesheet"/>
 <script src="http://metal-juse.github.io/juse-up.min.js" data-app="example@app|tile@juse/ui"></script>
 <script>
-define("app.context", function(){
+define("app.context", ["juse/resource"], function(){
 	this.define(["config.properties"]);
-	this.property("property-1", "from property(key, value) call");
+	this.property("property-1", "from calling property(key, value)");
 	
 	return {
 		map: {"*.properties":"properties:"},
 		"properties": {
-			"property-1": "from context properties initializer",
-			"property-2": "from context properties initializer"
+			"property-1": "from context initializer",
+			"property-2": "from context initializer"
 		}
 	};
 });
