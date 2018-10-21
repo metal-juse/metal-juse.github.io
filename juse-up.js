@@ -1318,7 +1318,7 @@ juse("juse/text.context", ["juse/core"], function text(){
 	this.juse("teval", ["replace", "map"], function teval($replace, $map, $scope){
 		return function teval(spec, dataset) {
 			var ref = juse.toRef(spec);
-			var value = juse.filter(ref, this, dataset);
+			var value = this.context.property(ref) || juse.filter(ref, this, dataset);
 			value = dataset === undefined ? value || juse.lookup(ref, this) : value;
 			var map = juse.filter(ref.value, this) || $map(ref.value);
 			if (map) {
