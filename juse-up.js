@@ -56,10 +56,10 @@
 	}
 
 	function bufferApp() {
-		getContext().scope.juse($boot.doc ? ["juse/ui", "juse/core"] : ["juse/core"], function(){
-			getContext().scope.juse(["map@juse/core"], function($map){
+		getContextScope().juse($boot.doc ? ["juse/ui", "juse/core"] : ["juse/core"], function(){
+			getContextScope().juse(["map@juse/core"], function($map){
 				var app = toRef(currentHash(), currentApp());
-				copyTo(getContext().scope.cacheEntry("properties"), $map(app.value));
+				copyTo(getContextScope().cacheEntry("properties"), $map(app.value));
 				loadApp();
 			});
 		});
@@ -67,18 +67,17 @@
 
 	/** @member boot */
 	function loadApp() {
-		/** @provide load@juse/core **/
 		var app = toRef(currentHash(), currentApp());
 		var context = toRef(app.context||"");
 		delete app.value;
 		app.context = context.name || app.context || "";
 		$boot.appPath = context.kind || toRef($boot.app.context||"").kind;
-		getContext().scope.juse([toRef(app.context, ".context")], function(){
-			getContext().scope.juse([app, "follower@juse/core"], function($app, $follower){
+		getContextScope().juse([toRef(app.context, ".context")], function(){
+			getContextScope().juse([app, "load@juse/core", "done@juse/core"], function($app, $load, $done){
 				currentApp(app);
 				var value = typeOf($app, "function") ? $app() : $app;
-				$follower.notify("load@juse/core", value);
-				if (!$follower.notify("done@juse/core", app)) {
+				$load.fire(value);
+				if (!$done.fire(app)) {
 					setTimeout(done);
 				}
 			});
@@ -109,12 +108,15 @@
 			});
 
 			this.juse("juse/cache", function cache(){
+				copyTo(this, { init:init });
 				return seal(function cache(value){
 					copyTo(getModule(this.spec).cache, value);
-				}, {scope:function scope(){
+				}, { init:init });
+
+				function init() {
 					getModule(this.spec).cache = {};
 					copyTo(this, {cacheEntry:cacheEntry, cacheValue:cacheValue});
-				}});
+				}
 
 				function cacheValue(name, member, value) {
 					var cache = this.cacheEntry(name);
@@ -129,19 +131,20 @@
 			});
 
 			this.juse("juse/context", ["cache"], function context($cache){
-				scope.call(this.context);
+				copyTo(this, { init:init });
+				init.call(this.context);
 				$cache.call(this.context, initContext({
 					map: { "*": "modules:", "context": this.spec },
 					roots: [ "juse", "jx" ]
 				}));
-				return seal(function context(value){
+				return function context(value){
 					copyTo(this.cacheEntry("properties"), memberValue(value, "properties"));
 					$cache.call(this, initContext(value));
 					return {};
-				}, {scope:scope});
+				};
 
-				function scope() {
-					$cache.scope.call(this);
+				function init() {
+					$cache.init.call(this);
 					copyTo(this, {replace:replace, property:property});
 				}
 
@@ -157,11 +160,7 @@
 			});
 
 			this.juse("juse/contextAware", function contextAware(){
-				return function contextAware(){ this.contextOf = contextOf; };
-
-				function contextOf(spec) {
-					return getContext(toRef(spec)).scope;
-				}
+				return function contextAware(){ copyTo(this, {getContextScope:getContextScope}); };
 			});
 
 			function resolve(spec, scope) {
@@ -299,6 +298,10 @@
 		return name ? memberValue($boot.context, ["modules", name]) : $boot.context;
 	}
 
+	function getContextScope(ref) {
+		return getContext(toRef(ref)).scope;
+	}
+
 	/** @member module */
 	function findModule(ref) {
 		var args = {ref:ref};
@@ -348,7 +351,7 @@
 	function resolveRef(spec) {
 		var ref = remap(spec, this);
 		if (ref.value) {
-			ref.value = getContext(this).scope.replace(ref.value, this);
+			ref.value = getContextScope(this).replace(ref.value, this);
 		}
 		return ref;
 	}
@@ -433,13 +436,13 @@
 	}
 
 	/** @member filter */
-	function applyFilters(value, ref, key, module, member) {
-		return resolveFilters(ref, key, module).map(getModuleValue).reduce(applyFilter, {scope:module.scope, value:value, member:member}).value;
+	function applyFilters(value, ref, key, module, kind) {
+		return resolveFilters(ref, key, module).map(getModule).reduce(applyFilter, {scope:module.scope, value:value, kind:toRef(kind)}).value;
 	}
 
 	/** @member filter */
 	function applyFilter(args, filter) {
-		filter = memberValue(filter, args.member);
+		filter = args.kind ? memberValue(filter, [args.kind.name, args.kind.member]) : memberValue(filter, "value");
 		args.value = typeOf(filter, "function") && filter.call(args.scope, args.value) || args.value;
 		return args;
 	}
@@ -621,6 +624,18 @@
 	}
 
 	/** @member flush */
+	function initScope(module) {
+		module.scope = {spec:copyTo({}, module.def, $refKeys), meta:copyTo({}, module.def.meta), log:log};
+		module.scope.context = getContextScope(module);
+		if (module.type == "context") {
+			module.scope.define = module.scope.juse = juse;
+		} else if (module.name && module.scope.context.cacheValue) {
+			module.scope.context.cacheValue("map", slicePath(module.name, -1, 1), module.scope.spec);
+		}
+		applyFilters(module.value, module.def.spec, "type", module, "scope#init");
+	}
+
+	/** @member flush */
 	function initValue(module) {
 		module.value = (typeOf(module.def.args.value, "function") ? module.def.value_ : module.def.args.value) || external(module);
 		if (typeOf(module.def.args.value, "function")) {
@@ -631,20 +646,6 @@
 			delete module.scope.value;
 		}
 		module.value = applyFilters(module.value, module.def.spec, "type", module);
-	}
-
-	/** @member flush */
-	function initScope(module) {
-		var scope = module.scope = {spec:copyTo({}, module.def, $refKeys), meta:copyTo({}, module.def.meta), log:log};
-		if (module.type == "context") {
-			module.scope.define = module.scope.juse = juse;
-		} else {
-			module.scope.context = getContext(module).scope;
-			if (scope.context.cacheValue && slicePath(scope.spec.name, -1, 1)) {
-				scope.context.cacheValue("map", slicePath(scope.spec.name, -1, 1), scope.spec);
-			}
-		}
-		applyFilters(module.value, module.def.spec, "type", module, "scope");
 	}
 
 	/** @member request */
@@ -898,7 +899,7 @@
 	function log(value) {
 		if (typeof(console) == "undefined") return;
 		var property = memberValue(getContext(), ["scope", "property"]);
-		var dev = property && getContext().scope.property("app-mode") == "dev";
+		var dev = property && getContextScope().property("app-mode") == "dev";
 		if (!dev) return;
 		if (typeof(value) == "string") {
 			var i = $logKeys.indexOf(value);
@@ -1210,6 +1211,22 @@ juse("juse/core.context", ["juse/run"], function core(){
 		};
 	});
 
+	this.juse("event", ["follower"], function event($follower){
+		juse.copyTo(this, { init:function init(){ juse.copyTo(this, {fire:fire}); }});
+		return function event(){};
+		function fire(value){
+			return $follower.notify(this.spec, value);
+		}
+	});
+
+	this.juse("load.event", function load(){
+		return juse.seal(function load(){}, {fire:this.fire.bind(this)});
+	});
+
+	this.juse("done.event", function done(){
+		return juse.seal(function done(){}, {fire:this.fire.bind(this)});
+	});
+
 	this.juse("follower.contextAware", function follower($scope){
 		return juse.seal(function follower(){
 			addFollowers.call(this, this.meta.follow);
@@ -1224,7 +1241,7 @@ juse("juse/core.context", ["juse/run"], function core(){
 		}
 
 		function getFollowers(event) {
-			return $scope.contextOf(event).cacheValue("followers", event.name, []);
+			return $scope.getContextScope(event).cacheValue("followers", event.name, []);
 		}
 
 		function addFollower(spec) {
@@ -1265,12 +1282,12 @@ juse("juse/core.context", ["juse/run"], function core(){
 
 		function addProvider(spec) {
 			var event = juse.toRef(spec||this.spec);
-			$scope.contextOf(event).cacheValue("providers", event.name, juse.toRef(event.value||"", this.spec));
+			$scope.getContextScope(event).cacheValue("providers", event.name, juse.toRef(event.value||"", this.spec));
 		}
 
 		function fire(spec, value) {
 			var event = juse.toRef(spec);
-			var provide = juse.lookup($scope.contextOf(event).cacheValue("providers", event.name));
+			var provide = juse.lookup($scope.getContextScope(event).cacheValue("providers", event.name));
 			var args = {event:event, value:value};
 			if (juse.typeOf(provide, "function")) {
 				return $promise(provide.bind(args)).then(resolve.bind(args), reject.bind(args));
