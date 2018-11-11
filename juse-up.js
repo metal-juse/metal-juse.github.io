@@ -36,8 +36,7 @@
 		log("--boot--");
 		loadRoot();
 		if ($boot.doc) {
-			$boot.global.addEventListener("load", bufferApp);
-			$boot.global.addEventListener("hashchange", bufferApp);
+			follow($boot.global, {"load":bufferApp, "hashchange":bufferApp});
 		} else {
 			bufferApp();
 		}
@@ -96,6 +95,7 @@
 					member:member,
 					typeOf:typeOf,
 					valueOfKey:valueOfKey,
+					follow:follow,
 					assign:assign,
 					copy:copy,
 					seal:seal
@@ -654,8 +654,7 @@
 			return true;
 		} else if (!getRequest(ref)) {
 			var script = newRequest(ref);
-			script.addEventListener("load", failRequest);
-			script.addEventListener("error", failRequest);
+			follow(script, {"load":failRequest, "error":failRequest});
 			$boot.script.parentNode.insertBefore(script, $boot.script);
 			return true;
 		}
@@ -841,6 +840,14 @@
 		if (to.propertyIsEnumerable(name) && !override) return;
 		if (to[name] && !positive) return;
 		to[name] = value;
+	}
+
+	function follow(target, follower) {
+		Object.keys(follower).forEach(addFollower, {target:target,follower:follower});
+	}
+
+	function addFollower(key) {
+		this.target.addEventListener(key, this.follower[key]);
 	}
 
 	/** @member util */
@@ -1562,7 +1569,9 @@ juse("juse/ui.context", ["juse/resource", "juse/text", "juse/core"], function ui
 					action = action || juse.lookup(event, scope);
 					if (juse.typeOf(action, "function")) {
 						var args = {action:action, target:target, event:event};
-						node.addEventListener(kind, fire.bind(args));
+						var follower = {};
+						follower[kind] = fire.bind(args);
+						juse.follow(node, follower);
 						return true;
 					}
 				}
