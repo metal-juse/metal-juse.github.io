@@ -1,6 +1,6 @@
 # metal-juse.github.io
 
-**juse** is an [AMD][] inspired JavaScript framework to load and manage modules and dependencies (similar to [RequireJS][]).
+**juse** is an [AMD][] inspired JavaScript framework to load modules and manage dependencies (similar to [RequireJS][]).
 
 * [home](https://github.com/metal-juse/metal-juse.github.io)
 * [wiki](https://github.com/metal-juse/metal-juse.github.io/wiki)

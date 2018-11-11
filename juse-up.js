@@ -1,7 +1,7 @@
 /**
- * Another AMD inspired framework to manage modules and dependencies.
+ * Another AMD inspired JavaScript framework to load modules and manage dependencies.
  */
-(function(){
+(function boot(){
 
 	var $defKeys = ["spec", "refs", "value"];
 	var $kindKeys = ["kind", "context"], $contextKeys = ["context"];
@@ -11,31 +11,26 @@
 	var $refDelims = ["=", ":", "", ".", "#", "@", "|", ";"];
 	var $fnFormatKeys = ["", "name", "value"];
 	var $fnFormat = /function\s*([\S]*?)\s*\([^)]*\)\s*{\s*(?:\/\*\*+\s*([\S\s]*?)\s*\*\*+\/)?/;
-	var $metaFormat = /^[\s*]*@([^\s]+)[ \f\r\t\v]*([^\n]*\S)?\s*/;
+	var $propFormat = /^[\s*]*@([^\s]+)[ \f\r\t\v]*([^\n]*\S)?\s*/;
 	var $flushStates = enums(["BUFFER", "LOAD", "DEFINE", "RESOLVE", "READY", "FLUSH", "DONE", "ERROR"]);
 	var $logKeys = enums(["error", "warn", "info", "debug"]);
 	var $boot = {
-		buffer: [], flushCount: 0, moduleCount: 0,
+		buffer: [], errors: [], flushCount: 0, moduleCount: 0,
 		global: this.document ? this : this.global||this
 	};
 
 	/** @member boot */
 	return function boot(){
 		if ($boot.global.juse) return;
-		$boot.global.juse = juse;
-		$boot.global.define = $boot.global.define || juse;
-		$boot.doc = $boot.global.document;
-		if ($boot.doc) {
-			$boot.async = !!$boot.doc.currentScript;
-			$boot.script = currentScript();
-			$boot.jusePath = slicePath($boot.script.getAttribute("src"), -1);
-			$boot.app = toRef($boot.script.getAttribute("data-app")||"");
+		copy($boot.global, {juse:juse, define:$boot.global.define||juse});
+		if ($boot.global.document) {
+			copy($boot, {doc:$boot.global.document, async:!!$boot.global.document.currentScript, script:currentScript()});
+			copy($boot, {jusePath:slicePath($boot.script.getAttribute("src"), -1), app:toRef($boot.script.getAttribute("data-app")||"")});
 			if ($boot.doc.head != $boot.script.parentNode) {
 				$boot.doc.head.appendChild($boot.script);
 			}
 		} else {
-			$boot.jusePath = __dirname;
-			$boot.app = toRef(process.argv[2]||"");
+			copy($boot, {jusePath:__dirname, app:toRef(process.argv[2]||"")});
 		}
 
 		log("--boot--");
@@ -56,10 +51,10 @@
 	}
 
 	function bufferApp() {
-		getContextScope().juse($boot.doc ? ["juse/ui", "juse/core"] : ["juse/core"], function(){
-			getContextScope().juse(["map@juse/core"], function($map){
+		getContext().scope.juse($boot.doc ? ["juse/ui", "juse/core"] : ["juse/core"], function(){
+			getContext().scope.juse(["map@juse/core"], function($map){
 				var app = toRef(currentHash(), currentApp());
-				copyTo(getContextScope().cacheEntry("properties"), $map(app.value));
+				copy(getContext().scope.cacheEntry("properties"), $map(app.value));
 				loadApp();
 			});
 		});
@@ -69,15 +64,14 @@
 	function loadApp() {
 		var app = toRef(currentHash(), currentApp());
 		var context = toRef(app.context||"");
-		delete app.value;
-		app.context = context.name || app.context || "";
 		$boot.appPath = context.kind || toRef($boot.app.context||"").kind;
-		getContextScope().juse([toRef(app.context, ".context")], function(){
-			getContextScope().juse([app, "load@juse/core", "done@juse/core"], function($app, $load, $done){
+		copy(app, { context:context.name || app.context || "", value:"" }, null, true, true);
+		getContext().scope.juse([toRef(app.context, ".context")], function(){
+			getContext().scope.juse([app, "onload@juse/core", "ondone@juse/core"], function($app, $onload, $ondone){
 				currentApp(app);
 				var value = typeOf($app, "function") ? $app() : $app;
-				$load.fire(value);
-				if (!$done.fire(app)) {
+				$onload.fire(value);
+				if (!$ondone.fire(app)) {
 					setTimeout(done);
 				}
 			});
@@ -95,27 +89,28 @@
 					toPath:toPath,
 					toSpec:toSpec,
 					slicePath:slicePath,
+					property:property,
 					resolve:resolve,
 					lookup:lookup,
 					filter:filter,
-					memberName:memberName,
-					memberValue:memberValue,
+					member:member,
 					typeOf:typeOf,
 					valueOfKey:valueOfKey,
-					copyTo:copyTo,
+					assign:assign,
+					copy:copy,
 					seal:seal
 				});
 			});
 
 			this.juse("juse/cache", function cache(){
-				copyTo(this, { init:init });
+				assign(this, { init:init });
 				return seal(function cache(value){
-					copyTo(getModule(this.spec).cache, value);
+					copy(getModule(this.spec).cache, value);
 				}, { init:init });
 
 				function init() {
 					getModule(this.spec).cache = {};
-					copyTo(this, {cacheEntry:cacheEntry, cacheValue:cacheValue});
+					assign(this, {cacheEntry:cacheEntry, cacheValue:cacheValue});
 				}
 
 				function cacheValue(name, member, value) {
@@ -131,21 +126,21 @@
 			});
 
 			this.juse("juse/context", ["cache"], function context($cache){
-				copyTo(this, { init:init });
+				assign(this, { init:init });
 				init.call(this.context);
 				$cache.call(this.context, initContext({
-					map: { "*": "modules:", "context": this.spec },
+					map: { "*": "modules:", "context": "juse/context@", "cache": "juse/cache@", "juse": "juse@" },
 					roots: [ "juse", "jx" ]
 				}));
 				return function context(value){
-					copyTo(this.cacheEntry("properties"), memberValue(value, "properties"));
+					copy(this.cacheEntry("properties"), member(value, "properties"));
 					$cache.call(this, initContext(value));
 					return {};
 				};
 
 				function init() {
 					$cache.init.call(this);
-					copyTo(this, {replace:replace, property:property});
+					assign(this, {replace:replace, property:property});
 				}
 
 				function initContext(value) {
@@ -155,24 +150,42 @@
 				}
 
 				function initContextMap(map) {
-					if (map) copyTo(map, Object.keys(map).map(valueOfKey, map).map(toRef), Object.keys(map), true, true);
+					if (map) copy(map, Object.keys(map).map(valueOfKey, map).map(toRef), Object.keys(map), true, true);
+				}
+
+				function property(spec, value) {
+					spec = toRef(spec);
+					var properties = spec.kind ? this.cacheValue("properties", spec.kind, {}) : this.cacheEntry("properties");
+					var property = member(properties, [spec.name, spec.member]);
+					if (!property && value !== undefined) {
+						property = properties[spec.name] = properties[spec.name] || (spec.member ? {} : value);
+						if (spec.member) property = property[spec.member] = property[spec.member] || value;
+					}
+					return property;
+				}
+
+				var $replaceFormat = /\$\{([^\}]+)\}/g;
+				var $testFormat = /\$\{([^\}]+)\}/;
+				function replace(text, base) {
+					var context = this;
+					if (!text || typeof(text) != "string" || !$testFormat.test(text)) return text;
+					return text.replace($replaceFormat, function(match, spec) {
+						return context.property(toRef(spec, base)) || match;
+					});
 				}
 			});
 
-			this.juse("juse/contextAware", function contextAware(){
-				return function contextAware(){ copyTo(this, {getContextScope:getContextScope}); };
-			});
+			function property(spec, scope) {
+				return getContext(scope && scope.spec || currentApp()).scope.property(spec);
+			}
 
 			function resolve(spec, scope) {
 				return remap(spec, getModule(scope && scope.spec || currentApp()));
 			}
 
 			function lookup(spec, scope) {
-				var ref = spec && toRef({}, spec);
-				if (ref) {
-					return ref.name ? memberValue(getModuleValue(resolve(ref, scope)), [ref.member]) :
-						scope.context.property(toRef(ref, scope.spec)) || scope.meta[ref.member];
-				}
+				var ref = resolve(spec, scope);
+				return member(getModuleValue(ref), [ref.member]);
 			}
 
 			function filter(spec, scope, value) {
@@ -181,36 +194,18 @@
 				var module = getModule(scope && scope.spec || currentApp());
 				if (value !== undefined) {
 					value = applyFilters(value, ref, "type", module);
-					value = applyFilters(memberValue(value, [ref.member]), ref, "pipe", module);
+					value = applyFilters(member(value, [ref.member]), ref, "pipe", module);
 				} else {
 					value = filterRefValue.call(module, resolve(ref, scope));
 				}
 				return value;
-			}
-
-			function property(spec, value) {
-				spec = toRef(spec);
-				var properties = spec.kind ? this.cacheValue("properties", spec.kind, {}) : this.cacheEntry("properties");
-				var property = properties[spec.name] = properties[spec.name] || (spec.member ? {} : value);
-				if (spec.member) property = property[spec.member] = property[spec.member] || value;
-				return property;
-			}
-
-			var $replaceFormat = /\$\{([^\}]+)\}/g;
-			var $testFormat = /\$\{([^\}]+)\}/;
-			function replace(text, base) {
-				var context = this;
-				if (!text || typeof(text) != "string" || !$testFormat.test(text)) return text;
-				return text.replace($replaceFormat, function(match, spec) {
-					return context.property(toRef(spec, base)) || match;
-				});
 			}
 		});
 	}
 
 	/** @member define */
 	function juse(spec, refs, value) {
-		var def = resolveDef(currentSpec(), getDefArgs([spec, refs, value], arguments.length), this);
+		var def = resolveDef(currentSpec(), getDefArgs([spec, refs, value], arguments.length, this == $boot.global), this);
 		var module = getModule(def);
 		if (module && isError(module)) setModule(def);
 		if (!module || isPending(module)) {
@@ -225,20 +220,20 @@
 
 	/** @member define */
 	function resolveDef(spec, args, scope) {
-		var def = scope ? {meta:{}, args:args, refs:[]} : {args:{}, spec:spec};
+		var def = scope ? {properties:{}, args:args, refs:[]} : {args:{}, spec:spec};
 		if (scope) {
 			def.spec = toRef(def.args.spec, spec);
-			def.value_ = getMetaSpec(def.meta, def.args.value);
+			def.value_ = getProperties(def.properties, def.args.value);
 		}
 		if (!scope || !$boot.context) {
-			copyTo(def, def.spec);
+			copy(def, def.spec);
 		} else if (scope != $boot.global) {
-			def.spec = toRef(def.args.spec, {name:def.meta.name, context:scope.spec.name});
-			copyTo(def, {name:def.spec.name, context:def.spec.context});
+			def.spec = toRef(def.args.spec, {name:def.properties.name, context:scope.spec.name});
+			copy(def, {name:def.spec.name, context:def.spec.context});
 		} else {
-			copyTo(def, spec);
-			copyTo(def, getRefMap(def, def, true), $refKeys, true, true);
-			copyTo(def, {name:def.spec.name||def.meta.name, type:def.spec.type=="context"&&"context"});
+			copy(def, spec);
+			copy(def, getRefMap(def, def, true), $refKeys, true);
+			copy(def, {name:def.spec.name||def.properties.name, type:def.spec.type=="context"&&"context"});
 		}
 		return def;
 	}
@@ -246,7 +241,7 @@
 	/** @member define */
 	function makeModule(def, flushState) {
 		var module = getModule(def) || {};
-		copyTo(module, def, $refKeys, true, true);
+		copy(module, def, $refKeys, true, true);
 		module.def = def;
 		module.flushState = flushState;
 		if (!getModule(def)) {
@@ -258,34 +253,34 @@
 	}
 
 	/** @member define */
-	function getDefArgs(args, count) {
+	function getDefArgs(args, count, global) {
 		if (count < $defKeys.length) {
 			if (typeOf(args[0], "array")) {
 				args.unshift("");
-			} else if (count < 2) {
+			} else if (count < 2 && (global || typeOf(args[0], "function"))) {
 				args.unshift("", null);
 			} else if (!typeOf(args[1], "array")) {
 				args.splice(1, 0, null);
 			}
 		}
-		return copyTo({}, args, $defKeys);
+		return copy({}, args, $defKeys);
 	}
 
 	/** @member define */
-	function getMetaSpec(meta, value) {
+	function getProperties(properties, value) {
 		var values = typeOf(value, "function") && $fnFormat.exec($boot.global.juse.toString.call(value));
-		copyTo(meta, values, $fnFormatKeys);
-		value = meta.value;
-		delete meta.value;
-		while (values = $metaFormat.exec(value)) {
+		copy(properties, values, $fnFormatKeys);
+		value = properties.value;
+		delete properties.value;
+		while (values = $propFormat.exec(value)) {
 			var key = values[1], val = values[2]||"";
-			if (!meta[key]) {
-				meta[key] = val;
+			if (!properties[key]) {
+				properties[key] = val;
 			} else {
-				if (!typeOf(meta[key], "array")) {
-					meta[key] = [meta[key]];
+				if (!typeOf(properties[key], "array")) {
+					properties[key] = [properties[key]];
 				}
-				meta[key].push(val);
+				properties[key].push(val);
 			}
 			value = value.substring(values.index + values[0].length);
 		}
@@ -295,11 +290,7 @@
 	/** @member module */
 	function getContext(ref, context) {
 		var name = typeOf(ref, "object") ? ref.context||context : ref;
-		return name ? memberValue($boot.context, ["modules", name]) : $boot.context;
-	}
-
-	function getContextScope(ref) {
-		return getContext(toRef(ref)).scope;
+		return name ? member($boot.context, ["modules", name]) : $boot.context;
 	}
 
 	/** @member module */
@@ -319,12 +310,12 @@
 
 	/** @member module */
 	function getModule(ref, i, a, context) {
-		return (ref.type == "context") ? getContext(ref.name) : typeOf(getModuleName(ref), "string") && memberValue(getContext(ref, context), ["modules", getModuleName(ref)]);
+		return (ref.type == "context") ? getContext(ref.name) : typeOf(getModuleName(ref), "string") && member(getContext(ref, context), ["modules", getModuleName(ref)]);
 	}
 
 	/** @member module */
 	function getModuleValue(ref) {
-		return memberValue(getModule(ref), ["value"]);
+		return member(getModule(ref), ["value"]);
 	}
 
 	/** @member module */
@@ -351,7 +342,7 @@
 	function resolveRef(spec) {
 		var ref = remap(spec, this);
 		if (ref.value) {
-			ref.value = getContextScope(this).replace(ref.value, this);
+			ref.value = getContext(this).scope.replace(ref.value, this);
 		}
 		return ref;
 	}
@@ -370,18 +361,18 @@
 		if (map || !target || target == module) {
 			map = map || getRefMap(ref, module);
 			if (mapOnly && !map) return;
-			copyTo(ref, map, $refKeys, true, true);
+			copy(ref, map, $refKeys, true, true);
 			if (!map) {
 				ref.name = getRefName(ref, module);
 			}
 		}
 		if (ref.type && ref.type != module.type) {
-			copyTo(ref, getRefMap(getModuleName("*", ref.type), module));
+			copy(ref, getRefMap(getModuleName("*", ref.type), module));
 		}
-		copyTo(ref, module, (ref.type == module.type) ? $kindKeys : $contextKeys);
-		copyTo(ref, getContext(module), $kindKeys);
+		copy(ref, module, (ref.type == module.type) ? $kindKeys : $contextKeys);
+		copy(ref, getContext(module), $kindKeys);
 		if (ref.context || module.type == "context" || juseRoot(ref.name)) {
-			copyTo(ref, getRefMap("*", module));
+			copy(ref, getRefMap("*", module));
 		}
 		return ref;
 	}
@@ -390,12 +381,12 @@
 	function getRefMap(ref, module, remapOnly) {
 		var refKey = typeOf(ref, "object") ? getModuleName(ref, ref.type) : ref;
 		var moduleKey = getModuleName(module, module.type);
-		var remap = memberValue(getContext($boot.app), ["cache", "remap", moduleKey, refKey])
-			|| memberValue(getContext(module), ["cache", "remap", moduleKey, refKey])
+		var remap = member(getContext($boot.app), ["cache", "remap", moduleKey, refKey])
+			|| member(getContext(module), ["cache", "remap", moduleKey, refKey])
 		return remapOnly ? remap : remap
-			|| memberValue(getContext($boot.app), ["cache", "map", refKey])
-			|| memberValue(getContext(module), ["cache", "map", refKey])
-			|| memberValue(getContext(), ["cache", "map", refKey])
+			|| member(getContext($boot.app), ["cache", "map", refKey])
+			|| member(getContext(module), ["cache", "map", refKey])
+			|| member(getContext(), ["cache", "map", refKey])
 			|| module.name && contextRefMaps(module, refKey);
 	}
 
@@ -407,14 +398,14 @@
 
 	/** @member resolve */
 	function contextRefMap(ref) {
-		return this.value = memberValue(getModule(ref), ["cache", "map", this.refKey]);
+		return this.value = member(getModule(ref), ["cache", "map", this.refKey]);
 	}
 
 	/** @member resolve */
 	function getRefName(ref, module) {
 		var absolute = "context" in ref || ref.name.indexOf("/") >= 0;
 		var base = absolute ? null : slicePath(module.name, -1);
-		return [base].concat(ref.name.split("/")).filter(memberValue).join("/");
+		return [base].concat(ref.name.split("/")).filter(member).join("/");
 	}
 
 	/** @member filter */
@@ -423,7 +414,7 @@
 		if (!module) return;
 		var value = applyFilters(module.value, module.def.spec, "pipe", module);
 		if (ref.member && ref.member != module.member) {
-			value = memberValue(value, [ref.member]);
+			value = member(value, [ref.member]);
 		}
 		return applyFilters(value, ref, "pipe", this);
 	}
@@ -432,7 +423,7 @@
 	function resolveFilters(ref, key, module) {
 		var delim = (key == "type") ? "." : "|";
 		var mapper = (key == "type") ? remapRef : resolveRef;
-		return (ref && ref[key]) ? ref[key].split(delim).map(mapper, module).filter(memberValue) : [];
+		return (ref && ref[key]) ? ref[key].split(delim).map(mapper, module).filter(member) : [];
 	}
 
 	/** @member filter */
@@ -442,7 +433,7 @@
 
 	/** @member filter */
 	function applyFilter(args, filter) {
-		filter = args.kind ? memberValue(filter, [args.kind.name, args.kind.member]) : memberValue(filter, "value");
+		filter = args.kind ? member(filter, [args.kind.name, args.kind.member]) : member(filter, "value");
 		args.value = typeOf(filter, "function") && filter.call(args.scope, args.value) || args.value;
 		return args;
 	}
@@ -529,7 +520,7 @@
 			module.refs = [];
 			if (module.def.args.refs) {
 				module.def.refs = module.def.args.refs.map(resolveRef, module);
-				module.refs.push.apply(module.refs, module.def.refs.filter(memberValue));
+				module.refs.push.apply(module.refs, module.def.refs.filter(member));
 				module.def.refs.forEach(resolvePipe, module);
 			}
 			module.refs.push.apply(module.refs, resolveFilters(module.def.spec, "type", module));
@@ -582,6 +573,7 @@
 		if (error || isPending(module)) {
 			module.flushState = $flushStates.ERROR;
 			module.value = error || Error("timeout error");
+			$boot.errors.push(module.value);
 			log("error", toSpec(module.def), module.value.message);
 		}
 	}
@@ -595,7 +587,7 @@
 	/** @member flush */
 	function flushModule(module) {
 		if (module.flushState == $flushStates.READY || module.flushState == $flushStates.FLUSH) {
-			var refs = module.refs.map(findModule).filter(memberValue);
+			var refs = module.refs.map(findModule).filter(member);
 			if (module.flushState == $flushStates.READY) {
 				if (!refs.every(isReady)) return;
 				module.flushState = $flushStates.FLUSH;
@@ -625,8 +617,8 @@
 
 	/** @member flush */
 	function initScope(module) {
-		module.scope = {spec:copyTo({}, module.def, $refKeys), meta:copyTo({}, module.def.meta), log:log};
-		module.scope.context = getContextScope(module);
+		module.scope = {spec:copy({}, module.def, $refKeys), properties:copy({}, module.def.properties), log:log};
+		module.scope.context = getContext(module).scope;
 		if (module.type == "context") {
 			module.scope.define = module.scope.juse = juse;
 		} else if (module.name && module.scope.context.cacheValue) {
@@ -724,7 +716,7 @@
 	/** @member request */
 	function currentScript() {
 		var nodes;
-		return $boot.doc.currentScript || ($boot.script && $boot.script.previousElementSibling) || (nodes = $boot.doc.getElementsByTagName("script"), nodes[nodes.length-1]);
+		return $boot.global.document.currentScript || ($boot.script && $boot.script.previousElementSibling) || (nodes = $boot.global.document.getElementsByTagName("script"), nodes[nodes.length-1]);
 	}
 
 	/** @member request */
@@ -757,18 +749,18 @@
 			name = context.kind ? [context.name, name].join("/") : name;
 			var base = (juseRoot(name) || $boot.doc) ? "" : ".";
 			path = juseRoot(name) ? $boot.jusePath : $boot.appPath;
-			path = [base, path, ref.kind, name].filter(memberValue).join("/");
+			path = [base, path, ref.kind, name].filter(member).join("/");
 		}
 		return path;
 	}
 
 	/** @member ref */
 	function toRef(spec, base, keys) {
-		if (typeOf(spec, "string")) spec = copyTo({}, $refFormat.exec(spec), $refFormatKeys);
-		if (typeOf(base, "string")) base = copyTo({}, $refFormat.exec(base), $refFormatKeys);
+		if (typeOf(spec, "string")) spec = copy({}, $refFormat.exec(spec), $refFormatKeys);
+		if (typeOf(base, "string")) base = copy({}, $refFormat.exec(base), $refFormatKeys);
 		if (!typeOf(base, "object")) base = null;
 		keys = typeOf(keys, "array") && keys || keys && spec && Object.keys(spec) || $refKeys;
-		spec = copyTo(spec, base, keys, true);
+		spec = copy(spec, base, keys, true);
 		if (spec && spec.name) spec.name = spec.name.trim();
 		return spec;
 	}
@@ -809,33 +801,34 @@
 	}
 
 	/** @member util */
-	function seal(value) {
-		for (var i = 1; i < arguments.length; i++) {
-			copyValues(value, arguments[i]);
-		}
-		return Object.freeze(value);
+	function seal(to, from) {
+		return Object.freeze(assign.apply(this, arguments));
 	}
 
 	/** @member util */
-	function copyValues(to, from) {
-		var name = typeOf(from, "function") && $fnFormat.exec($boot.global.juse.toString.call(from))[1];
-		name ? (to[name] = from) : copyTo(to, from);
-	}
-
-	/** @member util */
-	function copyTo(to, from, names, override, positive) {
+	function assign(to, from) {
 		if (!to || !from) return to;
-		if (typeOf(from, ["array","arguments"]) && names) {
-			for (var i = 0; i < from.length; i++) {
-				var name = names[i], value = from[i];
-				copyValue(to, name, value, names, override, positive);
-			}
-		} else {
-			var keys = Object.keys(from);
-			for (var i = 0; i < keys.length; i++) {
-				var name = keys[i], value = from[name];
-				copyValue(to, name, value, names, override, positive);
-			}
+		for (var i = 1; i < arguments.length; i++) {
+			assignValue.call(to, arguments[i]);
+		}
+		return to;
+	}
+
+	function assignValue() {
+		for (var i = 0; i < arguments.length; i++) {
+			var value = arguments[i], name = typeOf(value, "function") && $fnFormat.exec($boot.global.juse.toString.call(value))[1];
+			if (name) copyValue(this, name, value);
+			else if (typeOf(value, ["array","arguments"])) assignValue.apply(this, value);
+			else copy(this, value);
+		}
+	}
+
+	function copy(to, from, names, override, positive) {
+		if (!to || !from) return to;
+		var keys = typeOf(from, ["array","arguments"]) ? names : Object.keys(from);
+		for (var i = 0; i < keys.length; i++) {
+			var name = keys[i], value = (keys === names) ? from[i] : from[name];
+			copyValue(to, name, value, names, override, positive);
 		}
 		return to;
 	}
@@ -846,7 +839,6 @@
 		if (names && names.indexOf(name) < 0) return;
 		if (!value && typeof(value) != "string") return;
 		if (to.propertyIsEnumerable(name) && !override) return;
-		if (to[name] && !value) return;
 		if (to[name] && !positive) return;
 		to[name] = value;
 	}
@@ -868,21 +860,11 @@
 
 	/** @member util */
 	function external(ref) {
-		return $boot.doc && $boot.doc.getElementById(ref.member||ref.name) || memberValue($boot.global, ref.member||ref.name);
+		return $boot.doc && $boot.doc.getElementById(ref.member||ref.name) || member($boot.global, ref.member||ref.name);
 	}
 
 	/** @member util */
-	function memberValue(value, names) {
-		return spot(value, names);
-	}
-
-	/** @member util */
-	function memberName(value, names) {
-		return spot(value, names, true);
-	}
-
-	/** @member util */
-	function spot(value, names, nameOnly) {
+	function member(value, names, nameOnly) {
 		var name;
 		names = typeOf(names, "string") ? names.split(".") : names;
 		if (names) {
@@ -892,14 +874,14 @@
 				value = !typeOf(value, "string") && (name in value) ? value[name] : (name = null);
 			}
 		}
-		return nameOnly ? typeOf(name, "string") && name : value;
+		return (nameOnly===true) ? typeOf(name, "string") && name : value;
 	}
 
 	/** @member util */
 	function log(value) {
 		if (typeof(console) == "undefined") return;
-		var property = memberValue(getContext(), ["scope", "property"]);
-		var dev = property && getContextScope().property("app-mode") == "dev";
+		var property = member(getContext(), ["scope", "property"]);
+		var dev = property && getContext().scope.property("app-mode") == "dev";
 		if (!dev) return;
 		if (typeof(value) == "string") {
 			var i = $logKeys.indexOf(value);
@@ -916,11 +898,11 @@ juse("juse/resource.context", function resource(){
 
 	this.juse("properties", function properties(){
 		return function properties(value){
-			if (juse.memberName(value, "kind")) {
+			if (juse.member(value, "kind", true)) {
 				var kind = value.kind || juse.slicePath(this.spec.name, -1, 1);
-				juse.copyTo(this.context.cacheValue("properties", kind, {}), value);
+				juse.copy(this.context.cacheValue("properties", kind, {}), value);
 			} else {
-				juse.copyTo(this.context.cacheEntry("properties"), value);
+				juse.copy(this.context.cacheEntry("properties"), value);
 			}
 		};
 	});
@@ -1148,7 +1130,7 @@ juse("juse/remote.context", ["run"], function remote(){
 		switch (method) {
 		case "GET":
 			this.data = null;
-			this.xhr.open(method, [this.url, keyValues(this.args.data)].filter(juse.memberValue).join("?"), true);
+			this.xhr.open(method, [this.url, keyValues(this.args.data)].filter(juse.member).join("?"), true);
 			break;
 		case "POST":
 			this.data = keyValues(this.args.data);
@@ -1211,99 +1193,66 @@ juse("juse/core.context", ["juse/run"], function core(){
 		};
 	});
 
-	this.juse("event", ["follower"], function event($follower){
-		juse.copyTo(this, { init:function init(){ juse.copyTo(this, {fire:fire}); }});
-		return function event(){};
-		function fire(value){
-			return $follower.notify(this.spec, value);
+	this.juse("event", ["cache"], function event($cache, $scope){
+		juse.assign(this, {init:init});
+		return juse.seal(function event(value){
+			return juse.seal(value||function event(){}, {callback:this.callback.bind(this), fire:this.fire.bind(this)});
+		}, {init:init});
+
+		function init(){
+			$cache.init.call(this);
+			juse.assign(this, {callback:callback, fire:fire});
 		}
-	});
 
-	this.juse("load.event", function load(){
-		return juse.seal(function load(){}, {fire:this.fire.bind(this)});
-	});
-
-	this.juse("done.event", function done(){
-		return juse.seal(function done(){}, {fire:this.fire.bind(this)});
-	});
-
-	this.juse("follower.contextAware", function follower($scope){
-		return juse.seal(function follower(){
-			addFollowers.call(this, this.meta.follow);
-		}, {notify:notify});
-
-		function addFollowers(spec) {
-			if (juse.typeOf(spec, "array")) {
-				spec.forEach(addFollower, this);
-			} else if (juse.typeOf(spec, "string")) {
-				addFollower.call(this, spec);
+		function callback(callback){
+			if (juse.typeOf(callback, "function")) {
+				callbacks(this).push(callback);
 			}
 		}
 
-		function getFollowers(event) {
-			return $scope.getContextScope(event).cacheValue("followers", event.name, []);
-		}
-
-		function addFollower(spec) {
-			var event = juse.toRef(spec||this.spec);
-			getFollowers(event).push(juse.toRef(event.value||"#follow", this.spec));
-		}
-
-		function notify(spec, value, error) {
-			var args = {event:juse.toRef(spec), value:value, error:error};
-			getFollowers(args.event).forEach(notifyFollower, args);
+		function fire(value, error){
+			var args = {value:value, error:error};
+			callbacks(this).forEach(notify, args);
 			return args.result;
 		}
 
-		function notifyFollower(spec) {
-			var follow = juse.lookup(spec);
-			if (juse.typeOf(follow, "function")) {
-				try {
-					this.result = this.result || follow(this.event, this.value, this.error);
-				} catch (ex) {
-					$scope.log("error", ex);
-				}
+		function notify(callback) {
+			try {
+				this.result = this.result || callback(this.value, this.error);
+			} catch (ex) {
+				$scope.log("error", ex);
 			}
+		}
+
+		function callbacks(scope) {
+			return scope.cacheEntry("callbacks", []);
 		}
 	});
 
-	this.juse("provider.contextAware", ["promise", "follower"], function provider($promise, $follower, $scope){
-		return juse.seal(function provider(){
-			addProviders.call(this, this.meta.provide);
-		}, {fire:fire});
+	this.juse("onload.event");
 
-		function addProviders(spec) {
-			if (juse.typeOf(spec, "array")) {
-				spec.forEach(addProvider, this);
-			} else if (juse.typeOf(spec, "string")) {
-				addProvider.call(this, spec);
-			}
+	this.juse("ondone.event");
+
+	this.juse("service", ["event", "promise"], function service($event, $promise){
+		juse.assign(this, {init:init});
+		return function service(value){
+			return juse.seal(value||function service(){}, {callback:this.callback.bind(this), fire:this.fire.bind(this), provide:this.provide.bind(this), submit:this.submit.bind(this)});
+		};
+
+		function init(){
+			$event.init.call(this);
+			juse.assign(this, {provide:provide, submit:submit});
 		}
 
-		function addProvider(spec) {
-			var event = juse.toRef(spec||this.spec);
-			$scope.getContextScope(event).cacheValue("providers", event.name, juse.toRef(event.value||"", this.spec));
+		function provide(callbacks){
+			return juse.assign(this.cacheEntry("providers"), arguments);
 		}
 
-		function fire(spec, value) {
-			var event = juse.toRef(spec);
-			var provide = juse.lookup($scope.getContextScope(event).cacheValue("providers", event.name));
-			var args = {event:event, value:value};
-			if (juse.typeOf(provide, "function")) {
-				return $promise(provide.bind(args)).then(resolve.bind(args), reject.bind(args));
-			} else {
-				return $promise.reject(Error("provider not found for: " + juse.toSpec(event))).then(null, reject.bind(args));
-			}
-		}
-
-		function resolve(value) {
-			$follower.notify(this.event, value);
-			return $promise.resolve(value);
-		}
-
-		function reject(value) {
-			$follower.notify(this.event, null, value);
-			return $promise.reject(value);
+		function submit(spec, value) {
+			var ref = juse.toRef(spec);
+			var provide = juse.member(this.provide(), ref.member);
+			var args = {value:value};
+			return $promise(provide.bind(args)).then($promise.resolve, $promise.reject);
 		}
 	});
 });
@@ -1335,12 +1284,11 @@ juse("juse/text.context", ["juse/core"], function text(){
 	this.juse("teval", ["replace", "map"], function teval($replace, $map, $scope){
 		return function teval(spec, dataset) {
 			var ref = juse.toRef(spec);
-			var value = this.context.property(ref) || juse.filter(ref, this, dataset);
-			value = dataset === undefined ? value || juse.lookup(ref, this) : value;
+			var value = juse.property(ref, this) || juse.filter(ref, this, dataset);
 			var map = juse.filter(ref.value, this) || $map(ref.value);
 			if (map) {
 				value = (juse.typeOf(value, "array") && !value.length || juse.typeOf(value, "object") && !Object.keys(value).length) ? null : value;
-				var value2 = juse.memberName(map, [value]) ? juse.memberValue(map, [value])
+				var value2 = juse.member(map, [value], true) ? juse.member(map, [value])
 						: (value && "*" in map) ? map["*"]
 								: (!value && "" in map) ? map[""] : value;
 				if (value2 !== value) value = $replace.call(this, value2, value);
@@ -1354,23 +1302,22 @@ juse("juse/text.context", ["juse/core"], function text(){
 juse("juse/ui.context", ["juse/resource", "juse/text", "juse/core"], function ui(){
 	var $view, $dom, $array = [];
 
-	this.juse("view.follower", ["html"], function view($html, $scope){
-		this.meta.follow = "load@juse/core";
-		return juse.seal(
-			function view(){
-				$scope.context.cacheValue("views", this.spec.name, this.spec);
-			},
-			{follow: function follow(event, value) {
-				$view = $view || juse.global.document.body.querySelector("[data-view]") || juse.global.document.body;
-				value = $html(value);
-				if ($dom.closest(value, $view)) {
-				} else if ($view.lastElementChild) {
-					$view.replaceChild(value, $view.lastElementChild);
-				} else {
-					$view.appendChild(value);
-				}
-			}}
-		);
+	this.juse("view", ["html", "onload"], function view($html, $onload, $scope){
+		$onload.callback(onload);
+		return function view(){
+			$scope.context.cacheValue("views", this.spec.name, this.spec);
+		};
+
+		function onload(value) {
+			$view = $view || juse.global.document.body.querySelector("[data-view]") || juse.global.document.body;
+			value = $html(value);
+			if ($dom.closest(value, $view)) {
+			} else if ($view.lastElementChild) {
+				$view.replaceChild(value, $view.lastElementChild);
+			} else {
+				$view.appendChild(value);
+			}
+		}
 	});
 
 	this.juse("dom", ["html"], function dom($html){
@@ -1666,7 +1613,7 @@ juse("juse/valid.context", ["juse/text"], function valid($text, $context){
 
 	this.juse("required.validator", ["replace"], function required($replace){
 		return function required(spec, value, ref) {
-			return value ? "" : $replace(juse.lookup("#required.message", this) || "required: ${0}", juse.toSpec(ref));
+			return value ? "" : $replace(juse.property("#required.message", this) || "required: ${0}", juse.toSpec(ref));
 		};
 	});
 
@@ -1696,24 +1643,25 @@ juse("juse/model.context", ["juse/remote", "juse/core", "juse/ui", "juse/valid",
 			}
 		}
 		if (model && create) {
-			juse.copyTo(model.spec, spec, $modelKeys);
+			juse.copy(model.spec, spec, $modelKeys);
 			model.binder = getBinder(model.spec&&model.spec.kind);
 		}
 		return model;
 	}
 
-	this.juse("model.follower", ["dom", "tile", "provider", "validate"], function model($dom, $tile, $provider, $validate, $scope){
-		this.meta.follow = "load@juse/core";
+	this.juse("model", ["dom", "tile", "provider", "validate", "onload"], function model($dom, $tile, $provider, $validate, $onload, $scope){
+		$onload.callback(onload);
 		return juse.seal(function model(node) {
 			node = $dom.call(this, node);
 			makeModels.call(this, node);
 			return node;
 		},
-		{follow: function follow() {
+		{renderChild:renderChild, renderModel:renderModel, fireEvent:fireEvent, notifyInput:notifyInput, addTile:addTile, getModel:getModel, getModelValue:getModelValue, notifyModel:notifyModel, resolveEvent:resolveEvent, rejectEvent:rejectEvent});
+
+		function onload() {
 			var models = $context.cacheEntry("models");
 			Object.keys(models).map(juse.valueOfKey, models).forEach(renderDefault);
-		},
-		renderChild:renderChild, renderModel:renderModel, fireEvent:fireEvent, notifyInput:notifyInput, addTile:addTile, getModel:getModel, getModelValue:getModelValue, notifyModel:notifyModel, resolveEvent:resolveEvent, rejectEvent:rejectEvent});
+		}
 
 		function makeModels(node) {
 			$dom.filterNodes(node, "[data-model]").forEach(makeModel, this);
@@ -1786,7 +1734,7 @@ juse("juse/model.context", ["juse/remote", "juse/core", "juse/ui", "juse/valid",
 			if (juse.typeOf(binder, "function")) {
 				binder(input, value);
 			} else {
-				$provider.fire(input.event, value).then(resolveEvent.bind(args), rejectEvent.bind(args));
+				juse.lookup(input.event.name, input.scope).submit(input.event, value).then(resolveEvent.bind(args), rejectEvent.bind(args));
 			}
 		}
 
