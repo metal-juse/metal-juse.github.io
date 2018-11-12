@@ -1315,7 +1315,7 @@ juse("juse/ui.context", ["juse/resource", "juse/text", "juse/core"], function ui
 			$scope.context.cacheValue("views", this.spec.name, this.spec);
 		};
 
-		function load(event, value) {
+		function load(value) {
 			$view = $view || juse.global.document.body.querySelector("[data-view]") || juse.global.document.body;
 			value = $html(value);
 			if ($dom.closest(value, $view)) {
@@ -1658,7 +1658,7 @@ juse("juse/model.context", ["juse/remote", "juse/core", "juse/ui", "juse/valid",
 		return model;
 	}
 
-	this.juse("model", ["dom", "tile", "provider", "validate", "load"], function model($dom, $tile, $provider, $validate, $load, $scope){
+	this.juse("model", ["dom", "tile", "validate", "load"], function model($dom, $tile, $validate, $load, $scope){
 		$load.follow({load:load});
 		return juse.seal(function model(node) {
 			node = $dom.call(this, node);
@@ -1667,7 +1667,7 @@ juse("juse/model.context", ["juse/remote", "juse/core", "juse/ui", "juse/valid",
 		},
 		{renderChild:renderChild, renderModel:renderModel, fireEvent:fireEvent, notifyInput:notifyInput, addTile:addTile, getModel:getModel, getModelValue:getModelValue, notifyModel:notifyModel, resolveEvent:resolveEvent, rejectEvent:rejectEvent});
 
-		function load(event) {
+		function load() {
 			var models = $context.cacheEntry("models");
 			Object.keys(models).map(juse.valueOfKey, models).forEach(renderDefault);
 		}
