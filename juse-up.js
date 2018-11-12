@@ -140,7 +140,7 @@
 
 				function init() {
 					$cache.init.call(this);
-					assign(this, {replace:replace, property:property});
+					assign(this, {property:property});
 				}
 
 				function initContext(value) {
@@ -163,16 +163,6 @@
 					}
 					return property;
 				}
-
-				var $replaceFormat = /\$\{([^\}]+)\}/g;
-				var $testFormat = /\$\{([^\}]+)\}/;
-				function replace(text, base) {
-					var context = this;
-					if (!text || typeof(text) != "string" || !$testFormat.test(text)) return text;
-					return text.replace($replaceFormat, function(match, spec) {
-						return context.property(toRef(spec, base)) || match;
-					});
-				}
 			});
 
 			function property(spec, scope) {
@@ -185,7 +175,7 @@
 
 			function lookup(spec, scope) {
 				var ref = resolve(spec, scope);
-				return member(getModuleValue(ref), [ref.member]);
+				return member(getModule(ref), ["value", ref.member]);
 			}
 
 			function filter(spec, scope, value) {
@@ -314,11 +304,6 @@
 	}
 
 	/** @member module */
-	function getModuleValue(ref) {
-		return member(getModule(ref), ["value"]);
-	}
-
-	/** @member module */
 	function getModuleName(ref, type) {
 		var name = typeOf(ref, "object") ? ref.name : ref;
 		type = (ref.type && ref.type != "context" && ref.type != "js") ? ref.type : type;
@@ -342,7 +327,7 @@
 	function resolveRef(spec) {
 		var ref = remap(spec, this);
 		if (ref.value) {
-			ref.value = getContext(this).scope.replace(ref.value, this);
+			ref.value = juse.lookup("replace@juse/core")(ref.value, this);
 		}
 		return ref;
 	}
@@ -1189,6 +1174,19 @@ juse("juse/remote.context", ["run"], function remote(){
 });
 
 juse("juse/core.context", ["juse/run"], function core(){
+
+	this.juse("replace", function replace(){
+		var $replaceFormat = /\$\{([^\}]+)\}/g;
+		var $testFormat = /\$\{([^\}]+)\}/;
+
+		return function replace(text, base) {
+			var context = this;
+			if (!text || typeof(text) != "string" || !$testFormat.test(text)) return text;
+			return text.replace($replaceFormat, function(match, spec) {
+				return context.property(toRef(spec, base)) || match;
+			});
+		};
+	});
 
 	this.juse("map", function map(){
 		return function map(spec){
