@@ -66,11 +66,11 @@
 		$boot.appPath = context.kind || toRef($boot.app.context||"").kind;
 		copy(app, { context:context.name || app.context || "", value:"" }, null, true, true);
 		getContext().scope.juse([toRef(app.context, ".context")], function(){
-			getContext().scope.juse([app, "onload@juse/core", "ondone@juse/core"], function($app, $onload, $ondone){
+			getContext().scope.juse([app, "load@juse/core"], function($app, $load){
 				currentApp(app);
 				var value = typeOf($app, "function") ? $app() : $app;
-				$onload.fire(value);
-				if (!$ondone.fire(app)) {
+				$load.fire("load", value);
+				if (!$load.fire("done", app)) {
 					setTimeout(done);
 				}
 			});
@@ -1201,23 +1201,27 @@ juse("juse/core.context", ["juse/run"], function core(){
 	this.juse("event", ["cache"], function event($cache, $scope){
 		juse.assign(this, {init:init});
 		return juse.seal(function event(value){
-			return juse.seal(value||function event(){}, {callback:this.callback.bind(this), fire:this.fire.bind(this)});
+			return juse.seal(value||function event(){}, {addEventListener:this.addEventListener.bind(this), follow:this.follow.bind(this), fire:this.fire.bind(this)});
 		}, {init:init});
 
 		function init(){
 			$cache.init.call(this);
-			juse.assign(this, {callback:callback, fire:fire});
+			juse.assign(this, {addEventListener:addEventListener, follow:follow, fire:fire});
 		}
 
-		function callback(callback){
+		function addEventListener(kind, callback){
 			if (juse.typeOf(callback, "function")) {
-				callbacks(this).push(callback);
+				callbacks(kind, this).push(callback);
 			}
 		}
 
-		function fire(value, error){
+		function follow(follower) {
+			juse.follow(this, juse.assign({}, arguments));
+		}
+
+		function fire(kind, value, error){
 			var args = {value:value, error:error};
-			callbacks(this).forEach(notify, args);
+			callbacks(kind, this).forEach(notify, args);
 			return args.result;
 		}
 
@@ -1229,19 +1233,17 @@ juse("juse/core.context", ["juse/run"], function core(){
 			}
 		}
 
-		function callbacks(scope) {
-			return scope.cacheEntry("callbacks", []);
+		function callbacks(kind, scope) {
+			return scope.cacheValue("callbacks", kind, []);
 		}
 	});
 
-	this.juse("onload.event");
-
-	this.juse("ondone.event");
+	this.juse("load.event");
 
 	this.juse("service", ["event", "promise"], function service($event, $promise){
 		juse.assign(this, {init:init});
 		return function service(value){
-			return juse.seal(value||function service(){}, {callback:this.callback.bind(this), fire:this.fire.bind(this), provide:this.provide.bind(this), submit:this.submit.bind(this)});
+			return juse.seal(value||function service(){}, {addEventListener:this.addEventListener.bind(this), follow:this.follow.bind(this), fire:this.fire.bind(this), provide:this.provide.bind(this), submit:this.submit.bind(this)});
 		};
 
 		function init(){
@@ -1307,13 +1309,13 @@ juse("juse/text.context", ["juse/core"], function text(){
 juse("juse/ui.context", ["juse/resource", "juse/text", "juse/core"], function ui(){
 	var $view, $dom, $array = [];
 
-	this.juse("view", ["html", "onload"], function view($html, $onload, $scope){
-		$onload.callback(onload);
+	this.juse("view", ["html", "load"], function view($html, $load, $scope){
+		$load.follow({load:load});
 		return function view(){
 			$scope.context.cacheValue("views", this.spec.name, this.spec);
 		};
 
-		function onload(value) {
+		function load(event, value) {
 			$view = $view || juse.global.document.body.querySelector("[data-view]") || juse.global.document.body;
 			value = $html(value);
 			if ($dom.closest(value, $view)) {
@@ -1656,8 +1658,8 @@ juse("juse/model.context", ["juse/remote", "juse/core", "juse/ui", "juse/valid",
 		return model;
 	}
 
-	this.juse("model", ["dom", "tile", "provider", "validate", "onload"], function model($dom, $tile, $provider, $validate, $onload, $scope){
-		$onload.callback(onload);
+	this.juse("model", ["dom", "tile", "provider", "validate", "load"], function model($dom, $tile, $provider, $validate, $load, $scope){
+		$load.follow({load:load});
 		return juse.seal(function model(node) {
 			node = $dom.call(this, node);
 			makeModels.call(this, node);
@@ -1665,7 +1667,7 @@ juse("juse/model.context", ["juse/remote", "juse/core", "juse/ui", "juse/valid",
 		},
 		{renderChild:renderChild, renderModel:renderModel, fireEvent:fireEvent, notifyInput:notifyInput, addTile:addTile, getModel:getModel, getModelValue:getModelValue, notifyModel:notifyModel, resolveEvent:resolveEvent, rejectEvent:rejectEvent});
 
-		function onload() {
+		function load(event) {
 			var models = $context.cacheEntry("models");
 			Object.keys(models).map(juse.valueOfKey, models).forEach(renderDefault);
 		}
