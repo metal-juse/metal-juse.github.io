@@ -166,7 +166,7 @@
 			});
 
 			function property(spec, scope) {
-				return getContext(scope && scope.spec || currentApp()).scope.property(spec);
+				return spec = toRef(spec), getContext(scope && scope.spec || currentApp()).scope.property(spec) || member(scope, ["properties", spec.name]);
 			}
 
 			function resolve(spec, scope) {
@@ -174,8 +174,7 @@
 			}
 
 			function lookup(spec, scope) {
-				var ref = resolve(spec, scope);
-				return member(getModule(ref), ["value", ref.member]);
+				return spec = resolve(spec, scope), member(getModule(spec), ["value", spec.member]);
 			}
 
 			function filter(spec, scope, value) {
@@ -237,6 +236,7 @@
 		if (!getModule(def)) {
 			module.id = $boot.moduleCount++;
 			if (!setModule(def, module)) return;
+			module.scope = {spec:copy({}, module.def, $refKeys), properties:copy({}, module.def.properties)};
 			$boot.buffer.push(module);
 		}
 		return module;
@@ -327,7 +327,7 @@
 	function resolveRef(spec) {
 		var ref = remap(spec, this);
 		if (ref.value) {
-			ref.value = juse.lookup("replace@juse/core")(ref.value, this);
+			ref.value = juse.lookup("replace@juse/core")(ref.value, this.scope);
 		}
 		return ref;
 	}
@@ -602,8 +602,7 @@
 
 	/** @member flush */
 	function initScope(module) {
-		module.scope = {spec:copy({}, module.def, $refKeys), properties:copy({}, module.def.properties), log:log};
-		module.scope.context = getContext(module).scope;
+		copy(module.scope, {context:getContext(module).scope, log:log});
 		if (module.type == "context") {
 			module.scope.define = module.scope.juse = juse;
 		} else if (module.name && module.scope.context.cacheValue) {
@@ -1179,11 +1178,10 @@ juse("juse/core.context", ["juse/run"], function core(){
 		var $replaceFormat = /\$\{([^\}]+)\}/g;
 		var $testFormat = /\$\{([^\}]+)\}/;
 
-		return function replace(text, base) {
-			var context = this;
+		return function replace(text, scope) {
 			if (!text || typeof(text) != "string" || !$testFormat.test(text)) return text;
 			return text.replace($replaceFormat, function(match, spec) {
-				return context.property(toRef(spec, base)) || match;
+				return juse.property(spec, scope) || match;
 			});
 		};
 	});
