@@ -181,11 +181,11 @@
 				var ref = toRef(spec);
 				if (!ref) return;
 				var module = getModule(scope && scope.spec || currentApp());
-				if (value !== undefined) {
+				if (value === undefined) {
+					value = filterRefValue.call(module, resolve(ref, scope));
+				} else {
 					value = applyFilters(value, ref, "type", module);
 					value = applyFilters(member(value, [ref.member]), ref, "pipe", module);
-				} else {
-					value = filterRefValue.call(module, resolve(ref, scope));
 				}
 				return value;
 			}
