@@ -35,9 +35,9 @@
 
 		loadRoot();
 		if ($boot.doc) {
-			follow($boot.global, {"load":bufferApp, "hashchange":bufferApp});
+			follow($boot.global, {"load":loadApp, "hashchange":loadApp});
 		} else {
-			bufferApp();
+			loadApp();
 		}
 	};
 
@@ -48,31 +48,27 @@
 		log("--done--");
 	}
 
-	function bufferApp() {
+	/** @member boot */
+	function loadApp() {
 		getContext().scope.juse($boot.doc ? ["juse/ui", "juse/core"] : ["juse/core"], function(){
 			getContext().scope.juse(["map@juse/core"], function($map){
 				var app = toRef(currentHash(), currentApp());
+				var context = toRef(app.context||"");
+				$boot.appPath = context.kind || toRef($boot.app.context||"").kind;
 				copy(getContext().scope.cacheEntry("properties"), $map(app.value));
-				log("--load--");
-				loadApp();
-			});
-		});
-	}
+				copy(app, { context:context.name || app.context || "", value:"" }, null, true, true);
 
-	/** @member boot */
-	function loadApp() {
-		var app = toRef(currentHash(), currentApp());
-		var context = toRef(app.context||"");
-		$boot.appPath = context.kind || toRef($boot.app.context||"").kind;
-		copy(app, { context:context.name || app.context || "", value:"" }, null, true, true);
-		getContext().scope.juse([toRef(app.context, ".context")], function(){
-			getContext().scope.juse([app, "load@juse/core"], function($app, $load){
-				currentApp(app);
-				var value = typeOf($app, "function") ? $app() : $app;
-				$load.fire("load", value);
-				if (!$load.fire("done", app)) {
-					setTimeout(done);
-				}
+				log("--load--");
+				getContext().scope.juse([toRef(app.context, ".context")], function(){
+					getContext().scope.juse([app, "load@juse/core"], function($app, $load){
+						currentApp(app);
+						var value = typeOf($app, "function") ? $app() : $app;
+						$load.fire("load", value);
+						if (!$load.fire("done", app)) {
+							setTimeout(done);
+						}
+					});
+				});
 			});
 		});
 	}
