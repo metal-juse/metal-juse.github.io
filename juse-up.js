@@ -54,12 +54,12 @@
 			getContext().scope.juse(["map@juse/core"], function($map){
 				var app = toRef(currentHash(), currentApp());
 				var context = toRef(app.context||"");
+				var properties = $map(app.value);
 				$boot.appPath = context.kind || toRef($boot.app.context||"").kind;
-				copy(getContext().scope.cacheEntry("properties"), $map(app.value));
 				copy(app, { context:context.name || app.context || "", value:"" }, null, true, true);
-
-				log("--load--");
 				getContext().scope.juse([toRef(app.context, ".context")], function(){
+					copy(getContext(currentApp()).scope.cacheEntry("properties"), properties);
+					log("--load--");
 					getContext().scope.juse([app, "load@juse/core"], function($app, $load){
 						currentApp(app);
 						var value = typeOf($app, "function") ? $app() : $app;
@@ -868,8 +868,9 @@
 	/** @member util */
 	function log(value) {
 		if (typeof(console) == "undefined") return;
-		var property = member(getContext(), ["scope", "property"]);
-		var dev = property && getContext().scope.property("app-mode") == "dev";
+		var context = getContext(currentApp());
+		var property = member(context, ["scope", "property"]);
+		var dev = property && context.scope.property("app-mode") == "dev";
 		if (!dev) return;
 		if (typeof(value) == "string") {
 			var i = $logKeys.indexOf(value);
