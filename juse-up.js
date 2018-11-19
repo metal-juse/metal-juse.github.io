@@ -33,7 +33,6 @@
 			copy($boot, {jusePath:__dirname, app:toRef(process.argv[2]||"")});
 		}
 
-		log("--boot--");
 		loadRoot();
 		if ($boot.doc) {
 			follow($boot.global, {"load":bufferApp, "hashchange":bufferApp});
@@ -54,6 +53,7 @@
 			getContext().scope.juse(["map@juse/core"], function($map){
 				var app = toRef(currentHash(), currentApp());
 				copy(getContext().scope.cacheEntry("properties"), $map(app.value));
+				log("--load--");
 				loadApp();
 			});
 		});
@@ -98,7 +98,8 @@
 					follow:follow,
 					assign:assign,
 					copy:copy,
-					seal:seal
+					seal:seal,
+					log:log
 				});
 			});
 
@@ -602,7 +603,7 @@
 
 	/** @member flush */
 	function initScope(module) {
-		copy(module.scope, {context:getContext(module).scope, log:log});
+		module.scope.context = getContext(module).scope;
 		if (module.type == "context") {
 			module.scope.define = module.scope.juse = juse;
 		} else if (module.name && module.scope.context.cacheValue) {
@@ -927,7 +928,7 @@ juse("juse/run.context", function run(){
 		};
 	});
 
-	this.juse("async", ["try"], function async($try, $scope){
+	this.juse("async", ["try"], function async($try){
 		var callAsync = typeof setImmediate == "function" ? setImmediate : setTimeout;
 		var $buffer = [];
 
@@ -942,7 +943,7 @@ juse("juse/run.context", function run(){
 			var error = {};
 			while ($buffer.length) {
 				if ($try($buffer.shift(), null, error) === error) {
-					$scope.log("error", error.ex);
+					juse.log("error", error.ex);
 				}
 			}
 		}
@@ -1196,7 +1197,7 @@ juse("juse/core.context", ["juse/run"], function core(){
 		};
 	});
 
-	this.juse("event", ["cache"], function event($cache, $scope){
+	this.juse("event", ["cache"], function event($cache){
 		juse.assign(this, {init:init});
 		return juse.seal(function event(value){
 			return juse.seal(value||function event(){}, {addEventListener:this.addEventListener.bind(this), follow:this.follow.bind(this), fire:this.fire.bind(this)});
@@ -1227,7 +1228,7 @@ juse("juse/core.context", ["juse/run"], function core(){
 			try {
 				this.result = this.result || callback(this.value, this.error);
 			} catch (ex) {
-				$scope.log("error", ex);
+				juse.log("error", ex);
 			}
 		}
 
@@ -1656,7 +1657,7 @@ juse("juse/model.context", ["juse/remote", "juse/core", "juse/ui", "juse/valid",
 		return model;
 	}
 
-	this.juse("model", ["dom", "tile", "validate", "load"], function model($dom, $tile, $validate, $load, $scope){
+	this.juse("model", ["dom", "tile", "validate", "load"], function model($dom, $tile, $validate, $load){
 		$load.follow({load:load});
 		return juse.seal(function model(node) {
 			node = $dom.call(this, node);
@@ -1766,7 +1767,7 @@ juse("juse/model.context", ["juse/remote", "juse/core", "juse/ui", "juse/valid",
 		function notifyMessage(input, messages) {
 			$dom.toggleClass(input.node, "error", !!messages);
 			if (!notifyModel(getModel("messages"), messages, input) && messages) {
-				$scope.log("error", messages);
+				juse.log("error", messages);
 			}
 		}
 
