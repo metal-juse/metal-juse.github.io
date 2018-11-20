@@ -579,7 +579,9 @@
 			if (!refs.every(isFlushed)) return;
 			if (!getContext(module).refs.map(getModule).every(allFlushed)) return;
 			try {
-				initModule(module);
+				log("init:", toSpec(module.def));
+				initScope(module);
+				initValue(module);
 				module.flushState = $flushStates.DONE;
 			} catch (e) {
 				failModule(module, null, null, e);
@@ -588,19 +590,10 @@
 	}
 
 	/** @member flush */
-	function initModule(module) {
-		log("init:", toSpec(module.def));
-		if (module.type == "context") {
-			module.modules = {};
-		}
-		initScope(module);
-		initValue(module);
-	}
-
-	/** @member flush */
 	function initScope(module) {
 		module.scope.context = getContext(module).scope;
 		if (module.type == "context") {
+			module.modules = {};
 			module.scope.define = module.scope.juse = juse;
 		} else if (module.name && module.scope.context.cacheValue) {
 			module.scope.context.cacheValue("map", slicePath(module.name, -1, 1), module.scope.spec);
