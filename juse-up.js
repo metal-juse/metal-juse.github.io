@@ -687,8 +687,7 @@
 	}
 
 	/** @member request */
-	function currentScript() {
-		var nodes;
+	function currentScript(nodes) {
 		return $boot.global.document.currentScript || ($boot.script && $boot.script.previousElementSibling) || (nodes = $boot.global.document.getElementsByTagName("script"), nodes[nodes.length-1]);
 	}
 
