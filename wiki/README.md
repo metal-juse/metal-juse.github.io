@@ -5,7 +5,7 @@
 * **juse** provides core framework modules as services to assist with the additional design features.
 * **juse** makes it easy to separate common reusable patterns from application modules into its own framework modules.
 * **juse** supports easy integration with legacy frameworks such as [jQuery][].
-* **juse** is compatible with mainstream browsers including IE9+, as well as JavaScript runtime [Node.js][].
+* **juse** is compatible with mainstream browsers including IE9+, as well as server-side JavaScript runtime [Node.js][].
 
 # Design Features
 
