@@ -50,7 +50,7 @@
 
 	/** @member boot */
 	function loadApp() {
-		getContext().scope.juse($boot.doc ? ["juse/ui", "juse/core"] : ["juse/core"], function(){
+		getContext().scope.juse($boot.doc ? ["juse/core","juse/ui"] : ["juse/core"], function(){
 			getContext().scope.juse(["map@juse/core"], function($map){
 				var app = toRef(currentHash(), currentApp());
 				var context = toRef(app.context||"");
@@ -58,10 +58,9 @@
 				$boot.appPath = context.kind || toRef($boot.app.context||"").kind;
 				copy(app, { context:context.name || app.context || "", value:"" }, null, true, true);
 				getContext().scope.juse([toRef(app.context, ".context")], function(){
-					copy(getContext(currentApp()).scope.cacheEntry("properties"), properties);
+					copy(getContext(currentApp(app)).scope.cacheEntry("properties"), properties);
 					log("--load--");
 					getContext().scope.juse([app, "load@juse/core"], function($app, $load){
-						currentApp(app);
 						var value = typeOf($app, "function") ? $app() : $app;
 						$load.fire("load", value);
 						if (!$load.fire("done", app)) {
@@ -160,6 +159,75 @@
 					}
 					return property;
 				}
+			});
+
+			this.juse("juse/request", function request(){
+				return function request(ref){
+					if (!$boot.doc) {
+						return nodeRequest(ref);
+					}
+					return defaultRequest(ref);
+				};
+
+				function nodeRequest(ref) {
+					var path = toPath(ref);
+					log("load:", toSpec(ref), "<-", path);
+					$boot.currentSpec = ref;
+					require(path);
+					var module = getModule(ref);
+					if (external(module)) {
+						module.flushState = $flushStates.DEFINE;
+					}
+					return true;
+				}
+
+				function defaultRequest(ref) {
+					if (getRequest(ref)) return;
+					var spec = toSpec(ref), path = toPath(ref);
+					var tagName = ref.type == "css" ? "link" : "script";
+					var script = $boot.doc.createElement(tagName);
+					script.setAttribute("data-spec", spec);
+					if (tagName == "link") {
+						script.rel = "stylesheet";
+						script.href = path;
+						path = script.href;
+					} else {
+						script.async = $boot.async;
+						script.src = path;
+						path = script.src;
+					}
+					log("load:", spec, "<-", path);
+					follow(script, {"load":failRequest, "error":failRequest});
+					$boot.script.parentNode.insertBefore(script, $boot.script);
+					return true;
+				}
+
+				function failRequest(event) {
+					var module = findModule(toRef(getSpec(event.target)));
+					if (isPending(module)) {
+						if (event.type == "load") {
+							if (module.type == "css") {
+								module.refs = [];
+								module.flushState = $flushStates.DONE;
+							} else if (external(module)) {
+								module.flushState = $flushStates.DEFINE;
+							}
+						} else {
+							failModule(module, null, null, Error("response " + event.type));
+						}
+						flush();
+					}
+				}
+
+				function getRequest(ref) {
+					var script = $boot.script, spec = toSpec(ref);
+					while (script = script.previousElementSibling) {
+						if (getSpec(script) == spec) {
+							return script;
+						}
+					}
+				}
+
 			});
 
 			function property(spec, scope) {
@@ -544,7 +612,7 @@
 	function loadModule(module) {
 		if (module.flushState == $flushStates.BUFFER) {
 			module.flushState = $flushStates.LOAD;
-			if (makeRequest(module.def)) {
+			if (juse.lookup("juse/request@")(module.def)) {
 				return !$boot.async;
 			}
 		}
@@ -556,7 +624,7 @@
 			module.flushState = $flushStates.ERROR;
 			module.value = error || Error("timeout error");
 			$boot.errors.push(module.value);
-			log("error", toSpec(module.def), module.value.message);
+			log("error", toSpec(module.def), module.value);
 		}
 	}
 
@@ -612,73 +680,6 @@
 			delete module.scope.value;
 		}
 		module.value = applyFilters(module.value, module.def.spec, "type", module);
-	}
-
-	/** @member request */
-	function makeRequest(ref) {
-		if (!$boot.doc) {
-			var path = toPath(ref);
-			log("load:", toSpec(ref), "<-", path);
-			$boot.currentSpec = ref;
-			require(path);
-			var module = getModule(ref);
-			if (external(module)) {
-				module.flushState = $flushStates.DEFINE;
-			}
-			return true;
-		} else if (!getRequest(ref)) {
-			var script = newRequest(ref);
-			follow(script, {"load":failRequest, "error":failRequest});
-			$boot.script.parentNode.insertBefore(script, $boot.script);
-			return true;
-		}
-	}
-
-	/** @member request */
-	function failRequest(event) {
-		var module = findModule(toRef(getSpec(event.target)));
-		if (isPending(module)) {
-			if (event.type == "load") {
-				if (module.type == "css") {
-					module.refs = [];
-					module.flushState = $flushStates.DONE;
-				} else if (external(module)) {
-					module.flushState = $flushStates.DEFINE;
-				}
-			} else {
-				failModule(module, null, null, Error("response " + event.type));
-			}
-			flush();
-		}
-	}
-
-	/** @member request */
-	function getRequest(ref) {
-		var script = $boot.script, spec = toSpec(ref);
-		while (script = script.previousElementSibling) {
-			if (getSpec(script) == spec) {
-				return script;
-			}
-		}
-	}
-
-	/** @member request */
-	function newRequest(ref) {
-		var spec = toSpec(ref), path = toPath(ref);
-		var tagName = ref.type == "css" ? "link" : "script";
-		var script = $boot.doc.createElement(tagName);
-		script.setAttribute("data-spec", spec);
-		if (tagName == "link") {
-			script.rel = "stylesheet";
-			script.href = path;
-			path = script.href;
-		} else {
-			script.async = $boot.async;
-			script.src = path;
-			path = script.src;
-		}
-		log("load:", spec, "<-", path);
-		return script;
 	}
 
 	/** @member request */
