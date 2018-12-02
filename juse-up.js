@@ -163,10 +163,8 @@
 
 			this.juse("juse/request", function request(){
 				return function request(ref){
-					if (!$boot.doc) {
-						return nodeRequest(ref);
-					}
-					return defaultRequest(ref);
+					if (!$boot.doc) return nodeRequest(ref);
+					else return defaultRequest(ref);
 				};
 
 				function nodeRequest(ref) {
@@ -182,7 +180,7 @@
 				}
 
 				function defaultRequest(ref) {
-					if (getRequest(ref)) return;
+					if (findRequest(ref)) return;
 					var spec = toSpec(ref), path = toPath(ref);
 					var tagName = ref.type == "css" ? "link" : "script";
 					var script = $boot.doc.createElement(tagName);
@@ -190,6 +188,7 @@
 					if (tagName == "link") {
 						script.rel = "stylesheet";
 						script.href = path;
+						script.title = spec;
 						path = script.href;
 					} else {
 						script.async = $boot.async;
@@ -197,12 +196,21 @@
 						path = script.src;
 					}
 					log("load:", spec, "<-", path);
-					follow(script, {"load":failRequest, "error":failRequest});
+					follow(script, {"load":handleResponse, "error":handleResponse});
 					$boot.script.parentNode.insertBefore(script, $boot.script);
 					return true;
 				}
 
-				function failRequest(event) {
+				function findRequest(ref) {
+					var script = $boot.script, spec = toSpec(ref);
+					while (script = script.previousElementSibling) {
+						if (getSpec(script) == spec) {
+							return script;
+						}
+					}
+				}
+
+				function handleResponse(event) {
 					var module = findModule(toRef(getSpec(event.target)));
 					if (isPending(module)) {
 						if (event.type == "load") {
@@ -218,16 +226,6 @@
 						flush();
 					}
 				}
-
-				function getRequest(ref) {
-					var script = $boot.script, spec = toSpec(ref);
-					while (script = script.previousElementSibling) {
-						if (getSpec(script) == spec) {
-							return script;
-						}
-					}
-				}
-
 			});
 
 			function property(spec, scope) {
