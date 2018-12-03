@@ -181,7 +181,6 @@
 				}
 
 				function defaultRequest(ref) {
-					if (findRequest(ref)) return;
 					var spec = toSpec(ref), path = toPath(ref);
 					var tagName = ref.type == "css" ? "link" : "script";
 					var script = $boot.doc.createElement(tagName);
@@ -200,15 +199,6 @@
 					follow(script, {"load":defaultResponse, "error":defaultResponse});
 					$boot.script.parentNode.insertBefore(script, $boot.script);
 					return true;
-				}
-
-				function findRequest(ref) {
-					var script = $boot.script, spec = toSpec(ref);
-					while (script = script.previousElementSibling) {
-						if (getSpec(script) == spec) {
-							return script;
-						}
-					}
 				}
 
 				function defaultResponse(event) {
