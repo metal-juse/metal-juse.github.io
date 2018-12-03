@@ -164,6 +164,7 @@
 			this.juse("juse/request", function request(){
 				return function request(ref){
 					if (!$boot.doc) return nodeRequest(ref);
+					else if (ref.kind == "static") return staticRequest(ref);
 					else return defaultRequest(ref);
 				};
 
@@ -196,7 +197,7 @@
 						path = script.src;
 					}
 					log("load:", spec, "<-", path);
-					follow(script, {"load":handleResponse, "error":handleResponse});
+					follow(script, {"load":defaultResponse, "error":defaultResponse});
 					$boot.script.parentNode.insertBefore(script, $boot.script);
 					return true;
 				}
@@ -210,7 +211,7 @@
 					}
 				}
 
-				function handleResponse(event) {
+				function defaultResponse(event) {
 					var module = findModule(toRef(getSpec(event.target)));
 					if (isPending(module)) {
 						if (event.type == "load") {
@@ -224,6 +225,34 @@
 							failModule(module, null, null, Error("response " + event.type));
 						}
 						flush();
+					}
+				}
+
+				function staticRequest(ref) {
+					var req = { ref:ref, xhr:new XMLHttpRequest() };
+					try {
+						req.xhr.open("GET", toPath(ref), true);
+						req.xhr.onreadystatechange = staticResponse.bind(req);
+						req.xhr.send();
+					} catch (ex) {
+						req.error = ex;
+						staticResponse.call(req);
+					}
+					return true;
+				}
+
+				function staticResponse() {
+					if (!this.error && this.xhr.readyState != 4) return;
+					if (this.xhr.status == 200 || this.xhr.status == 0 && this.xhr.responseText) {
+						this.value = this.xhr.responseText;
+					} else if (!this.error) {
+						this.error = Error(this.xhr.statusText||"Not Found");
+						this.error.code = this.xhr.status||404;
+					}
+					if (!this.error) {
+						juse(this.ref, this.value);
+					} else {
+						failModule(findModule(this.ref), null, null, this.error);
 					}
 				}
 			});
@@ -277,7 +306,7 @@
 			def.spec = toRef(def.args.spec, spec);
 			def.value_ = getProperties(def.properties, def.args.value);
 		}
-		if (!scope || !$boot.context) {
+		if (!scope || !$boot.context || def.spec.kind == "static") {
 			copy(def, def.spec);
 		} else if (scope != $boot.global) {
 			def.spec = toRef(def.args.spec, {name:def.properties.name, context:scope.spec.name});
@@ -610,7 +639,7 @@
 	function loadModule(module) {
 		if (module.flushState == $flushStates.BUFFER) {
 			module.flushState = $flushStates.LOAD;
-			if (juse.lookup("juse/request@")(module.def)) {
+			if (juse.lookup("juse/request@")(module.def.spec)) {
 				return !$boot.async;
 			}
 		}
