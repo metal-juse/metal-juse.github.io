@@ -164,6 +164,7 @@
 			this.juse("juse/request", function request(){
 				return function request(ref){
 					if (!$boot.doc) return nodeRequest(ref);
+					else if (ref.type == "css") return defaultRequest(ref);
 					else if (ref.kind == "static") return staticRequest(ref);
 					else return defaultRequest(ref);
 				};
@@ -296,11 +297,14 @@
 			def.spec = toRef(def.args.spec, spec);
 			def.value_ = getProperties(def.properties, def.args.value);
 		}
-		if (!scope || !$boot.context || def.spec.kind == "static") {
+		if (!scope || !$boot.context) {
 			copy(def, def.spec);
 		} else if (scope != $boot.global) {
 			def.spec = toRef(def.args.spec, {name:def.properties.name, context:scope.spec.name});
-			copy(def, {name:def.spec.name, context:def.spec.context});
+			copy(def, {name:def.spec.name, context:def.spec.context, type:def.spec.type});
+		} else if (def.spec.kind == "static") {
+			def = getModule(def.spec).def;
+			def.args.value = args.value;
 		} else {
 			copy(def, spec);
 			copy(def, getRefMap(def, def, true), $refKeys, true);
@@ -433,7 +437,7 @@
 				ref.name = getRefName(ref, module);
 			}
 		}
-		if (ref.type && ref.type != module.type) {
+		if (ref.type) {
 			copy(ref, getRefMap(getModuleName("*", ref.type), module));
 		}
 		copy(ref, module, (ref.type == module.type) ? $kindKeys : $contextKeys);
@@ -479,7 +483,7 @@
 	function filterRefValue(ref) {
 		var module = ref && getModule(ref);
 		if (!module) return;
-		var value = applyFilters(module.value, module.def.spec, "pipe", module);
+		var value = module.value;
 		if (ref.member && ref.member != module.member) {
 			value = member(value, [ref.member]);
 		}
@@ -584,6 +588,9 @@
 	function resolveRefs(module) {
 		if (module.flushState == $flushStates.DEFINE || module.flushState == $flushStates.RESOLVE) {
 			module.flushState = $flushStates.RESOLVE;
+			if (module.def.spec.type) {
+				copy(module.def.spec, getRefMap(getModuleName("*", module.def.spec.type), module));
+			}
 			module.refs = [];
 			if (module.def.args.refs) {
 				module.def.refs = module.def.args.refs.map(resolveRef, module);
@@ -607,7 +614,7 @@
 			if (!module.refs.every(getModule) && !getContext(module).refs.map(getModule).every(allFlushed)) return;
 			module.flushState = $flushStates.READY;
 			module.refs.forEach(bufferModule, module);
-			if (typeOf(module.value, "string") && module.value && !external(module)) {
+			if (typeOf(module.value, "string") && module.value && !external(module) || module.def.spec.kind == "static" && !module.def.args.value) {
 				module.flushState = $flushStates.BUFFER;
 			}
 		}
@@ -684,6 +691,7 @@
 			module.scope.context.cacheValue("map", slicePath(module.name, -1, 1), module.scope.spec);
 		}
 		applyFilters(module.value, module.def.spec, "type", module, "scope#init");
+		applyFilters(module.value, module.def.spec, "pipe", module, "scope#init");
 	}
 
 	/** @member flush */
@@ -697,6 +705,7 @@
 			delete module.scope.value;
 		}
 		module.value = applyFilters(module.value, module.def.spec, "type", module);
+		module.value = applyFilters(module.value, module.def.spec, "pipe", module);
 	}
 
 	/** @member request */
@@ -1244,7 +1253,7 @@ juse("juse/core.context", ["juse/run"], function core(){
 		}
 	});
 
-	this.juse("load.event");
+	this.juse("load|event", function load(){});
 
 	this.juse("service", ["event", "promise"], function service($event, $promise){
 		juse.assign(this, {init:init});
