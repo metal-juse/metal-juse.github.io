@@ -4,7 +4,7 @@
 (function boot(){
 
 	var $defKeys = ["spec", "refs", "value"];
-	var $kindKeys = ["kind", "context"], $contextKeys = ["context"];
+	var $nameKeys = ["name", "type", "context"];
 	var $refKeys = ["key", "kind", "name", "type", "member", "context", "pipe", "value"];
 	var $refFormatKeys = [""].concat($refKeys);
 	var $refFormat = /(?:\s*([^.#@|;\s]*)\s*=)?(?:\s*([^.#@|;\s]*)\s*:)?\s*([^.#@|;]*)(?:\.([^#@|;\s]*))?(?:#([^@|;\s]*))?(?:@([^|;\s]*))?(?:\s*\|\s*([^;\s]*))?(?:\s*;\s*([\S\s]*))?/;
@@ -178,11 +178,10 @@
 					if (external(module)) {
 						module.flushState = $flushStates.DEFINE;
 					}
-					return true;
 				}
 
 				function defaultRequest(ref) {
-					var spec = toSpec(ref), path = toPath(ref);
+					var path = toPath(ref), spec = toSpec(ref);
 					var tagName = ref.type == "css" ? "link" : "script";
 					var script = $boot.doc.createElement(tagName);
 					script.setAttribute("data-spec", spec);
@@ -199,7 +198,6 @@
 					log("load:", spec, "<-", path);
 					follow(script, {"load":defaultResponse, "error":defaultResponse});
 					$boot.script.parentNode.insertBefore(script, $boot.script);
-					return true;
 				}
 
 				function defaultResponse(event) {
@@ -229,7 +227,6 @@
 						req.error = ex;
 						staticResponse.call(req);
 					}
-					return true;
 				}
 
 				function staticResponse() {
@@ -283,7 +280,11 @@
 		if (!module || isPending(module)) {
 			log("define:", toSpec(def));
 			module = makeModule(def, $flushStates.DEFINE);
-			$boot.context = $boot.context || module;
+			if (!$boot.context) {
+				$boot.context = module;
+			} else {
+				module.scope.context = getContext(module).scope;
+			}
 			if (this == $boot.global || $boot.buffer.length == 1) {
 				flush();
 			}
@@ -301,14 +302,14 @@
 			copy(def, def.spec);
 		} else if (scope != $boot.global) {
 			def.spec = toRef(def.args.spec, {name:def.properties.name, context:scope.spec.name});
-			copy(def, {name:def.spec.name, context:def.spec.context, type:def.spec.type});
+			copy(def, def.spec);
 		} else if (def.spec.kind == "static") {
 			def = getModule(def.spec).def;
 			def.args.value = args.value;
 		} else {
-			copy(def, spec);
-			copy(def, getRefMap(def, def, true), $refKeys, true);
-			copy(def, {name:def.spec.name||def.properties.name, type:def.spec.type=="context"&&"context"});
+			copy(def.spec, getRefMap(def.spec, def.spec, true));
+			copy(def, def.spec);
+			copy(def, {name:def.properties.name});
 		}
 		return def;
 	}
@@ -322,7 +323,7 @@
 		if (!getModule(def)) {
 			module.id = $boot.moduleCount++;
 			if (!setModule(def, module)) return;
-			module.scope = {spec:copy({}, module.def, $refKeys), properties:copy({}, module.def.properties)};
+			module.scope = {spec:copy({}, module.def.spec, $nameKeys), properties:copy({}, module.def.properties)};
 			$boot.buffer.push(module);
 		}
 		return module;
@@ -440,25 +441,23 @@
 		if (ref.type) {
 			copy(ref, getRefMap(getModuleName("*", ref.type), module));
 		}
-		copy(ref, module, (ref.type == module.type) ? $kindKeys : $contextKeys);
-		copy(ref, getContext(module), $kindKeys);
-		if (ref.context || module.type == "context" || juseRoot(ref.name)) {
+		if (ref.context || module.context || module.type == "context" || juseRoot(ref.name)) {
 			copy(ref, getRefMap("*", module));
 		}
-		return ref;
+		return copy(ref, {kind:module.kind||getContext(module).kind, context:module.context});
 	}
 
 	/** @member resolve */
-	function getRefMap(ref, module, remapOnly) {
+	function getRefMap(ref, spec, remapOnly) {
 		var refKey = typeOf(ref, "object") ? getModuleName(ref, ref.type) : ref;
-		var moduleKey = getModuleName(module, module.type);
+		var moduleKey = getModuleName(spec, spec.type);
 		var remap = member(getContext($boot.app), ["cache", "remap", moduleKey, refKey])
-			|| member(getContext(module), ["cache", "remap", moduleKey, refKey])
+			|| member(getContext(spec), ["cache", "remap", moduleKey, refKey])
 		return remapOnly ? remap : remap
 			|| member(getContext($boot.app), ["cache", "map", refKey])
-			|| member(getContext(module), ["cache", "map", refKey])
-			|| member(getContext(), ["cache", "map", refKey])
-			|| module.name && contextRefMaps(module, refKey);
+			|| member(getContext(spec), ["cache", "map", refKey])
+			|| spec.name && contextRefMaps(spec, refKey)
+			|| member(getContext(), ["cache", "map", refKey]);
 	}
 
 	/** @member resolve */
@@ -473,9 +472,9 @@
 	}
 
 	/** @member resolve */
-	function getRefName(ref, module) {
+	function getRefName(ref, spec) {
 		var absolute = "context" in ref || ref.name.indexOf("/") >= 0;
-		var base = absolute ? null : slicePath(module.name, -1);
+		var base = absolute ? null : slicePath(spec.name, -1);
 		return [base].concat(ref.name.split("/")).filter(member).join("/");
 	}
 
@@ -617,6 +616,9 @@
 			if (typeOf(module.value, "string") && module.value && !external(module) || module.def.spec.kind == "static" && !module.def.args.value) {
 				module.flushState = $flushStates.BUFFER;
 			}
+			if (module.name && module.scope.context.cacheValue) {
+				module.scope.context.cacheValue("map", slicePath(module.name, -1, 1), module.scope.spec);
+			}
 		}
 	}
 
@@ -636,9 +638,8 @@
 	function loadModule(module) {
 		if (module.flushState == $flushStates.BUFFER) {
 			module.flushState = $flushStates.LOAD;
-			if (juse.lookup("juse/request@")(module.def.spec)) {
-				return !$boot.async;
-			}
+			juse.lookup("juse/request@")(module.def.spec);
+			return !$boot.async;
 		}
 	}
 
@@ -687,8 +688,6 @@
 		if (module.type == "context") {
 			module.modules = {};
 			module.scope.define = module.scope.juse = juse;
-		} else if (module.name && module.scope.context.cacheValue) {
-			module.scope.context.cacheValue("map", slicePath(module.name, -1, 1), module.scope.spec);
 		}
 		applyFilters(module.value, module.def.spec, "type", module, "scope#init");
 		applyFilters(module.value, module.def.spec, "pipe", module, "scope#init");
@@ -1635,7 +1634,7 @@ juse("juse/valid.context", ["juse/text"], function valid($text, $context){
 		}
 	});
 
-	this.juse("required.validator", ["replace"], function required($replace){
+	this.juse("required|validator", ["replace"], function required($replace){
 		return function required(spec, value, ref) {
 			return value ? "" : $replace(juse.property("#required.message", this) || "required: ${0}", juse.toSpec(ref));
 		};
@@ -1867,7 +1866,7 @@ juse("juse/model.context", ["juse/remote", "juse/core", "juse/ui", "juse/valid",
 
 	});
 
-	this.juse("input.binder", ["dom", "widget", "model", "teval"], function input($dom, $widget, $model, $teval){
+	this.juse("input|binder", ["dom", "widget", "model", "teval"], function input($dom, $widget, $model, $teval){
 		return juse.seal(
 			function input(tile){
 				tile.valid = juse.toRef($dom.data(tile.node, "data-valid", null));
@@ -1917,7 +1916,7 @@ juse("juse/model.context", ["juse/remote", "juse/core", "juse/ui", "juse/valid",
 		}
 	});
 
-	this.juse("link.binder", ["dom", "widget", "model"], function link($dom, $widget, $model){
+	this.juse("link|binder", ["dom", "widget", "model"], function link($dom, $widget, $model){
 		return juse.seal(
 			function link(tile){
 				tile.link = $model.getModel(tile.spec.name, true);
@@ -1975,7 +1974,7 @@ juse("juse/model.context", ["juse/remote", "juse/core", "juse/ui", "juse/valid",
 		}
 	});
 
-	this.juse("list.binder", ["dom", "model"], function list($dom, $model){
+	this.juse("list|binder", ["dom", "model"], function list($dom, $model){
 		return juse.seal(
 			function list(tile){
 				tile.content = $dom.moveContent(tile.node);
@@ -2031,7 +2030,7 @@ juse("juse/model.context", ["juse/remote", "juse/core", "juse/ui", "juse/valid",
 		}
 	});
 
-	this.juse("map.binder", ["dom", "model"], function map($dom, $model){
+	this.juse("map|binder", ["dom", "model"], function map($dom, $model){
 		return juse.seal(
 			function map(tile){
 				tile.content = $dom.moveContent(tile.node);
@@ -2073,7 +2072,7 @@ juse("juse/model.context", ["juse/remote", "juse/core", "juse/ui", "juse/valid",
 		}
 	});
 
-	this.juse("remote.binder", ["dom", "widget", "model", "request"], function remote($dom, $widget, $model, $request){
+	this.juse("remote|binder", ["dom", "widget", "model", "request"], function remote($dom, $widget, $model, $request){
 		return juse.seal(
 			function remote(tile){
 				tile.event = juse.toRef($dom.data(tile.node, "data-event", null));
@@ -2097,7 +2096,7 @@ juse("juse/model.context", ["juse/remote", "juse/core", "juse/ui", "juse/valid",
 		}
 	});
 
-	this.juse("text.binder", ["model", "teval"], function text($model, $teval){
+	this.juse("text|binder", ["model", "teval"], function text($model, $teval){
 		var $replaceFormat = /%\{([^\}]*)\}/g;
 
 		return juse.seal(
@@ -2121,7 +2120,7 @@ juse("juse/model.context", ["juse/remote", "juse/core", "juse/ui", "juse/valid",
 		}
 	});
 
-	this.juse("value.binder", ["dom", "teval"], function value($dom, $teval){
+	this.juse("value|binder", ["dom", "teval"], function value($dom, $teval){
 		return juse.seal(
 			function value(tile){
 				tile.length = tile.node.innerHTML.length;
