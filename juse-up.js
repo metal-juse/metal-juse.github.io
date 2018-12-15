@@ -4,11 +4,11 @@
 (function boot(){
 
 	var $defKeys = ["spec", "refs", "value"];
-	var $nameKeys = ["name", "type", "context"];
-	var $refKeys = ["key", "kind", "name", "type", "member", "context", "pipe", "value"];
-	var $refFormatKeys = [""].concat($refKeys);
-	var $refFormat = /(?:\s*([^.#@|;\s]*)\s*=)?(?:\s*([^.#@|;\s]*)\s*:)?\s*([^.#@|;]*)(?:\.([^#@|;\s]*))?(?:#([^@|;\s]*))?(?:@([^|;\s]*))?(?:\s*\|\s*([^;\s]*))?(?:\s*;\s*([\S\s]*))?/;
-	var $refDelims = ["=", ":", "", ".", "#", "@", "|", ";"];
+	var $refKeys = ["kind", "name", "type", "context"];
+	var $specKeys = ["key", "kind", "name", "type", "member", "context", "pipe", "value"];
+	var $specFormatKeys = [""].concat($specKeys);
+	var $specFormat = /(?:\s*([^.#@|;\s]*)\s*=)?(?:\s*([^.#@|;\s]*)\s*:)?\s*([^.#@|;]*)(?:\.([^#@|;\s]*))?(?:#([^@|;\s]*))?(?:@([^|;\s]*))?(?:\s*\|\s*([^;\s]*))?(?:\s*;\s*([\S\s]*))?/;
+	var $specDelims = ["=", ":", "", ".", "#", "@", "|", ";"];
 	var $fnFormatKeys = ["", "name", "value"];
 	var $fnFormat = /function\s*([\S]*?)\s*\([^)]*\)\s*{\s*(?:\/\*\*+\s*([\S\s]*?)\s*\*\*+\/)?/;
 	var $propFormat = /^[\s*]*@([^\s]+)[ \f\r\t\v]*([^\n]*\S)?\s*/;
@@ -205,7 +205,6 @@
 					if (isPending(module)) {
 						if (event.type == "load") {
 							if (module.type == "css") {
-								module.refs = [];
 								module.flushState = $flushStates.DONE;
 							} else if (external(module)) {
 								module.flushState = $flushStates.DEFINE;
@@ -274,17 +273,13 @@
 
 	/** @member define */
 	function juse(spec, refs, value) {
-		var def = resolveDef(currentSpec(), getDefArgs([spec, refs, value], arguments.length, this == $boot.global), this);
+		var def = resolveDef(currentSpec(), getDefArgs([spec, refs, value], arguments.length, this), this);
 		var module = getModule(def);
 		if (module && isError(module)) setModule(def);
 		if (!module || isPending(module)) {
 			log("define:", toSpec(def));
 			module = makeModule(def, $flushStates.DEFINE);
-			if (!$boot.context) {
-				$boot.context = module;
-			} else {
-				module.scope.context = getContext(module).scope;
-			}
+			$boot.context = $boot.context || module;
 			if (this == $boot.global || $boot.buffer.length == 1) {
 				flush();
 			}
@@ -295,46 +290,48 @@
 	function resolveDef(spec, args, scope) {
 		var def = scope ? {properties:{}, args:args, refs:[]} : {args:{}, spec:spec};
 		if (scope) {
-			def.spec = toRef(def.args.spec, spec);
 			def.value_ = getProperties(def.properties, def.args.value);
+			def.spec = copy(toRef(def.args.spec, spec), {name:def.properties.name});
 		}
 		if (!scope || !$boot.context) {
-			copy(def, def.spec);
 		} else if (scope != $boot.global) {
 			def.spec = toRef(def.args.spec, {name:def.properties.name, context:scope.spec.name});
-			copy(def, def.spec);
 		} else if (def.spec.kind == "static") {
 			def = getModule(def.spec).def;
 			def.args.value = args.value;
 		} else {
 			copy(def.spec, getRefMap(def.spec, def.spec, true));
-			copy(def, def.spec);
-			copy(def, {name:def.properties.name});
 		}
-		return def;
+		return copy(def, def.spec);
 	}
 
 	/** @member define */
 	function makeModule(def, flushState) {
 		var module = getModule(def) || {};
-		copy(module, def, $refKeys, true, true);
+		copy(module, def, $specKeys, true, true);
 		module.def = def;
 		module.flushState = flushState;
 		if (!getModule(def)) {
 			module.id = $boot.moduleCount++;
 			if (!setModule(def, module)) return;
-			module.scope = {spec:copy({}, module.def.spec, $nameKeys), properties:copy({}, module.def.properties)};
+			module.scope = {spec:copy({}, module.def.spec, $refKeys), properties:copy({}, module.def.properties)};
 			$boot.buffer.push(module);
+		}
+		if (module.type == "context") {
+			module.modules = {};
+			module.scope.define = module.scope.juse = juse;
+		} else {
+			module.scope.context = getContext(module).scope;
 		}
 		return module;
 	}
 
 	/** @member define */
-	function getDefArgs(args, count, global) {
+	function getDefArgs(args, count, scope) {
 		if (count < $defKeys.length) {
 			if (typeOf(args[0], "array")) {
 				args.unshift("");
-			} else if (count < 2 && (global || typeOf(args[0], "function"))) {
+			} else if (count < 2 && (scope == $boot.global || typeOf(args[0], "function"))) {
 				args.unshift("", null);
 			} else if (!typeOf(args[1], "array")) {
 				args.splice(1, 0, null);
@@ -433,7 +430,7 @@
 		if (map || !target || target == module) {
 			map = map || getRefMap(ref, module);
 			if (mapOnly && !map) return;
-			copy(ref, map, $refKeys, true, true);
+			copy(ref, map, $specKeys, true, true);
 			if (!map) {
 				ref.name = getRefName(ref, module);
 			}
@@ -616,7 +613,7 @@
 			if (typeOf(module.value, "string") && module.value && !external(module) || module.def.spec.kind == "static" && !module.def.args.value) {
 				module.flushState = $flushStates.BUFFER;
 			}
-			if (module.name && module.scope.context.cacheValue) {
+			if (module.name && !module.type && module.scope.context.cacheValue) {
 				module.scope.context.cacheValue("map", slicePath(module.name, -1, 1), module.scope.spec);
 			}
 		}
@@ -673,8 +670,7 @@
 			if (!getContext(module).refs.map(getModule).every(allFlushed)) return;
 			try {
 				log("init:", toSpec(module.def));
-				initScope(module);
-				initValue(module);
+				initModule(module);
 				module.flushState = $flushStates.DONE;
 			} catch (e) {
 				failModule(module, null, null, e);
@@ -683,18 +679,9 @@
 	}
 
 	/** @member flush */
-	function initScope(module) {
-		module.scope.context = getContext(module).scope;
-		if (module.type == "context") {
-			module.modules = {};
-			module.scope.define = module.scope.juse = juse;
-		}
+	function initModule(module) {
 		applyFilters(module.value, module.def.spec, "type", module, "scope#init");
 		applyFilters(module.value, module.def.spec, "pipe", module, "scope#init");
-	}
-
-	/** @member flush */
-	function initValue(module) {
 		module.value = (typeOf(module.def.args.value, "function") ? module.def.value_ : module.def.args.value) || external(module);
 		if (typeOf(module.def.args.value, "function")) {
 			var values = module.def.refs.map(filterRefValue, module);
@@ -754,10 +741,10 @@
 
 	/** @member ref */
 	function toRef(spec, base, keys) {
-		if (typeOf(spec, "string")) spec = copy({}, $refFormat.exec(spec), $refFormatKeys);
-		if (typeOf(base, "string")) base = copy({}, $refFormat.exec(base), $refFormatKeys);
+		if (typeOf(spec, "string")) spec = copy({}, $specFormat.exec(spec), $specFormatKeys);
+		if (typeOf(base, "string")) base = copy({}, $specFormat.exec(base), $specFormatKeys);
 		if (!typeOf(base, "object")) base = null;
-		keys = typeOf(keys, "array") && keys || keys && spec && Object.keys(spec) || $refKeys;
+		keys = typeOf(keys, "array") && keys || keys && spec && Object.keys(spec) || $specKeys;
 		spec = copy(spec, base, keys, true);
 		if (spec && spec.name) spec.name = spec.name.trim();
 		return spec;
@@ -766,9 +753,9 @@
 	/** @member ref */
 	function toSpec(ref) {
 		var parts = [];
-		for (var i = 0; i < $refKeys.length; i++) {
-			var value = ref[$refKeys[i]];
-			var delim = $refDelims[i];
+		for (var i = 0; i < $specKeys.length; i++) {
+			var value = ref[$specKeys[i]];
+			var delim = $specDelims[i];
 			if (value || typeof(value) == "string" && delim) {
 				if (i>1) parts.push(delim, value);
 				else parts.push(value, delim);
