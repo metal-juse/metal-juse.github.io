@@ -80,7 +80,7 @@
 				return seal(this.context.juse, {
 					global: $boot.global,
 					toRef:toRef,
-					toPath:toPath,
+					path:path,
 					toSpec:toSpec,
 					slicePath:slicePath,
 					property:property,
@@ -170,7 +170,7 @@
 				};
 
 				function nodeRequest(ref) {
-					var path = toPath(ref);
+					var path = juse.path(ref);
 					log("load:", toSpec(ref), "<-", path);
 					$boot.currentSpec = ref;
 					require(path);
@@ -181,7 +181,7 @@
 				}
 
 				function defaultRequest(ref) {
-					var path = toPath(ref), spec = toSpec(ref);
+					var path = juse.path(ref), spec = toSpec(ref);
 					var tagName = ref.type == "css" ? "link" : "script";
 					var script = $boot.doc.createElement(tagName);
 					script.setAttribute("data-spec", spec);
@@ -219,7 +219,7 @@
 				function staticRequest(ref) {
 					var req = { ref:ref, xhr:new XMLHttpRequest() };
 					try {
-						req.xhr.open("GET", toPath(ref), true);
+						req.xhr.open("GET", juse.path(ref), true);
 						req.xhr.onreadystatechange = staticResponse.bind(req);
 						req.xhr.send();
 					} catch (ex) {
@@ -725,7 +725,7 @@
 	}
 
 	/** @member ref */
-	function toPath(spec) {
+	function path(spec) {
 		var ref = toRef(spec);
 		var path = ref.value;
 		if (!path) {
@@ -1105,7 +1105,7 @@ juse("juse/remote.context", ["run"], function remote(){
 
 	this.juse("request", ["promise"], function request($promise){
 		return function request(spec, args/*data, method, headers*/) {
-			var req = { spec:spec, url:juse.toPath(juse.resolve(spec, this)), args:args||{}, scope:this };
+			var req = { spec:spec, url:juse.path(juse.resolve(spec, this)), args:args||{}, scope:this };
 			return $promise(sendRequest.bind(req));
 		};
 	});
