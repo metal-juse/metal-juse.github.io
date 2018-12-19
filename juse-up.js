@@ -25,17 +25,17 @@
 		copy($boot.global, {juse:juse, define:$boot.global.define||juse});
 		if ($boot.global.document) {
 			copy($boot, {doc:$boot.global.document, async:!!$boot.global.document.currentScript, script:currentScript()});
-			copy($boot, {jusePath:slicePath($boot.script.getAttribute("src"), -1), app:toRef($boot.script.getAttribute("data-app")||"")});
+			copy($boot, {jusePath:slicePath($boot.script.getAttribute("src"), -1), app:spec($boot.script.getAttribute("data-app")||"")});
 			if ($boot.doc.head != $boot.script.parentNode) {
 				$boot.doc.head.appendChild($boot.script);
 			}
 		} else {
-			copy($boot, {jusePath:__dirname, app:toRef(process.argv[2]||"")});
+			copy($boot, {jusePath:__dirname, app:spec(process.argv[2]||"")});
 		}
 
 		loadRoot();
 		if ($boot.doc) {
-			follow($boot.global, {"load":loadApp, "hashchange":loadApp});
+			juse.follow($boot.global, {"load":loadApp, "hashchange":loadApp});
 		} else {
 			loadApp();
 		}
@@ -52,12 +52,12 @@
 	function loadApp() {
 		getContext().scope.juse($boot.doc ? ["juse/core","juse/ui"] : ["juse/core"], function(){
 			getContext().scope.juse(["map@juse/core"], function($map){
-				var app = toRef(currentHash(), currentApp());
-				var context = toRef(app.context||"");
+				var app = spec(currentHash(), currentApp());
+				var context = spec(app.context||"");
 				var properties = $map(app.value);
-				$boot.appPath = context.kind || toRef($boot.app.context||"").kind;
+				$boot.appPath = context.kind || spec($boot.app.context||"").kind;
 				copy(app, { context:context.name || app.context || "", value:"" }, null, true, true);
-				getContext().scope.juse([toRef(app.context, ".context")], function(){
+				getContext().scope.juse([spec(app.context, ".context")], function(){
 					copy(getContext(currentApp(app)).scope.cacheEntry("properties"), properties);
 					log("--load--");
 					getContext().scope.juse([app, "load@juse/core"], function($app, $load){
@@ -79,9 +79,9 @@
 			this.juse(function juse(){
 				return seal(this.context.juse, {
 					global: $boot.global,
-					toRef:toRef,
+					spec:spec,
+					specs:specs,
 					path:path,
-					toSpec:toSpec,
 					slicePath:slicePath,
 					property:property,
 					resolve:resolve,
@@ -89,7 +89,7 @@
 					filter:filter,
 					member:member,
 					typeOf:typeOf,
-					valueOfKey:valueOfKey,
+					values:values,
 					follow:follow,
 					assign:assign,
 					copy:copy,
@@ -141,21 +141,21 @@
 
 				function initContext(value) {
 					if (value && value.map) initContextMap(value.map);
-					if (value && value.remap) Object.keys(value.remap).map(valueOfKey, value.remap).forEach(initContextMap);
+					if (value && value.remap) juse.values(value.remap).forEach(initContextMap);
 					return value;
 				}
 
 				function initContextMap(map) {
-					if (map) copy(map, Object.keys(map).map(valueOfKey, map).map(toRef), Object.keys(map), true, true);
+					if (map) copy(map, juse.values(map).map(spec), Object.keys(map), true, true);
 				}
 
-				function property(spec, value) {
-					spec = toRef(spec);
-					var properties = spec.kind ? this.cacheValue("properties", spec.kind, {}) : this.cacheEntry("properties");
-					var property = member(properties, [spec.name, spec.member]);
+				function property(ref, value) {
+					ref = spec(ref);
+					var properties = ref.kind ? this.cacheValue("properties", ref.kind, {}) : this.cacheEntry("properties");
+					var property = member(properties, [ref.name, ref.member]);
 					if (!property && value !== undefined) {
-						property = properties[spec.name] = properties[spec.name] || (spec.member ? {} : value);
-						if (spec.member) property = property[spec.member] = property[spec.member] || value;
+						property = properties[ref.name] = properties[ref.name] || (ref.member ? {} : value);
+						if (ref.member) property = property[ref.member] = property[ref.member] || value;
 					}
 					return property;
 				}
@@ -171,17 +171,17 @@
 
 				function nodeRequest(ref) {
 					var path = juse.path(ref);
-					log("load:", toSpec(ref), "<-", path);
+					log("load:", specs(ref), "<-", path);
 					$boot.currentSpec = ref;
 					require(path);
-					var module = getModule(ref);
+					var module = findModule(ref);
 					if (external(module)) {
 						module.flushState = $flushStates.DEFINE;
 					}
 				}
 
 				function defaultRequest(ref) {
-					var path = juse.path(ref), spec = toSpec(ref);
+					var path = juse.path(ref), spec = specs(ref);
 					var tagName = ref.type == "css" ? "link" : "script";
 					var script = $boot.doc.createElement(tagName);
 					script.setAttribute("data-spec", spec);
@@ -189,31 +189,27 @@
 						script.rel = "stylesheet";
 						script.href = path;
 						script.title = spec;
-						path = script.href;
 					} else {
 						script.async = $boot.async;
 						script.src = path;
-						path = script.src;
 					}
-					log("load:", spec, "<-", path);
-					follow(script, {"load":defaultResponse, "error":defaultResponse});
+					log("load:", spec, "<-", script);
+					juse.follow(script, {"load":defaultResponse, "error":defaultResponse});
 					$boot.script.parentNode.insertBefore(script, $boot.script);
 				}
 
 				function defaultResponse(event) {
-					var module = findModule(toRef(getSpec(event.target)));
-					if (isPending(module)) {
-						if (event.type == "load") {
-							if (module.type == "css") {
-								module.flushState = $flushStates.DONE;
-							} else if (external(module)) {
-								module.flushState = $flushStates.DEFINE;
-							}
-						} else {
-							failModule(module, null, null, Error("response " + event.type));
+					var module = findModule(getSpec(event.target));
+					if (event.type == "load") {
+						if (module.type == "css") {
+							module.flushState = $flushStates.DONE;
+						} else if (external(module)) {
+							module.flushState = $flushStates.DEFINE;
 						}
-						flush();
+					} else {
+						failModule(module, null, null, Error("response " + event.type));
 					}
+					flush();
 				}
 
 				function staticRequest(ref) {
@@ -236,16 +232,19 @@
 						this.error = Error(this.xhr.statusText||"Not Found");
 						this.error.code = this.xhr.status||404;
 					}
+					var module = findModule(this.ref);
 					if (!this.error) {
-						juse(this.ref, this.value);
+						module.def.args.value = this.value;
+						module.flushState = $flushStates.DEFINE;
 					} else {
-						failModule(findModule(this.ref), null, null, this.error);
+						failModule(module, null, null, this.error);
 					}
+					flush();
 				}
 			});
 
-			function property(spec, scope) {
-				return spec = toRef(spec), getContext(scope && scope.spec || currentApp()).scope.property(spec) || member(scope, ["properties", spec.name]);
+			function property(ref, scope) {
+				return ref = spec(ref), getContext(scope && scope.spec || currentApp()).scope.property(ref) || member(scope, ["properties", ref.name]);
 			}
 
 			function resolve(spec, scope) {
@@ -256,8 +255,24 @@
 				return spec = resolve(spec, scope), member(getModule(spec), ["value", spec.member]);
 			}
 
-			function filter(spec, scope, value) {
-				var ref = toRef(spec);
+			function follow(target, follower) {
+				Object.keys(follower).forEach(addFollower, {target:target,follower:follower});
+			}
+
+			function addFollower(key) {
+				this.target.addEventListener(key, this.follower[key]);
+			}
+
+			function values(value) {
+				return Object.keys(value).map(valueOfKey, value);
+			}
+
+			function valueOfKey(name) {
+				return this[name];
+			}
+
+			function filter(ref, scope, value) {
+				ref = spec(ref);
 				if (!ref) return;
 				var module = getModule(scope && scope.spec || currentApp());
 				if (value === undefined) {
@@ -268,6 +283,20 @@
 				}
 				return value;
 			}
+
+			function path(ref) {
+				ref = spec(ref);
+				var path = ref.value;
+				if (!path) {
+					var context = getContext(ref);
+					var name = getModuleName(ref, "js");
+					name = context.kind ? [context.name, name].join("/") : name;
+					var base = (juseRoot(name) || $boot.doc) ? "" : ".";
+					path = juseRoot(name) ? $boot.jusePath : $boot.appPath;
+					path = [base, path, ref.kind, name].filter(member).join("/");
+				}
+				return path;
+			}
 		});
 	}
 
@@ -277,30 +306,26 @@
 		var module = getModule(def);
 		if (module && isError(module)) setModule(def);
 		if (!module || isPending(module)) {
-			log("define:", toSpec(def));
+			log("define:", specs(def));
 			module = makeModule(def, $flushStates.DEFINE);
 			$boot.context = $boot.context || module;
-			if (this == $boot.global || $boot.buffer.length == 1) {
+			if ($boot.buffer.length == 1) {
 				flush();
 			}
 		}
 	}
 
 	/** @member define */
-	function resolveDef(spec, args, scope) {
-		var def = scope ? {properties:{}, args:args, refs:[]} : {args:{}, spec:spec};
+	function resolveDef(ref, args, scope) {
+		var def = scope ? {properties:{}, args:args, refs:[]} : {args:{}, spec:ref};
 		if (scope) {
 			def.value_ = getProperties(def.properties, def.args.value);
-			def.spec = copy(toRef(def.args.spec, spec), {name:def.properties.name});
+			def.spec = copy(spec(def.args.spec, ref), {name:def.properties.name});
 		}
-		if (!scope || !$boot.context) {
-		} else if (scope != $boot.global) {
-			def.spec = toRef(def.args.spec, {name:def.properties.name, context:scope.spec.name});
-		} else if (def.spec.kind == "static") {
-			def = getModule(def.spec).def;
-			def.args.value = args.value;
-		} else {
+		if (scope == $boot.global) {
 			copy(def.spec, getRefMap(def.spec, def.spec, true));
+		} else if (scope) {
+			def.spec = spec(def.args.spec, {name:def.properties.name, context:scope.spec.name});
 		}
 		return copy(def, def.spec);
 	}
@@ -422,8 +447,8 @@
 	}
 
 	/** @member resolve */
-	function remap(spec, module, mapOnly) {
-		var ref = toRef({}, spec);
+	function remap(ref, module, mapOnly) {
+		ref = spec({}, ref);
 		if (!ref.name || !module) return ref;
 		var target = !mapOnly && getModule(ref, null, null, module.context);
 		var map = getRefMap(ref, module, true);
@@ -495,7 +520,7 @@
 
 	/** @member filter */
 	function applyFilters(value, ref, key, module, kind) {
-		return resolveFilters(ref, key, module).map(getModule).reduce(applyFilter, {scope:module.scope, value:value, kind:toRef(kind)}).value;
+		return resolveFilters(ref, key, module).map(getModule).reduce(applyFilter, {scope:module.scope, value:value, kind:spec(kind)}).value;
 	}
 
 	/** @member filter */
@@ -577,7 +602,7 @@
 
 	/** @member flush */
 	function allFlushed(module) {
-		return isFlushed(module) && (!module.modules || Object.keys(module.modules).map(valueOfKey, module.modules).every(isFlushed));
+		return isFlushed(module) && (!module.modules || juse.values(module.modules).every(isFlushed));
 	}
 
 	/** @member flush */
@@ -622,11 +647,11 @@
 	/** @member flush */
 	function bufferModule(ref) {
 		if (ref && !getModule(ref)) {
-			log("buffer:", toSpec(ref), "by", toSpec(this));
+			log("buffer:", specs(ref), "by", specs(this));
 			if (external(ref)) {
 				makeModule(resolveDef(ref), $flushStates.DEFINE);
 			} else if (!makeModule(resolveDef(ref), $flushStates.BUFFER)) {
-				log("warn", "fail to buffer", toSpec(ref), "by", toSpec(this));
+				log("warn", "fail to buffer", specs(ref), "by", specs(this));
 			}
 		}
 	}
@@ -646,7 +671,7 @@
 			module.flushState = $flushStates.ERROR;
 			module.value = error || Error("timeout error");
 			$boot.errors.push(module.value);
-			log("error", toSpec(module.def), module.value);
+			log("error", specs(module.def), module.value);
 		}
 	}
 
@@ -669,7 +694,7 @@
 			if (!refs.every(isFlushed)) return;
 			if (!getContext(module).refs.map(getModule).every(allFlushed)) return;
 			try {
-				log("init:", toSpec(module.def));
+				log("init:", specs(module.def));
 				initModule(module);
 				module.flushState = $flushStates.DONE;
 			} catch (e) {
@@ -696,7 +721,7 @@
 
 	/** @member request */
 	function getSpec(node) {
-		return node.getAttribute("data-spec");
+		return spec(node.getAttribute("data-spec"));
 	}
 
 	/** @member request */
@@ -711,7 +736,7 @@
 
 	/** @member request */
 	function currentSpec() {
-		return $boot.doc ? toRef(getSpec(currentScript())) : $boot.currentSpec;
+		return $boot.doc ? getSpec(currentScript()) : $boot.currentSpec;
 	}
 
 	/** @member request */
@@ -725,22 +750,7 @@
 	}
 
 	/** @member ref */
-	function path(spec) {
-		var ref = toRef(spec);
-		var path = ref.value;
-		if (!path) {
-			var context = getContext(ref);
-			var name = getModuleName(ref, "js");
-			name = context.kind ? [context.name, name].join("/") : name;
-			var base = (juseRoot(name) || $boot.doc) ? "" : ".";
-			path = juseRoot(name) ? $boot.jusePath : $boot.appPath;
-			path = [base, path, ref.kind, name].filter(member).join("/");
-		}
-		return path;
-	}
-
-	/** @member ref */
-	function toRef(spec, base, keys) {
+	function spec(spec, base, keys) {
 		if (typeOf(spec, "string")) spec = copy({}, $specFormat.exec(spec), $specFormatKeys);
 		if (typeOf(base, "string")) base = copy({}, $specFormat.exec(base), $specFormatKeys);
 		if (!typeOf(base, "object")) base = null;
@@ -751,7 +761,7 @@
 	}
 
 	/** @member ref */
-	function toSpec(ref) {
+	function specs(ref) {
 		var parts = [];
 		for (var i = 0; i < $specKeys.length; i++) {
 			var value = ref[$specKeys[i]];
@@ -828,14 +838,6 @@
 		to[name] = value;
 	}
 
-	function follow(target, follower) {
-		Object.keys(follower).forEach(addFollower, {target:target,follower:follower});
-	}
-
-	function addFollower(key) {
-		this.target.addEventListener(key, this.follower[key]);
-	}
-
 	/** @member util */
 	function typeOf(value, expected, prefix) {
 		var type = typeof(value);
@@ -844,11 +846,6 @@
 			type = type.substring(8, type.length-1).toLowerCase();
 		}
 		return expected ? prefix ? type.indexOf(expected) == 0 : $boot.buffer.constructor === expected.constructor ? expected.indexOf(type) >= 0 : expected == type : type;
-	}
-
-	/** @member util */
-	function valueOfKey(name) {
-		return this[name];
 	}
 
 	/** @member util */
@@ -1192,7 +1189,7 @@ juse("juse/core.context", ["juse/run"], function core(){
 	this.juse("map", function map(){
 		return function map(spec){
 			var map = {};
-			for (var ref = juse.toRef(spec); ref && ref.name; ref = juse.toRef(ref.value)) {
+			for (var ref = juse.spec(spec); ref && ref.name; ref = juse.spec(ref.value)) {
 				map[ref.key||""] = ref.name;
 			}
 			return map;
@@ -1257,7 +1254,7 @@ juse("juse/core.context", ["juse/run"], function core(){
 		}
 
 		function submit(spec, value) {
-			var ref = juse.toRef(spec);
+			var ref = juse.spec(spec);
 			var provide = juse.member(this.provide(), ref.member);
 			var args = {value:value};
 			return $promise(provide.bind(args)).then($promise.resolve, $promise.reject);
@@ -1291,7 +1288,7 @@ juse("juse/text.context", ["juse/core"], function text(){
 
 	this.juse("teval", ["replace", "map"], function teval($replace, $map, $scope){
 		return function teval(spec, dataset) {
-			var ref = juse.toRef(spec);
+			var ref = juse.spec(spec);
 			var value = juse.property(ref, this) || juse.filter(ref, this, dataset);
 			var map = juse.filter(ref.value, this) || $map(ref.value);
 			if (map) {
@@ -1503,8 +1500,8 @@ juse("juse/ui.context", ["juse/resource", "juse/text", "juse/core"], function ui
 
 		function replaceTag(tag) {
 			var spec = tag.getAttribute("data-tag");
-			var ref = spec && juse.toRef(spec);
-			var tile = ref && juse.filter(juse.toRef(ref, ".html"), this.scope);
+			var ref = spec && juse.spec(spec);
+			var tile = ref && juse.filter(juse.spec(ref, ".html"), this.scope);
 			if (!ref && this.outertag) {
 				tile = this.outertag;
 			} else if (this.tiles[ref.name]) {
@@ -1521,7 +1518,7 @@ juse("juse/ui.context", ["juse/resource", "juse/text", "juse/core"], function ui
 
 		var $eventKeys = ["click","dblclick","mousedown","mouseenter","mouseleave","mousemove","mouseover","mouseout","mouseup","input","change","keyup","keydown","keypress"];
 		var $eventMap = {
-			enter: juse.toRef("keyup:13")
+			enter: juse.spec("keyup:13")
 		};
 
 		return juse.seal(function widget(node, scope) {
@@ -1536,7 +1533,7 @@ juse("juse/ui.context", ["juse/resource", "juse/text", "juse/core"], function ui
 		}
 
 		function bindWidget(node) {
-			var spec = juse.toRef($dom.data(node, "data-widget", null));
+			var spec = juse.spec($dom.data(node, "data-widget", null));
 			var widget = juse.lookup(spec, this);
 			if (typeof(widget) == "function") {
 				widget.call(this, node);
@@ -1551,7 +1548,7 @@ juse("juse/ui.context", ["juse/resource", "juse/text", "juse/core"], function ui
 		function applyBinding(node) {
 			var spec = $dom.data(node, "data-event", null);
 			while (spec) {
-				var ref = juse.toRef(spec, this.base);
+				var ref = juse.spec(spec, this.base);
 				if (!bindEvent(this.scope, node, ref)) {
 					$dom.data(node, "data-event", spec);
 					break;
@@ -1561,7 +1558,7 @@ juse("juse/ui.context", ["juse/resource", "juse/text", "juse/core"], function ui
 		}
 
 		function bindEvent(scope, node, spec, action, target) {
-			var event = juse.toRef(spec);
+			var event = juse.spec(spec);
 			if (event) {
 				var map = eventMap(event);
 				var kind = map && map.kind || event.kind || $eventKeys[0];
@@ -1603,7 +1600,7 @@ juse("juse/valid.context", ["juse/text"], function valid($text, $context){
 	this.juse("validate", function validate(){
 		return function validate(spec, value, ref){
 			var messages;
-			for (spec = juse.toRef(spec); spec; spec = juse.toRef(spec.value)) {
+			for (spec = juse.spec(spec); spec; spec = juse.spec(spec.value)) {
 				var name = spec.kind || spec.name;
 				var validator = $context.cacheValue("validators", name);
 				var message = juse.typeOf(validator, "function") && validator.call(this, spec, value, ref);
@@ -1623,7 +1620,7 @@ juse("juse/valid.context", ["juse/text"], function valid($text, $context){
 
 	this.juse("required|validator", ["replace"], function required($replace){
 		return function required(spec, value, ref) {
-			return value ? "" : $replace(juse.property("#required.message", this) || "required: ${0}", juse.toSpec(ref));
+			return value ? "" : $replace(juse.property("#required.message", this) || "required: ${0}", juse.specs(ref));
 		};
 	});
 
@@ -1643,7 +1640,7 @@ juse("juse/model.context", ["juse/remote", "juse/core", "juse/ui", "juse/valid",
 	}
 
 	function getModel(spec, create) {
-		spec = juse.toRef(spec);
+		spec = juse.spec(spec);
 		var model = spec && $context.cacheValue("models", spec.name);
 		if (!model && create) {
 			model = { tiles:[], value:null };
@@ -1670,7 +1667,7 @@ juse("juse/model.context", ["juse/remote", "juse/core", "juse/ui", "juse/valid",
 
 		function load() {
 			var models = $context.cacheEntry("models");
-			Object.keys(models).map(juse.valueOfKey, models).forEach(renderDefault);
+			juse.values(models).forEach(renderDefault);
 		}
 
 		function makeModels(node) {
@@ -1709,11 +1706,11 @@ juse("juse/model.context", ["juse/remote", "juse/core", "juse/ui", "juse/valid",
 		}
 
 		function kindOf(node, spec, base) {
-			return spec && juse.toRef(spec, base, true).kind || ($dom.textNode(node) ? "text" : ("form" in node) ? "input" : "");
+			return spec && juse.spec(spec, base, true).kind || ($dom.textNode(node) ? "text" : ("form" in node) ? "input" : "");
 		}
 
 		function addTile(node, model, spec) {
-			spec = juse.toRef(spec, model && model.spec, true);
+			spec = juse.spec(spec, model && model.spec, true);
 			if (!spec) return;
 			model = (spec.kind || model && !model.spec) && model || getModel(spec, true);
 			var args = {node:node}, tile = model.tiles.some(nodeEquals, args) && args.tile;
@@ -1753,7 +1750,7 @@ juse("juse/model.context", ["juse/remote", "juse/core", "juse/ui", "juse/valid",
 		}
 
 		function rejectEvent(error) {
-			notifyMessage(this.input, "event: " + juse.toSpec(this.input.event) + ", message: " + error.message);
+			notifyMessage(this.input, "event: " + juse.specs(this.input.event) + ", message: " + error.message);
 		}
 
 		function notifyInput(input, value) {
@@ -1832,7 +1829,7 @@ juse("juse/model.context", ["juse/remote", "juse/core", "juse/ui", "juse/valid",
 		}
 
 		function getModelValue(spec) {
-			spec = juse.toRef(spec);
+			spec = juse.spec(spec);
 			var model = getModel(spec);
 			return model.value && spec.member ? model.value[spec.member] : model.value;
 		}
@@ -1856,9 +1853,9 @@ juse("juse/model.context", ["juse/remote", "juse/core", "juse/ui", "juse/valid",
 	this.juse("input|binder", ["dom", "widget", "model", "teval"], function input($dom, $widget, $model, $teval){
 		return juse.seal(
 			function input(tile){
-				tile.valid = juse.toRef($dom.data(tile.node, "data-valid", null));
-				tile.event = juse.toRef($dom.data(tile.node, "data-event", null));
-				var event = juse.toRef(":", tile.event, true);
+				tile.valid = juse.spec($dom.data(tile.node, "data-valid", null));
+				tile.event = juse.spec($dom.data(tile.node, "data-event", null));
+				var event = juse.spec(":", tile.event, true);
 				event.kind = event.kind || inputEvent(tile);
 				$widget.bindEvent(tile.scope, tile.node, event, fireEvent, tile);
 			}
@@ -1907,8 +1904,8 @@ juse("juse/model.context", ["juse/remote", "juse/core", "juse/ui", "juse/valid",
 		return juse.seal(
 			function link(tile){
 				tile.link = $model.getModel(tile.spec.name, true);
-				tile.event = juse.toRef($dom.data(tile.node, "data-event", null));
-				$widget.bindEvent(tile.scope, tile.node, juse.toRef(":", tile.event, true), fireEvent, tile);
+				tile.event = juse.spec($dom.data(tile.node, "data-event", null));
+				$widget.bindEvent(tile.scope, tile.node, juse.spec(":", tile.event, true), fireEvent, tile);
 			}
 			,{notify:notify,render:render}
 		);
@@ -2062,8 +2059,8 @@ juse("juse/model.context", ["juse/remote", "juse/core", "juse/ui", "juse/valid",
 	this.juse("remote|binder", ["dom", "widget", "model", "request"], function remote($dom, $widget, $model, $request){
 		return juse.seal(
 			function remote(tile){
-				tile.event = juse.toRef($dom.data(tile.node, "data-event", null));
-				$widget.bindEvent(tile.scope, tile.node, juse.toRef(":", tile.event, true), fireEvent, tile);
+				tile.event = juse.spec($dom.data(tile.node, "data-event", null));
+				$widget.bindEvent(tile.scope, tile.node, juse.spec(":", tile.event, true), fireEvent, tile);
 				load(tile);
 			}
 			,{notify:notify,load:load}
@@ -2079,7 +2076,7 @@ juse("juse/model.context", ["juse/remote", "juse/core", "juse/ui", "juse/valid",
 
 		function load(input){
 			var args = {input:input};
-			$request.call(input.scope, juse.toRef(".json", input.spec, true)).then($model.resolveEvent.bind(args), $model.rejectEvent.bind(args));
+			$request.call(input.scope, juse.spec(".json", input.spec, true)).then($model.resolveEvent.bind(args), $model.rejectEvent.bind(args));
 		}
 	});
 
@@ -2100,7 +2097,7 @@ juse("juse/model.context", ["juse/remote", "juse/core", "juse/ui", "juse/valid",
 
 		function render(tile, value, input) {
 			tile.node.nodeValue = tile.content.replace($replaceFormat, function(match, spec) {
-				spec = juse.toRef(spec, tile.model.spec, true);
+				spec = juse.spec(spec, tile.model.spec, true);
 				var value = !spec.name ? tile.model.value : $model.getModelValue(spec.name);
 				return $teval.call(tile.scope, spec, value) || "";
 			});
