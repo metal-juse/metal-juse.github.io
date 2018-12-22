@@ -4,8 +4,8 @@
 (function boot(){
 
 	var $defKeys = ["spec", "refs", "value"];
-	var $refKeys = ["kind", "name", "type", "context"];
-	var $specKeys = ["key", "kind", "name", "type", "member", "context", "pipe", "value"];
+	var $refKeys = ["key", "kind", "name", "type", "member", "context"];
+	var $specKeys = $refKeys.concat("pipe", "value");
 	var $specFormatKeys = [""].concat($specKeys);
 	var $specFormat = /(?:\s*([^.#@|;\s]*)\s*=)?(?:\s*([^.#@|;\s]*)\s*:)?\s*([^.#@|;]*)(?:\.([^#@|;\s]*))?(?:#([^@|;\s]*))?(?:@([^|;\s]*))?(?:\s*\|\s*([^;\s]*))?(?:\s*;\s*([\S\s]*))?/;
 	var $specDelims = ["=", ":", "", ".", "#", "@", "|", ";"];
@@ -888,9 +888,9 @@ juse("juse/resource.context", function resource(){
 
 	this.juse("properties", function properties(){
 		return function properties(value){
-			if (juse.member(value, "kind", true)) {
-				var kind = value.kind || juse.slicePath(this.spec.name, -1, 1);
-				juse.copy(this.context.cacheValue("properties", kind, {}), value);
+			if (juse.member(this.spec, "key", true)) {
+				var key = this.spec.key || juse.slicePath(this.spec.name, -1, 1);
+				juse.copy(this.context.cacheValue("properties", key, {}), value);
 			} else {
 				juse.copy(this.context.cacheEntry("properties"), value);
 			}
