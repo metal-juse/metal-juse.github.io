@@ -637,8 +637,7 @@
 			module.refs.forEach(bufferModule, module);
 			if (typeOf(module.value, "string") && module.value && !external(module) || module.def.spec.kind == "static" && !module.def.args.value) {
 				module.flushState = $flushStates.BUFFER;
-			}
-			if (module.name && !module.type && module.scope.context.cacheValue) {
+			} else if (module.name && !module.type && module.scope.context.cacheValue) {
 				module.scope.context.cacheValue("map", slicePath(module.name, -1, 1), module.scope.spec);
 			}
 		}
