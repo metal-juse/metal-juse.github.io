@@ -1,7 +1,7 @@
-# [<<](..) Module Initialization
+# [<<](..) Module Loading
 
-* Module initializer.
-    * Module meta and annotation settings.
+* amd request.
+* static request.
 
 Example:
 

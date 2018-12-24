@@ -13,6 +13,7 @@
 * Module Definition and Dependencies [>>](design/define)
 * Module Grouping by Context [>>](design/context)
 * Module Configuration [>>](design/config)
+* Module Loading [>>](design/load)
 * Module Initialization [>>](design/init)
 * Module Stereotyping [>>](design/stereotype)
 
