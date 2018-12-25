@@ -1,4 +1,4 @@
-# [<<](..) Module Definition and Dependencies
+# [Module Definition and Dependencies](..)
 
 * Module is simply a name-value pair that **juse** manages.
 * Module is the smallest unit of code that can be encapsulated in one file.

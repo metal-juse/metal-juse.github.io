@@ -1,4 +1,4 @@
-# [<<](..) App Bootstrapping
+# [App Bootstrapping](..)
 
 * **juse** powered app is bootstrapped by a script tag in the hosting html.
     * `<script src="url/to/juse.js" data-app="main"></script>`

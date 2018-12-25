@@ -1,4 +1,4 @@
-# [<<](..) Module Initialization
+# [Module Initialization](..)
 
 * Module initializer.
     * Module meta and annotation settings.

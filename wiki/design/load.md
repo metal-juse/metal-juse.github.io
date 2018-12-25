@@ -1,4 +1,4 @@
-# [<<](..) Module Loading
+# [Module Loading](..)
 
 * amd request.
 * static request.

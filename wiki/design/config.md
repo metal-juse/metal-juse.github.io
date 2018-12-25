@@ -1,4 +1,4 @@
-# [<<](..) Module Configuration
+# [Module Configuration](..)
 
 * Context is also the place to define or source configuration settings (or properties).
 * Module obtains property by calling `$scope.context.property(key)`.
