@@ -320,9 +320,9 @@
 		if (scope) {
 			var values = typeOf(def.args.value, "function") && $fnFormat.exec($boot.global.juse.toString.call(def.args.value));
 			copy(def.properties, values, $fnFormatKeys);
-			def.spec = copy(spec(def.args.spec, ref), {name:def.properties.name});
 		}
 		if (scope == $boot.global) {
+			def.spec = copy(spec(def.args.spec, ref), {name:def.properties.name});
 			copy(def.spec, getRefMap(def.spec, def.spec, true));
 		} else if (scope) {
 			def.spec = spec(def.args.spec, {name:def.properties.name, context:scope.spec.name});
