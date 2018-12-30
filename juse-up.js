@@ -11,7 +11,6 @@
 	var $specDelims = ["=", ":", "", ".", "#", "@", "|", ";"];
 	var $fnFormatKeys = ["", "name", "value"];
 	var $fnFormat = /function\s*([\S]*?)\s*\([^)]*\)\s*{\s*(?:\/\*\*+\s*([\S\s]*?)\s*\*\*+\/)?/;
-	var $propFormat = /^[\s*]*@([^\s]+)[ \f\r\t\v]*([^\n]*\S)?\s*/;
 	var $flushStates = enums(["BUFFER", "LOAD", "DEFINE", "RESOLVE", "READY", "FLUSH", "DONE", "ERROR"]);
 	var $logKeys = enums(["error", "warn", "info", "debug"]);
 	var $boot = {
@@ -319,7 +318,8 @@
 	function resolveDef(ref, args, scope) {
 		var def = scope ? {properties:{}, args:args, refs:[]} : {args:{}, spec:ref};
 		if (scope) {
-			def.value_ = getProperties(def.properties, def.args.value);
+			var values = typeOf(def.args.value, "function") && $fnFormat.exec($boot.global.juse.toString.call(def.args.value));
+			copy(def.properties, values, $fnFormatKeys);
 			def.spec = copy(spec(def.args.spec, ref), {name:def.properties.name});
 		}
 		if (scope == $boot.global) {
@@ -339,7 +339,7 @@
 		if (!getModule(def)) {
 			module.id = $boot.moduleCount++;
 			if (!setModule(def, module)) return;
-			module.scope = {spec:copy({}, module.def.spec, $refKeys), properties:copy({}, module.def.properties)};
+			module.scope = {spec:copy({}, module.def.spec, $refKeys), properties:{}};
 			$boot.buffer.push(module);
 		}
 		if (module.type == "context") {
@@ -363,27 +363,6 @@
 			}
 		}
 		return copy({}, args, $defKeys);
-	}
-
-	/** @member define */
-	function getProperties(properties, value) {
-		var values = typeOf(value, "function") && $fnFormat.exec($boot.global.juse.toString.call(value));
-		copy(properties, values, $fnFormatKeys);
-		value = properties.value;
-		delete properties.value;
-		while (values = $propFormat.exec(value)) {
-			var key = values[1], val = values[2]||"";
-			if (!properties[key]) {
-				properties[key] = val;
-			} else {
-				if (!typeOf(properties[key], "array")) {
-					properties[key] = [properties[key]];
-				}
-				properties[key].push(val);
-			}
-			value = value.substring(values.index + values[0].length);
-		}
-		return value;
 	}
 
 	/** @member module */
@@ -706,7 +685,7 @@
 	function initModule(module) {
 		applyFilters(module.value, module.def.spec, "type", module, "scope#init");
 		applyFilters(module.value, module.def.spec, "pipe", module, "scope#init");
-		module.value = (typeOf(module.def.args.value, "function") ? module.def.value_ : module.def.args.value) || external(module);
+		module.value = (typeOf(module.def.args.value, "function") ? module.def.properties.value : module.def.args.value) || external(module);
 		if (typeOf(module.def.args.value, "function")) {
 			var values = module.def.refs.map(filterRefValue, module);
 			values.push(module.scope);

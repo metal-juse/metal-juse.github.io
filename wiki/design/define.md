@@ -4,7 +4,6 @@
 * Module is the smallest unit of code that can be encapsulated in one file.
 * Multiple modules can also be concatenated into a single file and minified by a JavaScript minifier.
 * Modules may depend on one another.
-
 * **juse** follows the base [AMD][] API to define and register modules and their dependencies.
     * `define(spec, specs, value)`
 * Module definition consists of **module spec**, **dependency specs** and **module value initializer**.
