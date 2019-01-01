@@ -182,19 +182,19 @@
 				function defaultRequest(ref) {
 					var path = juse.path(ref), spec = specs(ref);
 					var tagName = ref.type == "css" ? "link" : "script";
-					var script = $boot.doc.createElement(tagName);
-					script.setAttribute("data-spec", spec);
+					var tag = $boot.doc.createElement(tagName);
+					tag.setAttribute("data-spec", spec);
 					if (tagName == "link") {
-						script.rel = "stylesheet";
-						script.href = path;
-						script.title = spec;
+						tag.rel = "stylesheet";
+						tag.href = path;
+						tag.title = spec;
 					} else {
-						script.async = $boot.async;
-						script.src = path;
+						tag.async = $boot.async;
+						tag.src = path;
 					}
-					log("load:", spec, "<-", script);
-					juse.follow(script, {"load":defaultResponse, "error":defaultResponse});
-					$boot.script.parentNode.insertBefore(script, $boot.script);
+					log("load:", spec, "<-", tag);
+					juse.follow(tag, {"load":defaultResponse, "error":defaultResponse});
+					$boot.script.parentNode.insertBefore(tag, $boot.script);
 				}
 
 				function defaultResponse(event) {
