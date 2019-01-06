@@ -1,7 +1,7 @@
 /**
  * Another AMD inspired JavaScript framework to load modules and manage dependencies.
  */
-(function boot(global){
+(function boot($scope){
 	"use strict";
 	var $defKeys = ["spec", "refs", "value"];
 	var $refKeys = ["key", "kind", "name", "type", "member", "context"];
@@ -15,7 +15,7 @@
 	var $logKeys = enums(["error", "warn", "info", "debug"]);
 	var $boot = {
 		buffer: [], errors: [], flushCount: 0, moduleCount: 0,
-		global: global.document ? global : global.global||global
+		global: $scope.document ? $scope : global
 	};
 
 	/** @member boot */
@@ -301,7 +301,7 @@
 
 	/** @member define */
 	function juse(spec, refs, value) {
-		var scope = this||global;
+		var scope = this||$boot.global;
 		var def = resolveDef(currentSpec(), getDefArgs([spec, refs, value], arguments.length, scope), scope);
 		var module = getModule(def);
 		if (module && isError(module)) setModule(def);
