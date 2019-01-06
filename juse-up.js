@@ -1,8 +1,8 @@
 /**
  * Another AMD inspired JavaScript framework to load modules and manage dependencies.
  */
-(function boot(){
-
+(function boot(global){
+	"use strict";
 	var $defKeys = ["spec", "refs", "value"];
 	var $refKeys = ["key", "kind", "name", "type", "member", "context"];
 	var $specKeys = $refKeys.concat("pipe", "value");
@@ -15,7 +15,7 @@
 	var $logKeys = enums(["error", "warn", "info", "debug"]);
 	var $boot = {
 		buffer: [], errors: [], flushCount: 0, moduleCount: 0,
-		global: this.document ? this : this.global||this
+		global: global.document ? global : global.global||global
 	};
 
 	/** @member boot */
@@ -301,7 +301,8 @@
 
 	/** @member define */
 	function juse(spec, refs, value) {
-		var def = resolveDef(currentSpec(), getDefArgs([spec, refs, value], arguments.length, this), this);
+		var scope = this||global;
+		var def = resolveDef(currentSpec(), getDefArgs([spec, refs, value], arguments.length, scope), scope);
 		var module = getModule(def);
 		if (module && isError(module)) setModule(def);
 		if (!module || isPending(module)) {
@@ -861,7 +862,7 @@
 		}
 	}
 
-})()();
+})(this)();
 
 juse("juse/resource.context", function resource(){
 
