@@ -1,0 +1,88 @@
+juse("|tile|model", ["person.css", "person.html", "persons.html", "confirm"], function(){/**
+<div>
+<a href="#persons">persons (%{persons#length;0})</a>
+<a href="#person">person</a>
+<form>
+	<h4>${person#form.label}</h4>
+	<table data-model="person">
+		<tr><td><span>${person#firstName.label}</span>:</td><td><input type="text" data-value="#firstName" data-valid="required"></td><td data-value="#firstName"></td></tr>
+		<tr><td><span>${person#lastName.label}</span>:</td><td><input type="text" data-value="#lastName" data-valid="required"></td><td>%{#lastName}</td></tr>
+		<tr><td><span>${person#dob.label}</span>:</td><td><input type="date" data-value="#dob" data-valid="required"></td></tr>
+		<tr><td><span>${person#email.label}</span>:</td><td><input type="email" data-value="#email" data-valid="required"></td></tr>
+		<tr><td><span>${person#parent.label}</span>:</td><td><input type="checkbox" data-value="#parent"></td></tr>
+		<tr><td></td><td>
+			<input type="button" value="${person#submit.label}" data-value="link:persons">
+			<input type="button" value="${person#reset.label}" data-value>
+		</td></tr>
+	</table>
+</form>
+<div>
+	<h4>${person#table.label}</h4>
+	<table data-model="list:persons">
+		<thead>
+			<tr>
+				<th>${person#firstName.label}</th>
+				<th>${person#lastName.label}</th>
+				<th>${person#dob.label}</th>
+				<th>${person#parent.label}</th>
+				<th>${person#email.label}</th>
+			</tr>
+		</thead>
+		<tbody data-value=":" title="total is %{#length}">
+			<tr data-value="link:person">
+				<td>%{#firstName}</td>
+				<td>%{#lastName}</td>
+				<td>%{#dob}</td>
+				<td>%{#parent;*=Parent;Child}</td>
+				<td>%{#email}</td>
+			</tr>
+		</tbody>
+		<tfoot data-value=";*=hidden"><tr><td colspan="5" style="text-align:center;">No records.</td></tr></tfoot>
+	</table>
+	<table data-model="list:persons">
+		<thead>
+			<tr>
+				<th>${person#firstName.label}</th>
+				<th>${person#lastName.label}</th>
+				<th>${person#dob.label}</th>
+				<th>${person#parent.label}</th>
+				<th>${person#email.label}</th>
+			</tr>
+		</thead>
+		<tbody data-value=":" title="total is %{#length}">
+			<tr data-value="link:person">
+				<td>%{#firstName}</td>
+				<td>%{#lastName}</td>
+				<td>%{#dob}</td>
+				<td>%{#parent;*=Parent;Child}</td>
+				<td>%{#email}</td>
+			</tr>
+		</tbody>
+		<tfoot data-value=";*=hidden"><tr><td colspan="5" style="text-align:center;">No records.</td></tr></tfoot>
+	</table>
+	<table data-model="list:persons">
+		<thead>
+			<tr>
+				<th>${person#firstName.label}</th>
+				<th>${person#lastName.label}</th>
+				<th>${person#dob.label}</th>
+				<th>${person#parent.label}</th>
+				<th>${person#email.label}</th>
+			</tr>
+		</thead>
+		<tbody data-value=":" title="total is %{#length}">
+			<tr data-value="link:person">
+				<td>%{#firstName}</td>
+				<td>%{#lastName}</td>
+				<td>%{#dob}</td>
+				<td>%{#parent;*=Parent;Child}</td>
+				<td>%{#email}</td>
+			</tr>
+		</tbody>
+		<tfoot data-value=";*=hidden"><tr><td colspan="5" style="text-align:center;">No records.</td></tr></tfoot>
+	</table>
+</div>
+<ul class="messages" data-value="map:messages"><li>%{}</li></ul>
+</div>
+**//*<link rel="stylesheet" href="person.css" />*/
+});

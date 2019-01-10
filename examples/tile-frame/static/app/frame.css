@@ -1,0 +1,18 @@
+.frame, .frame *		{ position:absolute; overflow:hidden; background:lightgray; }
+
+[data-frame=head]		{ position:static; height:10px; cursor:move; }
+[data-frame=body],
+[data-frame=body] * 	{ position:static; padding:10px; overflow:auto; background:white; white-space:nowrap; }
+
+[data-frame=top]		{ width:100%; height:2px; left:0px; top:0px; cursor:n-resize; }
+[data-frame=topLeft]	{ width:10px; height:2px; left:0px; top:0px; cursor:nw-resize; }
+[data-frame=topRight]	{ width:10px; height:2px; right:0px; top:0px; cursor:ne-resize; }
+[data-frame=bottom]		{ width:100%; height:2px; left:0px; bottom:0px; cursor:s-resize; }
+[data-frame=bottomLeft]	{ width:10px; height:2px; left:0px; bottom:0px; cursor:sw-resize; }
+[data-frame=bottomRight]{ width:10px; height:2px; right:0px; bottom:0px; cursor:se-resize; }
+[data-frame=left]		{ width:2px; height:100%; left:0px; top:0px; cursor:w-resize; }
+[data-frame=leftTop]	{ width:2px; height:10px; left:0px; top:0px; cursor:nw-resize; }
+[data-frame=leftBottom]	{ width:2px; height:10px; left:0px; bottom:0px; cursor:sw-resize; }
+[data-frame=right]		{ width:2px; height:100%; right:0px; top:0px; cursor:e-resize; }
+[data-frame=rightTop]	{ width:2px; height:10px; right:0px; top:0px; cursor:ne-resize; }
+[data-frame=rightBottom]{ width:2px; height:10px; right:0px; bottom:0px; cursor:se-resize; }

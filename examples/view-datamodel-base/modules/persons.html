@@ -1,0 +1,72 @@
+juse("|tile|model", ["person.css", "person.html"], function(){/**
+<div>
+<a href="#main">main</a>
+<a href="#person">person</a>
+	<h4>${person#table.label}</h4>
+	<table data-model="list:persons">
+		<thead>
+			<tr>
+				<th>${person#firstName.label}</th>
+				<th>${person#lastName.label}</th>
+				<th>${person#dob.label}</th>
+				<th>${person#parent.label}</th>
+				<th>${person#email.label}</th>
+			</tr>
+		</thead>
+		<tbody data-value=":" title="total is %{#length}">
+			<tr data-value="link:person">
+				<td>%{#firstName}</td>
+				<td>%{#lastName}</td>
+				<td>%{#dob}</td>
+				<td>%{#parent;*=Parent;Child}</td>
+				<td>%{#email}</td>
+			</tr>
+		</tbody>
+		<tfoot data-value=";*=hidden"><tr><td colspan="5" style="text-align:center;">No records.</td></tr></tfoot>
+	</table>
+	<table data-model="list:persons">
+		<thead>
+			<tr>
+				<th>${person#firstName.label}</th>
+				<th>${person#lastName.label}</th>
+				<th>${person#dob.label}</th>
+				<th>${person#parent.label}</th>
+				<th>${person#email.label}</th>
+			</tr>
+		</thead>
+		<tbody data-value=":" title="total is %{#length}">
+			<tr data-value="link:person">
+				<td>%{#firstName}</td>
+				<td>%{#lastName}</td>
+				<td>%{#dob}</td>
+				<td>%{#parent;*=Parent;Child}</td>
+				<td>%{#email}</td>
+			</tr>
+		</tbody>
+		<tfoot data-value=";*=hidden"><tr><td colspan="5" style="text-align:center;">No records.</td></tr></tfoot>
+	</table>
+	<table data-model="list:persons">
+		<thead>
+			<tr>
+				<th>${person#firstName.label}</th>
+				<th>${person#lastName.label}</th>
+				<th>${person#dob.label}</th>
+				<th>${person#parent.label}</th>
+				<th>${person#email.label}</th>
+			</tr>
+		</thead>
+		<tbody data-value=":" title="total is %{#length}">
+			<tr data-value="link:person">
+				<td>%{#firstName}</td>
+				<td>%{#lastName}</td>
+				<td>%{#dob}</td>
+				<td>%{#parent;*=Parent;Child}</td>
+				<td>%{#email}</td>
+			</tr>
+		</tbody>
+		<tfoot data-value=";*=hidden"><tr><td colspan="5" style="text-align:center;">No records.</td></tr></tfoot>
+	</table>
+<ul class="messages" data-value="map:messages"><li>%{}</li></ul>
+</div>
+**//*<link rel="stylesheet" href="person.css" />*/
+});

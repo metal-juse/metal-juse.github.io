@@ -1,0 +1,44 @@
+juse("|tile|model|datatable", ["person.css"], function(){/**
+<div>
+<form>
+	<h4>${#form.label}</h4>
+	<table data-model="person">
+		<tr><td><span>${#firstName.label}</span>:</td><td><input type="text" data-value="#firstName"></td></tr>
+		<tr><td><span>${#lastName.label}</span>:</td><td><input type="text" data-value="#lastName"></td></tr>
+		<tr><td><span>${#dob.label}</span>:</td><td><input type="date" data-value="#dob"></td></tr>
+		<tr><td><span>${#email.label}</span>:</td><td><input type="email" data-value="#email"></td></tr>
+		<tr><td><span>${#parent.label}</span>:</td><td><input type="checkbox" data-value="#parent"></td></tr>
+		<tr><td></td><td>
+			<input type="button" value="${#submit.label}" data-value="link:persons" data-service="person#addPerson">
+			<input type="button" value="Load" data-value="remote:persons" data-service="#load">
+			<input type="button" value="${#reset.label}" data-value>
+		</td></tr>
+	</table>
+</form>
+<div>
+	<h4>${#table.label}</h4>
+	<table data-model="list:persons" data-datatable>
+		<thead>
+			<tr>
+				<th>${#firstName.label}</th>
+				<th>${#lastName.label}</th>
+				<th>${#dob.label}</th>
+				<th>${#parent.label}</th>
+				<th>${#email.label}</th>
+			</tr>
+		</thead>
+		<tbody data-value=":">
+			<tr data-value="link:person">
+				<td>%{#firstName}</td>
+				<td>%{#lastName}</td>
+				<td>%{#dob}</td>
+				<td>%{#parent;*=Parent;Child}</td>
+				<td>%{#email}</td>
+			</tr>
+		</tbody>
+		<tfoot data-value=";*=hidden"><tr><td colspan="5" style="text-align:center;">No records.</td></tr></tfoot>
+	</table>
+</div>
+</div>
+**//*<link rel="stylesheet" href="person.css" />*/
+});

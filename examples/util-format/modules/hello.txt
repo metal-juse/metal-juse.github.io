@@ -1,0 +1,3 @@
+juse("|replace", function(world){
+/**hello ${world#world.label}**/
+});

@@ -1,0 +1,9 @@
+#toggle.tree { width:16px; height:16px; display:inline-block; background: url(plus.gif) no-repeat 1px 1px; }
+#toggle.tree.open { background-image: url(minus.gif); }
+
+#label.tree { padding-left:20px; background: no-repeat 0px 1px; }
+#label.tree.folder { background-image: url(folder.png); }
+#label.tree.folder.open { background-image: url(folder_open.png); }
+
+#content.tree { padding-left:19px; display:none; }
+#content.tree.open { display:block; }

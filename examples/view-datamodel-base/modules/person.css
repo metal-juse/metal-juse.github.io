@@ -1,0 +1,26 @@
+td:first-child { text-align:right; }
+table {
+	border-collapse: collapse;
+	border-spacing: 0;
+	font-family: "Trebuchet MS",Arial,Helvetica,sans-serif;
+	font-size: 16px;
+}
+th {
+	background-color: #4caf50;
+	color: white;
+	padding-bottom: 11px;
+	padding-top: 11px;
+}
+tr.selected {
+	background-color: #f6c342;
+}
+h4 {
+	font-family: "Trebuchet MS",Arial,Helvetica,sans-serif;
+}
+.hidden { display: none; }
+.error { border-color: red; }
+.messages {
+	border: 1px solid black;
+	position: fixed;
+	bottom: 0px;
+}

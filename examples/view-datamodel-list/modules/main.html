@@ -1,0 +1,20 @@
+juse("|model", ["datamodel.css"], function(){/**
+<h4>datamodel</h4>
+<table>
+	<tr data-model="something">
+		<td align="right">Say something:</td>
+		<td><input type="text" data-value></td>
+		<td><input type="button" value="Enter" data-value="link:somethings"></td>
+		<td><input type="button" value="Delete" data-value></td>
+	</tr>
+</table>
+<table>
+	<thead><tr><th>Something</th></tr></thead>
+	<tbody data-value="list:somethings">
+		<tr data-value="link:something">
+			<td>%{}</td>
+		</tr>
+	</tbody>
+	<tfoot data-value="somethings;*=hidden"><tr><td>No records.</td></tr></tfoot>
+</table>
+**/});

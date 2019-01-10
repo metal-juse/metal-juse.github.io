@@ -1,0 +1,44 @@
+juse("|tile|model", ["person.css"], function(){/**
+<div>
+<form>
+	<h4>${person}</h4>
+	<table data-model="person">
+		<tr><td><span>${firstName}</span>:</td><td><input type="text" data-value="#firstName"></td></tr>
+		<tr><td><span>${lastName}</span>:</td><td><input type="text" data-value="#lastName"></td></tr>
+		<tr><td><span>${dob}</span>:</td><td><input type="date" data-value="#dob"></td></tr>
+		<tr><td><span>${email}</span>:</td><td><input type="email" data-value="#email"></td></tr>
+		<tr><td><span>${parent}</span>:</td><td><input type="checkbox" data-value="#parent"></td></tr>
+		<tr><td></td><td>
+			<input type="button" value="${submit}" data-value="link:persons" data-service="person#addPerson">
+			<input type="button" value="Load" data-value="remote:persons" data-service="#load">
+			<input type="button" value="${reset}" data-value>
+		</td></tr>
+	</table>
+</form>
+<div>
+	<h4>${persons}</h4>
+	<table data-model="list:persons">
+		<thead>
+			<tr>
+				<th>${firstName}</th>
+				<th>${lastName}</th>
+				<th>${dob}</th>
+				<th>${parent}</th>
+				<th>${email}</th>
+			</tr>
+		</thead>
+		<tbody data-value=":">
+			<tr data-value="link:person">
+				<td>%{#firstName}</td>
+				<td>%{#lastName}</td>
+				<td>%{#dob}</td>
+				<td>%{#parent;*=Parent;Child}</td>
+				<td>%{#email}</td>
+			</tr>
+		</tbody>
+		<tfoot data-value=";*=hidden"><tr><td colspan="5" style="text-align:center;">No records.</td></tr></tfoot>
+	</table>
+</div>
+</div>
+**//*<link rel="stylesheet" href="person.css" />*/
+});
