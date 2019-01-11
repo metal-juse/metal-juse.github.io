@@ -1,1 +1,1 @@
-juse(".context", ["juse/ui"]);
+juse(".context", ["juse/ui", "juse/resource"]);
