@@ -1459,20 +1459,18 @@ juse("juse/ui.context", ["juse/resource", "juse/text", "juse/core"], function ui
 	this.juse("tile", ["dom", "map"], function tile($dom, $map){
 
 		return function tile(node, dataset){
-			node = $dom.call(this, node);
 			return makeTile(node, dataset, this);
 		};
 
 		function makeTile(node, dataset, scope, outertag) {
 			$dom.replaceText(node, dataset, scope);
-			replaceTags.call(scope, node, dataset, outertag);
+			replaceTags(node, dataset, scope, outertag);
 			return node;
 		}
 
-		function replaceTags(tile, dataset, outertag) {
-			var tiles = $dom.childNodes(outertag, "data-tile");
-			var scope = {scope:this, dataset:dataset, outertag:outertag, tiles:tiles};
-			$dom.filterNodes(tile, "[data-tag]").forEach(replaceTag, scope);
+		function replaceTags(node, dataset, scope, outertag) {
+			var args = {dataset:dataset, scope:scope, outertag:outertag, tiles:$dom.childNodes(outertag, "data-tile")};
+			$dom.filterNodes(node, "[data-tag]").forEach(replaceTag, args);
 		}
 
 		function replaceTag(tag) {
@@ -1486,7 +1484,8 @@ juse("juse/ui.context", ["juse/resource", "juse/text", "juse/core"], function ui
 			} else if (tile) {
 				tile = makeTile(tile.cloneNode(true), this.dataset||$map(ref.value), this.scope, tag);
 			}
-			$dom.replaceContent(tag, tile);
+			if (tile) $dom.replaceContent(tag, tile);
+			else juse.log("warn", "tile not found", spec);
 		}
 
 	});
