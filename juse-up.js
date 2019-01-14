@@ -615,7 +615,7 @@
 			if (!module.refs.every(getModule) && !getContext(module).refs.map(getModule).every(allFlushed)) return;
 			module.flushState = $flushStates.READY;
 			module.refs.forEach(bufferModule, module);
-			if (typeOf(module.value, "string") && module.value && !external(module) || module.def.spec.kind == "static" && !module.def.args.value) {
+			if ((typeOf(module.value, "string") && module.value || module.def.spec.kind == "static" && !module.def.args.value) && !external(module)) {
 				module.flushState = $flushStates.BUFFER;
 			} else if (module.name && !module.type && module.scope.context.cacheValue) {
 				module.scope.context.cacheValue("map", slicePath(module.name, -1, 1), module.scope.spec);
@@ -686,7 +686,7 @@
 	function initModule(module) {
 		applyFilters(module.value, module.def.spec, "type", module, "scope#init");
 		applyFilters(module.value, module.def.spec, "pipe", module, "scope#init");
-		module.value = (typeOf(module.def.args.value, "function") ? module.def.properties.value : module.def.args.value) || external(module);
+		module.value = (typeOf(module.def.args.value, "function") ? module.def.properties.value : module.def.args.value) || external(module, true);
 		if (typeOf(module.def.args.value, "function")) {
 			var values = module.def.refs.map(filterRefValue, module);
 			values.push(module.scope);
@@ -828,8 +828,10 @@
 	}
 
 	/** @member util */
-	function external(ref) {
-		return $boot.doc && $boot.doc.getElementById(ref.member||ref.name) || member($boot.global, ref.member||ref.name);
+	function external(ref, remove) {
+		var value = $boot.doc && $boot.doc.getElementById(getModuleName(ref));
+		if (remove && value) value.parentNode.removeChild(value);
+		return value || member($boot.global, ref.member||ref.name);
 	}
 
 	/** @member util */

@@ -1,14 +1,19 @@
 <script src="../../juse-up.js" data-app="main.html@context"></script>
-<script type="text/javascript">
-	juse("context.context", ["juse/ui"], function(){
-		this.juse("main.html|tile", ["app/tree.html"], function(){/**
-			<div data-tag="app/tree; label=one">
-				<div data-tag="app/tree; label=two">
-					<div data-tag="app/tree; label=three">
-						<span>done</span>
-					</div>
-				</div>
+<div id="main.html">
+	<div data-tag="app/tree; label=one">
+		<div data-tag="app/tree; label=two">
+			<div data-tag="app/tree; label=three">
+				<span>done</span>
 			</div>
-		**/});
-	});
-</script>
+		</div>
+	</div>
+</div>
+<div id="app/tree.html">
+	<div data-widget="tree">
+		<span id="toggle" class="tree"></span>
+		<span id="label" class="tree folder">${label}</span>
+		<div id="content" class="tree placeholder">
+			<div data-tag></div>
+		</div>
+	</div>
+</div>
