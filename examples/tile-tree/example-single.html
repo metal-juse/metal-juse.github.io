@@ -1,0 +1,81 @@
+<script src="../../juse-up.js" data-app="main.html@context"></script>
+<script type="text/javascript">
+juse("context.context", ["juse/ui", "juse/resource"], function(){
+	this.juse("main.html|tile|widget", ["app/tree", "app/tree.html", "app/tree.css"]);
+	
+	this.juse("app/tree", function(){
+
+		return function tree(node){
+			[].forEach.call(node.querySelectorAll(".tree"), bind);
+			return node;
+		};
+
+		function bind(node) {
+			switch (node.id) {
+			case "toggle":
+				juse.follow(node, {"click":toggle});
+				break;
+			case "label":
+				juse.follow(node, {"dblclick":toggle});
+				break;
+			}
+		}
+
+		function toggle(event) {
+			var node = event.target;
+			switch (node.id) {
+			case "toggle":
+				toggleClass(node, "open");
+				toggleClass(node.nextElementSibling, "open");
+				toggleClass(node.nextElementSibling.nextElementSibling, "open");
+				break;
+			case "label":
+				toggleClass(node, "open");
+				toggleClass(node.nextElementSibling, "open");
+				toggleClass(node.previousElementSibling, "open");
+				break;
+			}
+		}
+
+		function toggleClass(node, name) {
+			var list = node.className.split(" ");
+			var i = list.indexOf(name);
+			if (i < 0) node.className = node.className + " " + name;
+			else {
+				list.splice(i,1);
+				node.className = list.join(" ");
+			}
+		}
+
+	});
+});
+</script>
+<style>
+#toggle.tree { width:16px; height:16px; display:inline-block; background: url(static/app/plus.gif) no-repeat 1px 1px; }
+#toggle.tree.open { background-image: url(static/app/minus.gif); }
+
+#label.tree { padding-left:20px; background: no-repeat 0px 1px; }
+#label.tree.folder { background-image: url(static/app/folder.png); }
+#label.tree.folder.open { background-image: url(static/app/folder_open.png); }
+
+#content.tree { padding-left:19px; display:none; }
+#content.tree.open { display:block; }
+</style>
+<div id="main.html">
+	<div data-tag="app/tree; label=one">
+		<div data-tag="app/tree; label=two">
+			<div data-tag="app/tree; label=three">
+				<span>done</span>
+			</div>
+		</div>
+	</div>
+</div>
+<div id="app/tree.html">
+	<div data-widget="tree">
+		<span id="toggle" class="tree"></span>
+		<span id="label" class="tree folder">${label}</span>
+		<div id="content" class="tree placeholder">
+			<div data-tag></div>
+		</div>
+	</div>
+</div>
