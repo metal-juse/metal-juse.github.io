@@ -9,7 +9,7 @@ An [example](example) to demonstrate how to use module `tile@juse/ui` and `widge
 * [app/tree][]
 : Module that implements simple interactive behavior on a tree structure, applied to the tree content by module `widget@juse/ui`.
 
-A similar [example](example-single) with all tree artifacts in one file.
+A similar [example](example-single) with all artifacts in one file.
 
 * [example-single.html][]
 : The single html file includes content for `main.html`, `app/tree`, `app/tree.html`, and `app/tree.css`.
