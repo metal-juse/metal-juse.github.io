@@ -1,4 +1,4 @@
-An example ([tile-tree][]) to demonstrate how to use module `tile@juse/ui` and `widget@juse/ui` to render interactive tree structured content.
+An [example](example) to demonstrate how to use module `tile@juse/ui` and `widget@juse/ui` to render interactive tree structured content.
 
 * [main.html][]
 : A module with tree structured content that contains 3 replacement tags that name the tile module [app/tree.html][], indicated by attribute `data-tag=app/tree`.
