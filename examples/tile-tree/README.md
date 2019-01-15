@@ -9,7 +9,12 @@ An [example](example) to demonstrate how to use module `tile@juse/ui` and `widge
 * [app/tree][]
 : Module that implements simple interactive behavior on a tree structure, applied to the tree content by module `widget@juse/ui`.
 
-[tile-tree]:		https://metal-juse.github.io/examples/tile-tree/
-[main.html]:		https://raw.githubusercontent.com/metal-juse/metal-juse.github.io/master/examples/tile-tree/static/main.html
-[app/tree.html]:	https://raw.githubusercontent.com/metal-juse/metal-juse.github.io/master/examples/tile-tree/static/app/tree.html
-[app/tree]:			https://raw.githubusercontent.com/metal-juse/metal-juse.github.io/master/examples/tile-tree/modules/app/tree.js
+A similar [example](example-single) with all tree artifacts in one file.
+
+* [example-single.html][]
+: The single html file includes content for `main.html`, `app/tree`, `app/tree.html`, and `app/tree.css`.
+
+[main.html]:			https://raw.githubusercontent.com/metal-juse/metal-juse.github.io/master/examples/tile-tree/static/main.html
+[app/tree.html]:		https://raw.githubusercontent.com/metal-juse/metal-juse.github.io/master/examples/tile-tree/static/app/tree.html
+[app/tree]:				https://raw.githubusercontent.com/metal-juse/metal-juse.github.io/master/examples/tile-tree/modules/app/tree.js
+[example-single.html]:	https://raw.githubusercontent.com/metal-juse/metal-juse.github.io/master/examples/tile-tree/example-single.html
