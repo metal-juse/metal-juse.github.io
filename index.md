@@ -4,6 +4,7 @@
 
 * [home](https://github.com/metal-juse/metal-juse.github.io)
 * [wiki](wiki)
+* [examples](https://metal-juse.github.io/examples/)
 
 [AMD]:			https://github.com/amdjs/amdjs-api/wiki/AMD (Asynchronous Module Definition)
 [RequireJS]:	https://requirejs.org/
