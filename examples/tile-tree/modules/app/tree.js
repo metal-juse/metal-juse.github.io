@@ -1,9 +1,11 @@
-juse(function(){
+juse(["tile"], function($tile){
+	return juse.seal(function tree(node, dataset){
+		return $tile.call(this, node, dataset, "tree");
+	}, {bindWidget:bindWidget});
 
-	return function tree(node){
+	function bindWidget(node) {
 		[].forEach.call(node.querySelectorAll(".tree"), bind);
-		return node;
-	};
+	}
 
 	function bind(node) {
 		switch (node.id) {

@@ -13,9 +13,9 @@
 </style>
 
 <div id="main.html">
-	<div data-tag="app/tree; label=one">
-		<div data-tag="app/tree; label=two">
-			<div data-tag="app/tree; label=three">
+	<div data-tree="label=one">
+		<div data-tree="label=two">
+			<div data-tree="label=three">
 				<span>done</span>
 			</div>
 		</div>
@@ -33,14 +33,16 @@
 
 <script type="text/javascript">
 juse("context.context", ["juse/ui", "juse/resource"], function(){
-	this.juse("main.html|tile|widget", ["app/tree", "app/tree.html"]);
+	this.juse("main.html|app/tree|widget", ["app/tree.html"]);
 	
-	this.juse("app/tree", function(){
+	this.juse("app/tree", ["tile"], function($tile){
+		return juse.seal(function tree(node, dataset){
+			return $tile.call(this, node, dataset, "tree");
+		}, {bindWidget:bindWidget});
 
-		return function tree(node){
+		function bindWidget(node) {
 			[].forEach.call(node.querySelectorAll(".tree"), bind);
-			return node;
-		};
+		}
 
 		function bind(node) {
 			switch (node.id) {

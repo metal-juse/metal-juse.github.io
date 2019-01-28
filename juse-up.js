@@ -617,8 +617,8 @@
 			module.refs.forEach(bufferModule, module);
 			if ((typeOf(module.value, "string") && module.value || module.def.spec.kind == "static" && !module.def.args.value) && !external(module)) {
 				module.flushState = $flushStates.BUFFER;
-			} else if (module.name && !module.type && module.scope.context.cacheValue) {
-				module.scope.context.cacheValue("map", slicePath(module.name, -1, 1), module.scope.spec);
+			} else if (module.name && module.type != "context" && module.scope.context.cacheValue) {
+				module.scope.context.cacheValue("map", getModuleName(slicePath(module.name, -1, 1), module.type), module.scope.spec);
 			}
 		}
 	}
@@ -1321,6 +1321,7 @@ juse("juse/ui.context", ["juse/resource", "juse/text", "juse/core"], function ui
 			forNodes:forNodes,
 			closest:closest,
 			filterNodes:filterNodes,
+			selectNodes:selectNodes,
 			data:data,
 			textNode:textNode,
 			forTextNodes:forTextNodes,
@@ -1411,7 +1412,11 @@ juse("juse/ui.context", ["juse/resource", "juse/text", "juse/core"], function ui
 			}
 		}
 
-		function filterNodes(node, selector) {
+		function filterNodes(node, name) {
+			return selectNodes(node, "["+name+"]");
+		}
+
+		function selectNodes(node, selector) {
 			selector = selector || node.nodeType != $dom.ELEMENT_NODE && "*";
 			var nodes = selector ? node.querySelectorAll(selector) : node.getElementsByTagName("*");
 			return $array.slice.call(nodes);
@@ -1439,7 +1444,7 @@ juse("juse/ui.context", ["juse/resource", "juse/text", "juse/core"], function ui
 
 		function replaceText(node, dataset, scope) {
 			var args = {dataset:dataset, scope:scope};
-			filterNodes(node).forEach(replaceTexts, args);
+			selectNodes(node).forEach(replaceTexts, args);
 			replaceTexts.call(args, node);
 			return node;
 		}
@@ -1460,31 +1465,33 @@ juse("juse/ui.context", ["juse/resource", "juse/text", "juse/core"], function ui
 
 	this.juse("tile", ["dom", "map"], function tile($dom, $map){
 
-		return function tile(node, dataset){
-			return makeTile(node, dataset, this);
+		return function tile(node, dataset, name){
+			return makeTile(node, dataset, name, this);
 		};
 
-		function makeTile(node, dataset, scope, outertag) {
+		function makeTile(node, dataset, name, scope, outertag) {
 			$dom.replaceText(node, dataset, scope);
-			replaceTags(node, dataset, scope, outertag);
+			replaceTags(node, dataset, name, scope, outertag);
 			return node;
 		}
 
-		function replaceTags(node, dataset, scope, outertag) {
-			var args = {dataset:dataset, scope:scope, outertag:outertag, tiles:$dom.childNodes(outertag, "data-tile")};
-			$dom.filterNodes(node, "[data-tag]").forEach(replaceTag, args);
+		function replaceTags(node, dataset, name, scope, outertag) {
+			var args = {dataset:dataset, name:name, scope:scope, outertag:outertag, tiles:$dom.childNodes(outertag, "data-tile")};
+			$dom.filterNodes(node, name&&"data-"+name||"data-tag").forEach(replaceTag, args);
 		}
 
 		function replaceTag(tag) {
-			var spec = tag.getAttribute("data-tag");
-			var ref = spec && juse.spec(spec);
+			var name = this.name && "data-"+this.name || "data-tag";
+			var spec = tag.getAttribute(name);
+			var ref = this.name || spec && juse.spec(spec);
 			var tile = ref && juse.filter(juse.spec(ref, ".html"), this.scope);
 			if (!ref && this.outertag) {
 				tile = this.outertag;
 			} else if (this.tiles[ref.name]) {
 				tile = this.tiles[ref.name];
 			} else if (tile) {
-				tile = makeTile(tile.cloneNode(true), this.dataset||$map(ref.value), this.scope, tag);
+				var value = this.name ? spec : ref.value;
+				tile = makeTile(tile.cloneNode(true), this.dataset||$map(value), null, this.scope, tag);
 			}
 			if (tile) $dom.replaceContent(tag, tile);
 			else juse.log("warn", "tile not found", spec);
@@ -1506,21 +1513,23 @@ juse("juse/ui.context", ["juse/resource", "juse/text", "juse/core"], function ui
 		}, {bindEvent:bindEvent});
 
 		function bindWidgets(node, scope) {
-			$dom.filterNodes(node, "[data-widget]").forEach(bindWidget, scope);
+			$dom.filterNodes(node, "data-widget").forEach(bindWidget, scope);
 			applyBindings(scope, node);
 		}
 
 		function bindWidget(node) {
 			var spec = juse.spec($dom.data(node, "data-widget", null));
 			var widget = juse.lookup(spec, this);
-			if (typeof(widget) == "function") {
+			if (widget && juse.typeOf(widget.bindWidget, "function")) {
+				widget.bindWidget.call(this, node);
+			} else if (juse.typeOf(widget, "function")) {
 				widget.call(this, node);
 			}
 			applyBindings(this, node, spec);
 		}
 
 		function applyBindings(scope, node, base) {
-			$dom.filterNodes(node, "[data-event]").forEach(applyBinding, {scope:scope, base:base});
+			$dom.filterNodes(node, "data-event").forEach(applyBinding, {scope:scope, base:base});
 		}
 
 		function applyBinding(node) {
@@ -1649,7 +1658,7 @@ juse("juse/model.context", ["juse/remote", "juse/core", "juse/ui", "juse/valid",
 		}
 
 		function makeModels(node) {
-			$dom.filterNodes(node, "[data-model]").forEach(makeModel, this);
+			$dom.filterNodes(node, "data-model").forEach(makeModel, this);
 			makeTiles.call(this, node);
 		}
 
@@ -1663,7 +1672,7 @@ juse("juse/model.context", ["juse/remote", "juse/core", "juse/ui", "juse/valid",
 		function makeTiles(node, model) {
 			var args = {scope:this, model:model};
 			$dom.forNodes(node, "data-value", makeTile, args);
-			$dom.filterNodes(node).forEach(makeTextTiles, args);
+			$dom.selectNodes(node).forEach(makeTextTiles, args);
 			makeTextTiles.call(args, node);
 		}
 
