@@ -1,1 +1,1 @@
-juse(".context", ["juse/remote"]);
+juse.import("juse/remote").define(".context");

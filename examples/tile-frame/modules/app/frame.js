@@ -1,4 +1,4 @@
-juse(["dom"], function($dom){
+juse.import("dom").define(function($dom){
 
 	var box = ["head","top","topLeft","topRight","bottom","bottomLeft","bottomRight","left","leftTop","leftBottom","right","rightTop","rightBottom"];
 	var top = ["top","topLeft","topRight","leftTop","rightTop"];
@@ -8,8 +8,7 @@ juse(["dom"], function($dom){
 	var frame, target, nodes = {}, dataset = {};
 
 	return function frame(node){
-		[].forEach.call(node.querySelectorAll("[data-frame]"), bind);
-		return node;
+		return $dom.bindNodes(node, "[data-frame]", bind);
 	};
 
 	function bind(node) {

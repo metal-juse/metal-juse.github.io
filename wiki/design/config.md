@@ -14,8 +14,8 @@ Example:
 <link href="http://metal-juse.github.io/css/example.css" rel="stylesheet"/>
 <script src="http://metal-juse.github.io/juse-up.min.js" data-app="example@app|tile@juse/ui"></script>
 <script>
-define("app.context", ["juse/resource"], function(){
-	this.define(["config.properties"]);
+juse.import("juse/resource").define("app.context", function(){
+	juse.import("config.properties");
 	this.property("property-1", "from calling property(key, value)");
 	return {
 		map: {"*.properties":"properties:"},
@@ -52,8 +52,8 @@ It is also executed right here, and the **main** module value is:
 <link href="http://metal-juse.github.io/css/example.css" rel="stylesheet"/>
 <script src="http://metal-juse.github.io/juse-up.min.js" data-app="example@app|tile@juse/ui"></script>
 <script>
-define("app.context", ["juse/resource"], function(){
-	this.define(["config.properties"]);
+juse.import("juse/resource").define("app.context", function(){
+	juse.import("config.properties");
 	this.property("property-1", "from calling property(key, value)");
 	return {
 		map: {"*.properties":"properties:"},

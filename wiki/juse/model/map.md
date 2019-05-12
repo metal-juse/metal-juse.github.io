@@ -13,7 +13,7 @@ Example:
 ```html
 <link href="http://metal-juse.github.io/css/example.css" rel="stylesheet"/>
 <script src="http://metal-juse.github.io/juse-up.min.js" data-app="example.model@app;"></script>
-<script>juse("app.context", ["juse/model"]);</script>
+<script>juse.import("juse/model").define("app.context");</script>
 
 <div id="example">
 	foo: <input data-value="#foo" data-event="enter:#clear" type="text" placeholder="enter foo here"><br>
@@ -29,7 +29,7 @@ Live result:
 <section>
 <link href="http://metal-juse.github.io/css/example.css" rel="stylesheet"/>
 <script src="http://metal-juse.github.io/juse-up.min.js" data-app="example.model@app;"></script>
-<script>juse("app.context", ["juse/model"]);</script>
+<script>juse.import("juse/model").define("app.context");</script>
 
 <div id="example">
 	foo: <input data-value="#foo" data-event="enter:#clear" type="text" placeholder="enter foo here"><br>

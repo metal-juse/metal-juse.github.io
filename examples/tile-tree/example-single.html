@@ -13,13 +13,13 @@
 </style>
 
 <div id="main.html">
-	<div data-tree="label=one">
-		<div data-tree="label=two">
-			<div data-tree="label=three">
+	<tree label="one">
+		<tree label="two">
+			<tree label="three">
 				<span>done</span>
-			</div>
-		</div>
-	</div>
+			</tree>
+		</tree>
+	</tree>
 </div>
 <div id="app/tree.html">
 	<div data-widget="tree">
@@ -32,10 +32,10 @@
 </div>
 
 <script type="text/javascript">
-juse("context.context", ["juse/ui", "juse/resource"], function(){
-	this.juse("main.html|app/tree|widget", ["app/tree.html"]);
+juse.import("juse/ui", "juse/resource").define("context.context", function(){
+	juse.import("app/tree.html").define("main.html|app/tree|widget");
 	
-	this.juse("app/tree", ["tile"], function($tile){
+	juse.import("tile", "dom").define("app/tree", function($tile, $dom){
 		return juse.seal(function tree(node, dataset){
 			return $tile.call(this, node, dataset, "tree");
 		}, {bindWidget:bindWidget});
@@ -59,25 +59,15 @@ juse("context.context", ["juse/ui", "juse/resource"], function(){
 			var node = event.target;
 			switch (node.id) {
 			case "toggle":
-				toggleClass(node, "open");
-				toggleClass(node.nextElementSibling, "open");
-				toggleClass(node.nextElementSibling.nextElementSibling, "open");
+				$dom.toggleClass(node, "open");
+				$dom.toggleClass(node.nextElementSibling, "open");
+				$dom.toggleClass(node.nextElementSibling.nextElementSibling, "open");
 				break;
 			case "label":
-				toggleClass(node, "open");
-				toggleClass(node.nextElementSibling, "open");
-				toggleClass(node.previousElementSibling, "open");
+				$dom.toggleClass(node, "open");
+				$dom.toggleClass(node.nextElementSibling, "open");
+				$dom.toggleClass(node.previousElementSibling, "open");
 				break;
-			}
-		}
-
-		function toggleClass(node, name) {
-			var list = node.className.split(" ");
-			var i = list.indexOf(name);
-			if (i < 0) node.className = node.className + " " + name;
-			else {
-				list.splice(i,1);
-				node.className = list.join(" ");
 			}
 		}
 

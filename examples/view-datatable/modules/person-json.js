@@ -1,4 +1,4 @@
-juse([{
+juse.define([{
 	"firstName":"John",
 	"lastName":"Doe",
 	"dob":"2010-10-10",

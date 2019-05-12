@@ -18,8 +18,8 @@ Example:
 <link href="http://metal-juse.github.io/css/example.css" rel="stylesheet"/>
 <script src="http://metal-juse.github.io/juse-up.min.js" data-app="hello"></script>
 <script>
-define("world", "World!");
-define("hello", ["world"], function($world){ return "Hello " + $world; });
+juse.define("world", "World!");
+juse.import("world").define("hello", function($world){ return "Hello " + $world; });
 </script>
 ```
 
@@ -34,8 +34,8 @@ It is also executed right here, and the **main** module value is:
 <link href="http://metal-juse.github.io/css/example.css" rel="stylesheet"/>
 <script src="http://metal-juse.github.io/juse-up.min.js" data-app="hello"></script>
 <script>
-define("world", "World!");
-define("hello", ["world"], function($world){ return "Hello " + $world; });
+juse.define("world", "World!");
+juse.import("world").define("hello", function($world){ return "Hello " + $world; });
 </script>
 </section>
 

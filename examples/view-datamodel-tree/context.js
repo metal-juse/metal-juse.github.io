@@ -1,1 +1,1 @@
-juse(".context", ["juse/model", "juse/ui"]);
+juse.import("juse/model", "juse/ui").define(".context");

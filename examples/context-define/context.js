@@ -1,10 +1,10 @@
-juse(".context", ["app/context", "lib/context"], function(){
+juse.import("app/context", "lib/context").define(".context", function(){
 
-	this.juse("base", ["jquery", "canvas", "util"], function(jquery, canvas, util){
+	juse.import("jquery", "canvas", "util").define("base", function(jquery, canvas, util){
 		juse.log("callback:", this.spec.name, "<-", jquery, canvas, util);
 		return this.spec.name;
 	});
-	this.juse("main", ["jquery", "canvas", "util", "sub", "base"], function(jquery, canvas, util, sub, base){
+	juse.import("jquery", "canvas", "util", "sub", "base").define("main", function(jquery, canvas, util, sub, base){
 		juse.log("callback:", this.spec.name, "<-", jquery, canvas, util, sub, base);
 		return this.spec.name;
 	});

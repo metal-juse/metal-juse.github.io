@@ -1,4 +1,4 @@
-juse(["promise"], function(promise){
+juse.import("promise").define(function(promise){
 	var adapter = {
 			resolved: function(value) {
 				return promise(function(resolve, reject){

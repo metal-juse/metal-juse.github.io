@@ -1,4 +1,4 @@
-juse(function(){
+juse.define(function(){
 	function toggle(event){
 		event.target.innerHTML = (event.target.innerHTML == "hello") ? "world" : "hello";
 	}

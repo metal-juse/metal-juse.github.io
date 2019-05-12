@@ -1,8 +1,7 @@
-juse(function(){
+juse.import("dom").define(function($dom){
 
 	return function tree(node){
-		[].forEach.call(node.querySelectorAll(".tree"), bind);
-		return node;
+		return $dom.bindNodes(node, ".tree", bind);
 	};
 
 	function bind(node) {

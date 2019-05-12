@@ -1,4 +1,4 @@
-juse("|service", ["request"], function($request, $scope){
+juse.import("request").define("|service", function($request, $scope){
 	$scope.provide(addPerson, loadPersons);
 
 	function addPerson(resolve, reject) {

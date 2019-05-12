@@ -15,7 +15,7 @@ Example:
 <link href="http://metal-juse.github.io/css/example.css" rel="stylesheet"/>
 <script src="http://metal-juse.github.io/juse-up.min.js" data-app="hello"></script>
 <script>
-define("hello", "Hello World!");
+juse.define("hello", "Hello World!");
 </script>
 ```
 
@@ -30,7 +30,7 @@ It is also executed right here, and the **main** module value is:
 <link href="http://metal-juse.github.io/css/example.css" rel="stylesheet"/>
 <script src="http://metal-juse.github.io/juse-up.min.js" data-app="hello"></script>
 <script>
-define("hello", "Hello World!");
+juse.define("hello", "Hello World!");
 </script>
 </section>
 

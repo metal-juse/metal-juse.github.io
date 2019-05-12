@@ -11,9 +11,11 @@ Example:
 ```html
 <link href="http://metal-juse.github.io/css/example.css" rel="stylesheet"/>
 <script src="http://metal-juse.github.io/juse-up.min.js" data-app="example.datatable@app;"></script>
-<script>juse("app.context", ["jx/jquery"], function(){
+<script>
+juse.import("jx/jquery").define("app.context", function(){
 	this.juse(["datatable@jx/jquery"]);
-});</script>
+});
+</script>
 
 <div id="example">
 	<table data-datatable>
@@ -35,9 +37,11 @@ Live result:
 <section>
 <link href="http://metal-juse.github.io/css/example.css" rel="stylesheet"/>
 <script src="http://metal-juse.github.io/juse-up.min.js" data-app="example.datatable@app;"></script>
-<script>juse("app.context", ["jx/jquery"], function(){
+<script>
+juse.import("jx/jquery").define("app.context", function(){
 	this.juse(["datatable@jx/jquery"]);
-});</script>
+});
+</script>
 
 <div id="example">
 	<table data-datatable>

@@ -1,47 +1,31 @@
-juse(["tile"], function($tile){
-	return juse.seal(function tree(node, dataset){
-		return $tile.call(this, node, dataset, "tree");
-	}, {bindWidget:bindWidget});
-
-	function bindWidget(node) {
-		[].forEach.call(node.querySelectorAll(".tree"), bind);
-	}
+juse.
+import("tree.css").
+import("tile", "dom").
+define(function tree($tile, $dom, $scope){
+/*!@tree
+<div class="tree">
+	<span class="control toggle"></span>
+	<span class="control header">${label}</span>
+	<div class="content">
+		<div data-tag></div>
+	</div>
+</div>
+*/
+	juse.export(function tree(node){
+		$tile.call(this, node, $scope.properties);
+		return $dom.bindNodes(node, ".tree > .control", bind);
+	});
 
 	function bind(node) {
-		switch (node.id) {
-		case "toggle":
+		if ($dom.hasClass(node, "toggle")) {
 			juse.follow(node, {"click":toggle});
-			break;
-		case "label":
+		} else if ($dom.hasClass(node, "header")) {
 			juse.follow(node, {"dblclick":toggle});
-			break;
 		}
 	}
 
 	function toggle(event) {
-		var node = event.target;
-		switch (node.id) {
-		case "toggle":
-			toggleClass(node, "open");
-			toggleClass(node.nextElementSibling, "open");
-			toggleClass(node.nextElementSibling.nextElementSibling, "open");
-			break;
-		case "label":
-			toggleClass(node, "open");
-			toggleClass(node.nextElementSibling, "open");
-			toggleClass(node.previousElementSibling, "open");
-			break;
-		}
-	}
-
-	function toggleClass(node, name) {
-		var list = node.className.split(" ");
-		var i = list.indexOf(name);
-		if (i < 0) node.className = node.className + " " + name;
-		else {
-			list.splice(i,1);
-			node.className = list.join(" ");
-		}
+		$dom.toggleClass(event.target.parentNode, "open");
 	}
 
 });

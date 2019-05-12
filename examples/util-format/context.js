@@ -1,3 +1,3 @@
-juse(".context", ["juse/resource", "juse/text"], function(){
-	this.juse(["world.properties"]);
+juse.import("juse/resource", "juse/text").define(".context", function(){
+	juse.import("world.properties");
 });

@@ -14,7 +14,7 @@ Example:
 ```html
 <link href="http://metal-juse.github.io/css/example.css" rel="stylesheet"/>
 <script src="http://metal-juse.github.io/juse-up.min.js" data-app="example.model@app;"></script>
-<script>juse("app.context", ["juse/model", "juse/resource"], {map:{"*.json":"data:"}});</script>
+<script>juse.import("juse/model", "juse/resource").define("app.context", {map:{"*.json":"data:"}});</script>
 
 <div id="example">
 	<div data-model>
@@ -33,7 +33,7 @@ Live result:
 <section>
 <link href="http://metal-juse.github.io/css/example.css" rel="stylesheet"/>
 <script src="http://metal-juse.github.io/juse-up.min.js" data-app="example.model@app;"></script>
-<script>juse("app.context", ["juse/model", "juse/resource"], {map:{"*.json":"data:"}});</script>
+<script>juse.import("juse/model", "juse/resource").define("app.context", {map:{"*.json":"data:"}});</script>
 
 <div id="example">
 	<div data-model>

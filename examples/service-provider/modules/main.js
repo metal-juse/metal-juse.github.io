@@ -1,4 +1,4 @@
-juse(["test-service"], function($test){
+juse.import("test-service").define(function($test){
 	$test.follow(test1, test2);
 	return function main(){
 		juse.log("----submit #test1 hello");

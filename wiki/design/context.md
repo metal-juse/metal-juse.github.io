@@ -10,11 +10,11 @@ Example:
 <link href="http://metal-juse.github.io/css/example.css" rel="stylesheet"/>
 <script src="http://metal-juse.github.io/juse-up.min.js" data-app="hello@app"></script>
 <script>
-define("common.context", function(){
-	this.define("world", "World!");
+juse.define("common.context", function(){
+	juse.define("world", "World!");
 });
-define("app.context", ["common"], function(){
-	this.define("hello", ["world@common"], function($world){ return "Hello " + $world; });
+juse.import("common").define("app.context", function(){
+	juse.import("world@common").define("hello", function($world){ return "Hello " + $world; });
 });
 </script>
 ```
@@ -32,11 +32,11 @@ It is also executed right here, and the **main** module value is:
 <link href="http://metal-juse.github.io/css/example.css" rel="stylesheet"/>
 <script src="http://metal-juse.github.io/juse-up.min.js" data-app="hello@app"></script>
 <script>
-define("common.context", function(){
-	this.define("world", "World!");
+juse.define("common.context", function(){
+	juse.define("world", "World!");
 });
-define("app.context", ["common"], function(){
-	this.define("hello", ["world@common"], function($world){ return "Hello " + $world; });
+juse.import("common").define("app.context", function(){
+	juse.import("world@common").define("hello", function($world){ return "Hello " + $world; });
 });
 </script>
 </section>

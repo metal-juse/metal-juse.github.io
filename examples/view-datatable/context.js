@@ -1,4 +1,4 @@
-juse(".context", ["juse/resource", "juse/ui", "juse/model", "juse/remote", "juse/core", "jx/jquery"], function(){
-	this.juse(["person", "person.properties"]);
-	this.juse(["datatable@jx/jquery"]);
+juse.import("juse/resource", "juse/ui", "juse/model", "juse/remote", "juse/core", "jx/jquery").define(".context", function(){
+	juse.import("person", "person.properties");
+	juse.import("datatable@jx/jquery");
 });

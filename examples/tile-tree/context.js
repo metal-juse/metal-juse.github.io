@@ -1,5 +1,5 @@
-juse(".context", ["juse/ui", "juse/resource"], function(){
-	this.juse("main.html|app/tree|widget", ["app/tree.html", "app/tree.css"]);
+juse.import("juse/ui", "juse/resource").define(".context", function(){
+	juse.import("app/tree").define("main.html|app/tree");
 	return {
 		map: {
 			"*.html": "static:",
