@@ -12,7 +12,7 @@ Example:
 
 ```html
 <link href="http://metal-juse.github.io/css/example.css" rel="stylesheet"/>
-<script src="http://metal-juse.github.io/juse-up.min.js" data-app="example@app|tile@juse/ui"></script>
+<script src="http://metal-juse.github.io/juse-up.js" data-app="example@app|tile@juse/ui"></script>
 <script>
 juse.import("juse/resource").define("app.context", function(){
 	juse.import("config.properties");
@@ -50,7 +50,7 @@ It is also executed right here, and the **main** module value is:
 
 <section>
 <link href="http://metal-juse.github.io/css/example.css" rel="stylesheet"/>
-<script src="http://metal-juse.github.io/juse-up.min.js" data-app="example@app|tile@juse/ui"></script>
+<script src="http://metal-juse.github.io/juse-up.js" data-app="example@app|tile@juse/ui"></script>
 <script>
 juse.import("juse/resource").define("app.context", function(){
 	juse.import("config.properties");
