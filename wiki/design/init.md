@@ -7,7 +7,7 @@ Example:
 
 ```html
 <link href="http://metal-juse.github.io/css/example.css" rel="stylesheet"/>
-<script src="http://metal-juse.github.io/juse-up.js" data-app="hello"></script>
+<script src="http://metal-juse.github.io/juse-up.min.js" data-app="hello"></script>
 <script>
 juse.define("world", "WORLD!");
 juse.import("world").define("hello", function($world){ return "hello " + $world; });
@@ -18,7 +18,7 @@ In the example, ....
 
 <section>
 <link href="http://metal-juse.github.io/css/example.css" rel="stylesheet"/>
-<script src="http://metal-juse.github.io/juse-up.js" data-app="hello"></script>
+<script src="http://metal-juse.github.io/juse-up.min.js" data-app="hello"></script>
 <script>
 juse.define("world", "WORLD!");
 juse.import("world").define("hello", function($world){ return "hello " + $world; });

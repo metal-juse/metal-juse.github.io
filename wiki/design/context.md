@@ -8,7 +8,7 @@ Example:
 
 ```html
 <link href="http://metal-juse.github.io/css/example.css" rel="stylesheet"/>
-<script src="http://metal-juse.github.io/juse-up.js" data-app="hello@app"></script>
+<script src="http://metal-juse.github.io/juse-up.min.js" data-app="hello@app"></script>
 <script>
 juse.define("common.context", function(){
 	juse.define("world", "World!");
@@ -30,7 +30,7 @@ It is also executed right here, and the **main** module value is:
 
 <section>
 <link href="http://metal-juse.github.io/css/example.css" rel="stylesheet"/>
-<script src="http://metal-juse.github.io/juse-up.js" data-app="hello@app"></script>
+<script src="http://metal-juse.github.io/juse-up.min.js" data-app="hello@app"></script>
 <script>
 juse.define("common.context", function(){
 	juse.define("world", "World!");

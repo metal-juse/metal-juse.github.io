@@ -77,7 +77,7 @@
 	function loadRoot() {
 		define(".context", function(){
 
-			define(function juse(){
+			define("juse", function(){
 				$boot.global.juse = expOrt({
 					global:$boot.global,
 					define:define,
@@ -102,7 +102,7 @@
 				});
 			});
 
-			define("juse/cache", function cache(){
+			define("juse/cache", function(){
 				assign(this, { init:init });
 
 				function init() {
@@ -127,7 +127,7 @@
 				}
 			});
 
-			define("juse/context|juse/cache", function context(){
+			define("juse/context|juse/cache", function(){
 				init.call(this.context);
 				this.cacheInit.call(this.context, initContext({
 					map: { "*": "modules:", "context": "juse/context@", "cache": "juse/cache@", "juse": "juse@" },
@@ -166,7 +166,7 @@
 				}
 			});
 
-			define("juse/request", function request(){
+			define("juse/request", function(){
 				expOrt(function request(ref){
 					if (!$boot.doc) return nodeRequest(ref);
 					else if (ref.type == "css") return defaultRequest(ref);
@@ -925,9 +925,9 @@
 
 })(this)();
 
-juse.define("juse/run.context", function run(){
+juse.define("juse/run.context", function(){
 
-	juse.define("try", function $try(){
+	juse.define("try", function(){
 		juse.export(function $try(fn, args, error, target){
 			try {
 				return fn.apply(target, args);
@@ -936,7 +936,7 @@ juse.define("juse/run.context", function run(){
 				return error;
 			}
 		});
-	}).define("async", function async($try){
+	}).define("async", function($try){
 		var callAsync = (typeof setImmediate == "function") ? setImmediate : setTimeout;
 		var $buffer = [];
 
@@ -958,7 +958,7 @@ juse.define("juse/run.context", function run(){
 
 	});
 
-	juse.import("try", "async").define("promise", function promise($try, $async){
+	juse.import("try", "async").define("promise", function($try, $async){
 
 		var $outer, $error = {};
 
@@ -1107,9 +1107,9 @@ juse.define("juse/run.context", function run(){
 	});
 });
 
-juse.import("juse/run").define("juse/core.context", function core(){
+juse.import("juse/run").define("juse/core.context", function(){
 
-	juse.define(function replace(){
+	juse.define("replace", function(){
 		var $format = /\$\{([^\}]+)\}/g;
 		juse.export(function replace(text, scope) {
 			if (!text || typeof(text) != "string" || !$format.test(text)) return text;
@@ -1119,7 +1119,7 @@ juse.import("juse/run").define("juse/core.context", function core(){
 		});
 	});
 
-	juse.define(function map(){
+	juse.define("map", function(){
 		juse.export(function map(spec){
 			var map = {};
 			for (var ref = juse.spec(spec); ref && ref.name; ref = juse.spec(ref.value)) {
@@ -1129,7 +1129,7 @@ juse.import("juse/run").define("juse/core.context", function core(){
 		});
 	});
 
-	juse.define("|cache", function event(){
+	juse.define("event|cache", function(){
 		juse.export(function event(value){
 			return juse.seal(value||function event(){}, {addEventListener:this.addEventListener.bind(this), follow:this.follow.bind(this), fire:this.fire.bind(this)});
 		});
@@ -1169,7 +1169,7 @@ juse.import("juse/run").define("juse/core.context", function core(){
 
 	juse.define("onload|event");
 
-	juse.import("promise").define("|event", function service($promise){
+	juse.import("promise").define("service|event", function($promise){
 		juse.export(function service(value){
 			return juse.seal(value||function service(){}, {addEventListener:this.addEventListener.bind(this), follow:this.follow.bind(this), fire:this.fire.bind(this), provide:this.provide.bind(this), submit:this.submit.bind(this)});
 		});
@@ -1191,9 +1191,9 @@ juse.import("juse/run").define("juse/core.context", function core(){
 	});
 });
 
-juse.import("juse/core").define("juse/text.context", function text(){
+juse.import("juse/core").define("juse/text.context", function(){
 
-	juse.import("teval").define(function replace($teval, $scope){
+	juse.import("teval").define("replace", function($teval, $scope){
 		var $format = /\$\{([^\}]+)\}/g;
 		juse.export(function replace(text, dataset){
 			$teval = $teval || juse.lookup("teval", $scope);
@@ -1213,7 +1213,7 @@ juse.import("juse/core").define("juse/text.context", function text(){
 		});
 	});
 
-	juse.import("replace", "map").define(function teval($replace, $map, $scope){
+	juse.import("replace", "map").define("teval", function($replace, $map, $scope){
 		juse.export(function teval(spec, dataset) {
 			var ref = juse.spec(spec);
 			var value = juse.property(ref, this, dataset) || juse.filter(ref, this, dataset);
@@ -1231,9 +1231,9 @@ juse.import("juse/core").define("juse/text.context", function text(){
 
 });
 
-juse.define("juse/resource.context", function resource(){
+juse.define("juse/resource.context", function(){
 
-	juse.define(function properties(){
+	juse.define("properties", function(){
 		juse.export(function properties(value){
 			if (juse.member(this.spec, "key", true)) {
 				var key = this.spec.key || juse.slicePath(this.spec.name, -1, 1);
@@ -1244,13 +1244,13 @@ juse.define("juse/resource.context", function resource(){
 		});
 	});
 
-	juse.define(function json(){
+	juse.define("json", function(){
 		juse.export(function json(value){
 			return JSON.parse(value);
 		});
 	});
 
-	juse.define(function html(){
+	juse.define("html", function(){
 		juse.export(function html(value, name){
 			if (juse.typeOf(value, "html", true)) return value;
 			var div = juse.global.document.createElement(name||"div");
@@ -1260,9 +1260,9 @@ juse.define("juse/resource.context", function resource(){
 	});
 });
 
-juse.import("juse/run").define("juse/remote.context", function remote(){
+juse.import("juse/run").define("juse/remote.context", function(){
 
-	juse.import("promise").define(function request($promise){
+	juse.import("promise").define("request", function($promise){
 		juse.export(function request(spec, args/*data, method, headers*/) {
 			var req = { spec:spec, url:juse.path(juse.resolve(spec, this)), args:args||{}, scope:this };
 			return $promise(sendRequest.bind(req));
@@ -1334,10 +1334,10 @@ juse.import("juse/run").define("juse/remote.context", function remote(){
 
 });
 
-juse.import("juse/resource", "juse/text", "juse/core").define("juse/ui.context", function ui(){
+juse.import("juse/resource", "juse/text", "juse/core").define("juse/ui.context", function(){
 	var $view, $dom, $array = [];
 
-	juse.import("html", "onload").define(function view($html, $onload, $scope){
+	juse.import("html", "onload").define("view", function($html, $onload, $scope){
 		$onload.follow({load:load});
 		juse.export(function view(){
 			$scope.context.cacheValue("views", this.spec.name, this.spec);
@@ -1355,7 +1355,7 @@ juse.import("juse/resource", "juse/text", "juse/core").define("juse/ui.context",
 		}
 	});
 
-	juse.import("html", "replace@juse/text").define(function dom($html, $replace){
+	juse.import("html", "replace@juse/text").define("dom", function($html, $replace){
 		$dom = juse.export(function dom(value, clone){
 			return juse.typeOf(value, "string") ? $html.call(this, value) : clone ? value.cloneNode(true) : value;
 		}, {
@@ -1533,7 +1533,7 @@ juse.import("juse/resource", "juse/text", "juse/core").define("juse/ui.context",
 		}
 	});
 
-	juse.import("dom", "widget", "map").define("tile", function tile($dom, $widget, $map){
+	juse.import("dom", "widget", "map").define("tile", function($dom, $widget, $map){
 
 		juse.export(function tile(node, tiles, dataset){
 			return makeTile(node, tiles, dataset, this);
@@ -1577,7 +1577,7 @@ juse.import("juse/resource", "juse/text", "juse/core").define("juse/ui.context",
 
 	});
 
-	juse.import("dom").define("widget", function widget($dom){
+	juse.import("dom").define("widget", function($dom){
 
 		var $eventKeys = ["click","dblclick","mousedown","mouseenter","mouseleave","mousemove","mouseover","mouseout","mouseup","input","change","keyup","keydown","keypress"];
 		var $eventMap = {
@@ -1654,15 +1654,15 @@ juse.import("juse/resource", "juse/text", "juse/core").define("juse/ui.context",
 	});
 });
 
-juse.import("juse/text").define("juse/valid.context", function valid($text, $context){
+juse.import("juse/text").define("juse/valid.context", function($text, $context){
 
-	juse.define(function validator(){
+	juse.define("validator", function(){
 		juse.export(function validator(value){
 			$context.cacheValue("validators", this.spec.name, value);
 		});
 	});
 
-	juse.define(function validate(){
+	juse.define("validate", function(){
 		juse.export(function validate(spec, value, ref){
 			var messages;
 			for (spec = juse.spec(spec); spec; spec = juse.spec(spec.value)) {
@@ -1683,7 +1683,7 @@ juse.import("juse/text").define("juse/valid.context", function valid($text, $con
 		}
 	});
 
-	juse.import("replace").define("|validator", function required($replace){
+	juse.import("replace").define("required|validator", function($replace){
 		juse.export(function required(spec, value, ref) {
 			return value ? "" : $replace(juse.property("#required.message", this) || "required: ${0}", juse.specs(ref));
 		});
@@ -1691,10 +1691,10 @@ juse.import("juse/text").define("juse/valid.context", function valid($text, $con
 
 });
 
-juse.import("juse/remote", "juse/core", "juse/ui", "juse/valid", "juse/text").define("juse/model.context", function model(){
+juse.import("juse/remote", "juse/core", "juse/ui", "juse/valid", "juse/text").define("juse/model.context", function(){
 	var $modelKeys = ["kind","name"], $context = this;
 
-	juse.define(function binder(){
+	juse.define("binder", function(){
 		juse.export(function binder(){
 			$context.cacheValue("binders", this.spec.name, this.spec);
 		});
@@ -1721,7 +1721,7 @@ juse.import("juse/remote", "juse/core", "juse/ui", "juse/valid", "juse/text").de
 		return model;
 	}
 
-	juse.import("dom", "tile", "validate", "onload").define(function model($dom, $tile, $validate, $onload){
+	juse.import("dom", "tile", "validate", "onload").define("model", function($dom, $tile, $validate, $onload){
 		$onload.follow({load:load});
 		juse.export(function model(node) {
 			node = $dom.call(this, node);
@@ -1915,7 +1915,7 @@ juse.import("juse/remote", "juse/core", "juse/ui", "juse/valid", "juse/text").de
 
 	});
 
-	juse.import("dom", "widget", "model", "teval").define("input|binder", function input($dom, $widget, $model, $teval){
+	juse.import("dom", "widget", "model", "teval").define("input|binder", function($dom, $widget, $model, $teval){
 		juse.export(
 			function input(tile){
 				tile.valid = juse.spec($dom.data(tile.node, "data-valid", null));
@@ -1965,7 +1965,7 @@ juse.import("juse/remote", "juse/core", "juse/ui", "juse/valid", "juse/text").de
 		}
 	});
 
-	juse.import("dom", "widget", "model").define("link|binder", function link($dom, $widget, $model){
+	juse.import("dom", "widget", "model").define("link|binder", function($dom, $widget, $model){
 		juse.export(
 			function link(tile){
 				tile.link = $model.getModel(tile.spec.name, true);
@@ -2023,7 +2023,7 @@ juse.import("juse/remote", "juse/core", "juse/ui", "juse/valid", "juse/text").de
 		}
 	});
 
-	juse.import("dom", "model").define("list|binder", function list($dom, $model){
+	juse.import("dom", "model").define("list|binder", function($dom, $model){
 		juse.export(
 			function list(tile){
 				tile.content = $dom.moveContent(tile.node);
@@ -2079,7 +2079,7 @@ juse.import("juse/remote", "juse/core", "juse/ui", "juse/valid", "juse/text").de
 		}
 	});
 
-	juse.import("dom", "model").define("map|binder", function map($dom, $model){
+	juse.import("dom", "model").define("map|binder", function($dom, $model){
 		juse.export(
 			function map(tile){
 				tile.content = $dom.moveContent(tile.node);
@@ -2121,7 +2121,7 @@ juse.import("juse/remote", "juse/core", "juse/ui", "juse/valid", "juse/text").de
 		}
 	});
 
-	juse.import("dom", "widget", "model", "request").define("remote|binder", function remote($dom, $widget, $model, $request){
+	juse.import("dom", "widget", "model", "request").define("remote|binder", function($dom, $widget, $model, $request){
 		juse.export(
 			function remote(tile){
 				tile.event = juse.spec($dom.data(tile.node, "data-service", null));
@@ -2145,7 +2145,7 @@ juse.import("juse/remote", "juse/core", "juse/ui", "juse/valid", "juse/text").de
 		}
 	});
 
-	juse.import("model", "teval").define("text|binder", function text($model, $teval){
+	juse.import("model", "teval").define("text|binder", function($model, $teval){
 		var $replaceFormat = /%\{([^\}]*)\}/g;
 
 		juse.export(
@@ -2169,7 +2169,7 @@ juse.import("juse/remote", "juse/core", "juse/ui", "juse/valid", "juse/text").de
 		}
 	});
 
-	juse.import("dom", "teval").define("value|binder", function value($dom, $teval){
+	juse.import("dom", "teval").define("value|binder", function($dom, $teval){
 		juse.export(
 			function value(tile){
 				tile.length = tile.node.innerHTML.length;
