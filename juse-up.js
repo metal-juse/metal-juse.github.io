@@ -33,7 +33,7 @@
 			copy($boot, {jusePath:__dirname, app:spec(process.argv[2]||"")});
 		}
 
-		loadRoot().import("juse/core").import("map").then(function($map){$boot.map = $map;});
+		loadRoot();
 		if ($boot.doc) {
 			juse.follow($boot.global, {"load":loadApp, "hashchange":loadApp});
 		} else {
@@ -50,28 +50,32 @@
 
 	/** @member boot */
 	function loadApp() {
-		var app = spec(currentHash(), currentApp());
-		var context = spec(app.context||"");
-		var properties = $boot.map(app.value);
-		$boot.appPath = context.kind || spec($boot.app.context||"").kind;
-		copy(app, {context:(context.name||app.context||""), value:""}, null, true, true);
-		currentApp(app);
-		impOrt(spec(currentApp().context, ".context")).then(function(){
-			copy(getContext(currentApp()).scope.cacheEntry("properties"), properties);
-			log("--load--");
-			juse.import.call(this, currentApp(), "onload").then(function($app, $onload){
-				var value = typeOf($app, "function") ? $app() : $app;
-				$onload.fire("load", value);
-				if (!$onload.fire("done", currentApp())) {
-					setTimeout(done);
-				}
+		if (!$boot.map) {
+			impOrt("juse/core").import("map").then(function($map){$boot.map = $map; loadApp()});
+		} else {
+			var app = spec(currentHash(), currentApp());
+			var context = spec(app.context||"");
+			var properties = $boot.map(app.value);
+			$boot.appPath = context.kind || spec($boot.app.context||"").kind;
+			copy(app, {context:(context.name||app.context||""), value:""}, null, true, true);
+			currentApp(app);
+			impOrt(spec(currentApp().context, ".context")).then(function(){
+				copy(getContext(currentApp()).scope.cacheEntry("properties"), properties);
+				log("--load--");
+				juse.import.call(this, currentApp(), "onload").then(function($app, $onload){
+					var value = typeOf($app, "function") ? $app() : $app;
+					$onload.fire("load", value);
+					if (!$onload.fire("done", currentApp())) {
+						setTimeout(done);
+					}
+				});
 			});
-		});
+		}
 	}
 
 	/** @member boot */
 	function loadRoot() {
-		return define(".context", function(){
+		define(".context", function(){
 
 			define(function juse(){
 				$boot.global.juse = expOrt({
