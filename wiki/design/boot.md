@@ -1,13 +1,15 @@
 # [App Bootstrapping](..)
 
 * **juse** powered app is bootstrapped by a script tag in the hosting html.
-    * `<script src="url/to/juse.js" data-app="main"></script>`
+    * For example, `<script src="url/to/juse.js" data-app="main"></script>`
+    * The tag attribute `src` points to the **juse** bootstrap script url.
+    * The tag attribute `data-app` declares the app **main** module (or the app entry point).
 * The script tag loads the **juse** bootstrap script.
-    * The attribute `data-app` declares the **main** module (or the app entry point).
-* The bootstrap script loads the **main** module, as well as any dependent modules.
-* The **main** module value is then applied to the document body.
-* The bootstrap script also defines the [AMD][] compliant global function `define`.
-* **juse** loads module sources asynchronously if the loading browser supports the [async][] mode.
+* The bootstrap script defines the global top-level module `juse` with public methods (including `import` and `define`).
+    * `import` for loading dependencies.
+    * `define` for defining modules.
+* The bootstrap script then loads the app **main** module, as well as any dependent modules.
+* **juse** loads module sources asynchronously if the loading browser supports the script tag [async][] attribute.
 
 Example:
 
@@ -19,12 +21,12 @@ juse.define("hello", "Hello World!");
 </script>
 ```
 
-At line 2, the script tag loads the **juse** bootstrap script and declares the **main** module `hello`.
+At line 2, the script tag loads the **juse** bootstrap script and declares the app **main** module as `hello`.
 
-At line 4, the **main** module `hello` is defined via the global function `define`, and its value is then added to the document body.
+At line 4, method `juse.define` is called to define the **main** module `hello`, its value as `Hello World!`.
 
 The code can be copy/pasted into a standalone html file and opened in a browser.
-It is also executed right here, and the **main** module value is:
+The exact code is also executed right here on this page, with the **main** module value to be seen as:
 
 <section>
 <link href="http://metal-juse.github.io/css/example.css" rel="stylesheet"/>
