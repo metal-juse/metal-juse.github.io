@@ -9,7 +9,6 @@
     * `import` for loading dependencies.
     * `define` for defining modules.
 * The bootstrap script then loads the app **main** module, as well as any dependent modules.
-* **juse** loads module sources asynchronously if the loading browser supports the script tag [async][] attribute.
 
 Example:
 
@@ -37,4 +36,3 @@ juse.define("hello", "Hello World!");
 </section>
 
 [AMD]:		https://github.com/amdjs/amdjs-api/wiki/AMD (Asynchronous Module Definition)
-[async]:	https://www.w3schools.com/tags/att_script_async.asp

@@ -51,7 +51,7 @@
 	/** @member boot */
 	function loadApp() {
 		if (!$boot.map) {
-			impOrt("juse/core").import("map").then(function($map){$boot.map = $map; loadApp()});
+			impOrt("juse/core").import("map").then(function($map){$boot.map = $map; loadApp();});
 		} else {
 			var app = spec(currentHash(), currentApp());
 			var context = spec(app.context||"");
@@ -59,13 +59,13 @@
 			$boot.appPath = context.kind || spec($boot.app.context||"").kind;
 			copy(app, {context:(context.name||app.context||""), value:""}, null, true, true);
 			currentApp(app);
-			impOrt(spec(currentApp().context, ".context")).then(function(){
-				copy(getContext(currentApp()).scope.cacheEntry("properties"), properties);
+			impOrt(spec(app.context, ".context")).then(function(){
+				copy(getContext(app).scope.cacheEntry("properties"), properties);
 				log("--load--");
-				juse.import.call(this, currentApp(), "onload").then(function($app, $onload){
+				juse.import.call(this, app, "onload").then(function($app, $onload){
 					var value = typeOf($app, "function") ? $app() : $app;
 					$onload.fire("load", value);
-					if (!$onload.fire("done", currentApp())) {
+					if (!$onload.fire("done", app)) {
 						setTimeout(done);
 					}
 				});
