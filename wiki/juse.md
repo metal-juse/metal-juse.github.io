@@ -12,7 +12,7 @@
 * log cats
 * hashchange
 * loading events: load@juse/core, done@juse/core
-* data-app, app module spec
+* data-main, main module spec
 
 Supported features:
 * browser and/or node

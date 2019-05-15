@@ -25,47 +25,47 @@
 		$boot.global.juse = {};
 		if ($boot.global.document) {
 			copy($boot, {doc:$boot.global.document, async:!!$boot.global.document.currentScript, script:currentScript()});
-			copy($boot, {jusePath:slicePath($boot.script.getAttribute("src"), -1), app:spec($boot.script.getAttribute("data-app")||"")});
+			copy($boot, {jusePath:slicePath($boot.script.getAttribute("src"), -1), main:spec($boot.script.getAttribute("data-main")||"")});
 			if ($boot.doc.head != $boot.script.parentNode) {
 				$boot.doc.head.appendChild($boot.script);
 			}
 		} else {
-			copy($boot, {jusePath:__dirname, app:spec(process.argv[2]||"")});
+			copy($boot, {jusePath:__dirname, main:spec(process.argv[2]||"")});
 		}
 
 		loadRoot();
 		if ($boot.doc) {
-			juse.follow($boot.global, {"load":loadApp, "hashchange":loadApp});
+			juse.follow($boot.global, {"load":loadMain, "hashchange":loadMain});
 		} else {
-			loadApp();
+			loadMain();
 		}
 	};
 
 	/** @member boot */
 	function done() {
 		if ($boot.doc) log($boot);
-		else log($boot.jusePath, $boot.app);
+		else log($boot.jusePath, $boot.main);
 		log("--done--");
 	}
 
 	/** @member boot */
-	function loadApp() {
+	function loadMain() {
 		if (!$boot.map) {
-			impOrt("juse/core").import("map").then(function($map){$boot.map = $map; loadApp();});
+			impOrt("juse/core").import("map").then(function($map){$boot.map = $map; loadMain();});
 		} else {
-			var app = spec(currentHash(), currentApp());
-			var context = spec(app.context||"");
-			var properties = $boot.map(app.value);
-			$boot.appPath = context.kind || spec($boot.app.context||"").kind;
-			copy(app, {context:(context.name||app.context||""), value:""}, null, true, true);
-			currentApp(app);
-			impOrt(spec(app.context, ".context")).then(function(){
-				copy(getContext(app).scope.cacheEntry("properties"), properties);
+			var main = spec(currentHash(), currentMain());
+			var context = spec(main.context||"");
+			var properties = $boot.map(main.value);
+			$boot.mainPath = context.kind || spec($boot.main.context||"").kind;
+			copy(main, {context:(context.name||main.context||""), value:""}, null, true, true);
+			currentMain(main);
+			impOrt(spec(main.context, ".context")).then(function(){
+				copy(getContext(main).scope.cacheEntry("properties"), properties);
 				log("--load--");
-				juse.import.call(this, app, "onload").then(function($app, $onload){
-					var value = typeOf($app, "function") ? $app() : $app;
+				juse.import.call(this, main, "onload").then(function($main, $onload){
+					var value = typeOf($main, "function") ? $main() : $main;
 					$onload.fire("load", value);
-					if (!$onload.fire("done", app)) {
+					if (!$onload.fire("done", main)) {
 						setTimeout(done);
 					}
 				});
@@ -189,7 +189,7 @@
 					var path = juse.path(ref), spec = juse.specs(ref);
 					var tagName = ref.type == "css" ? "link" : "script";
 					var tag = $boot.doc.createElement(tagName);
-					tag.setAttribute("data-spec", spec);
+					tag.setAttribute("data-import", spec);
 					if (tagName == "link") {
 						tag.rel = "stylesheet";
 						tag.href = path;
@@ -249,11 +249,11 @@
 			});
 
 			function property(ref, scope, properties) {
-				return ref = spec(ref), getContext(scope && scope.spec || currentApp()).scope.property(ref) || member(properties, ref.name) || member(scope, ["properties", ref.name]);
+				return ref = spec(ref), getContext(scope && scope.spec || currentMain()).scope.property(ref) || member(properties, ref.name) || member(scope, ["properties", ref.name]);
 			}
 
 			function resolve(spec, scope) {
-				return refmap(spec, getModule(scope && scope.spec || currentApp()));
+				return refmap(spec, getModule(scope && scope.spec || currentMain()));
 			}
 
 			function lookup(spec, scope) {
@@ -279,7 +279,7 @@
 			function filter(ref, scope, value) {
 				ref = spec(ref);
 				if (!ref) return;
-				var module = getModule(scope && scope.spec || currentApp());
+				var module = getModule(scope && scope.spec || currentMain());
 				if (value === undefined) {
 					value = filterRefValue.call(module, resolve(ref, scope));
 				} else {
@@ -297,7 +297,7 @@
 					var name = getModuleName(ref, "js");
 					name = context.kind ? [context.name, name].join("/") : name;
 					var base = (juseRoot(name) || $boot.doc) ? "" : ".";
-					path = juseRoot(name) ? $boot.jusePath : $boot.appPath;
+					path = juseRoot(name) ? $boot.jusePath : $boot.mainPath;
 					path = [base, path, ref.kind, name].filter(member).join("/");
 				}
 				return path;
@@ -536,10 +536,10 @@
 	function resolveRefMap(ref, def, remapOnly) {
 		var refKey = typeOf(ref, "object") ? getModuleName(ref, ref.type) : ref;
 		var moduleKey = getModuleName(def, def.type);
-		var remap = moduleKey && (member(getContext($boot.app), ["cache", "remap", moduleKey, refKey])
+		var remap = moduleKey && (member(getContext($boot.main), ["cache", "remap", moduleKey, refKey])
 			|| member(getContext(def), ["cache", "remap", moduleKey, refKey]));
 		return remapOnly ? remap : remap
-			|| member(getContext($boot.app), ["cache", "map", refKey])
+			|| member(getContext($boot.main), ["cache", "map", refKey])
 			|| member(getContext(def), ["cache", "map", refKey])
 			|| member(getContext(), ["cache", "map", refKey])
 			|| findRefMap(def, refKey);
@@ -764,7 +764,7 @@
 
 	/** @member request */
 	function getSpec(node) {
-		return spec(node.getAttribute("data-spec"));
+		return spec(node.getAttribute("data-import"));
 	}
 
 	/** @member request */
@@ -778,9 +778,9 @@
 	}
 
 	/** @member request */
-	function currentApp(app) {
-		$boot.currentApp = app||$boot.currentApp;
-		return $boot.currentApp||$boot.app;
+	function currentMain(main) {
+		$boot.currentMain = main||$boot.currentMain;
+		return $boot.currentMain||$boot.main;
 	}
 
 	function juseRoot(name) {
@@ -910,7 +910,7 @@
 	/** @member util */
 	function log(value) {
 		if (typeof(console) == "undefined") return;
-		var context = getContext(currentApp());
+		var context = getContext(currentMain());
 		var property = member(context, ["scope", "property"]);
 		var dev = property && context.scope.property("app-mode") == "dev";
 		if (!dev) return;
