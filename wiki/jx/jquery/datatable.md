@@ -9,7 +9,7 @@ Tile binding specs:
 Example:
 
 ```html
-<link href="http://metal-juse.github.io/css/example.css" rel="stylesheet"/>
+<link rel="stylesheet" href="http://metal-juse.github.io/css/example.css"/>
 <script data-main="example.datatable@app;" src="http://metal-juse.github.io/juse-up.min.js"></script>
 <script>
 juse.import("jx/jquery").define("app.context", function(){
@@ -35,7 +35,7 @@ juse.import("jx/jquery").define("app.context", function(){
 Live result:
 
 <section>
-<link href="http://metal-juse.github.io/css/example.css" rel="stylesheet"/>
+<link rel="stylesheet" href="http://metal-juse.github.io/css/example.css"/>
 <script data-main="example.datatable@app;" src="http://metal-juse.github.io/juse-up.min.js"></script>
 <script>
 juse.import("jx/jquery").define("app.context", function(){

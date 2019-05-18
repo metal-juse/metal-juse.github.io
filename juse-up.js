@@ -24,19 +24,16 @@
 		if ($boot.global.juse) return;
 		$boot.global.juse = {};
 		if ($boot.global.document) {
-			copy($boot, {doc:$boot.global.document, async:!!$boot.global.document.currentScript, script:currentScript()});
-			copy($boot, {jusePath:slicePath($boot.script.getAttribute("src"), -1), main:spec($boot.script.getAttribute("data-main")||"")});
+			copy($boot, {doc:$boot.global.document, script:currentScript(), async:!!$boot.global.document.currentScript});
+			copy($boot, {main:spec($boot.script.getAttribute("data-main")||""), jusePath:slicePath($boot.script.getAttribute("src"), -1)});
 			if ($boot.doc.head != $boot.script.parentNode) {
 				$boot.doc.head.appendChild($boot.script);
 			}
-		} else {
-			copy($boot, {jusePath:__dirname, main:spec(process.argv[2]||"")});
-		}
-
-		loadRoot();
-		if ($boot.doc) {
+			loadRoot();
 			juse.follow($boot.global, {"load":loadMain, "hashchange":loadMain});
 		} else {
+			copy($boot, {main:spec(process.argv[2]||""), jusePath:__dirname});
+			loadRoot();
 			loadMain();
 		}
 	};
@@ -115,15 +112,15 @@
 					return copy(getModule(this.spec).cache, value);
 				}
 
+				function cacheEntry(name, value) {
+					var cache = getModule(this.spec).cache;
+					return cache[name] = cache[name] || value || {};
+				}
+
 				function cacheValue(name, member, value) {
 					var cache = this.cacheEntry(name);
 					if (value !== undefined) cache[member] = cache[member] || value;
 					return cache[member];
-				}
-
-				function cacheEntry(name, value) {
-					var cache = getModule(this.spec).cache;
-					return cache[name] = cache[name] || value || {};
 				}
 			});
 
@@ -135,7 +132,7 @@
 				}));
 				expOrt(function context(value){
 					copy(this.cacheEntry("properties"), member(value, "properties"));
-					this.cacheInit.call(this, initContext(value));
+					this.cacheInit(initContext(value));
 					return {};
 				});
 				assign(this, {init:init});
@@ -191,12 +188,9 @@
 					var tag = $boot.doc.createElement(tagName);
 					tag.setAttribute("data-import", spec);
 					if (tagName == "link") {
-						tag.rel = "stylesheet";
-						tag.href = path;
-						tag.title = spec;
+						copy(tag, {href:path, title:spec, rel:"stylesheet"}, null, true, true);
 					} else {
-						tag.async = $boot.async;
-						tag.src = path;
+						copy(tag, {src:path, async:$boot.async}, null, true, true);
 					}
 					log("load:", spec, "<-", tag);
 					juse.follow(tag, {"load":defaultResponse, "error":defaultResponse});
@@ -751,11 +745,10 @@
 			values.push(module.scope);
 			module.scope.value = module.value;
 			var exports = module.def.args.value.apply(module.scope, values) || $boot.exports;
-			if (exports !== undefined) $boot.exports = exports;
+			if (exports !== undefined) module.flow.exports = exports;
 			module.value = exports || module.value;
 			delete module.scope.value;
 		}
-		if ("exports" in $boot) module.flow.exports = $boot.exports;
 		delete module.flow;
 		delete $boot.exports;
 		module.value = applyFilters(module.value, module.def, "type", module);

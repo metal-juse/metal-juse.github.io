@@ -11,7 +11,7 @@
 Example:
 
 ```html
-<link href="http://metal-juse.github.io/css/example.css" rel="stylesheet"/>
+<link rel="stylesheet" href="http://metal-juse.github.io/css/example.css"/>
 <script data-main="example@app|tile@juse/ui" src="http://metal-juse.github.io/juse-up.min.js"></script>
 <script>
 juse.import("juse/resource").define("app.context", function(){
@@ -49,7 +49,7 @@ The code can be copy/pasted into a standalone html file and opened in a browser.
 It is also executed right here, and the **main** module value is:
 
 <section>
-<link href="http://metal-juse.github.io/css/example.css" rel="stylesheet"/>
+<link rel="stylesheet" href="http://metal-juse.github.io/css/example.css"/>
 <script data-main="example@app|tile@juse/ui" src="http://metal-juse.github.io/juse-up.min.js"></script>
 <script>
 juse.import("juse/resource").define("app.context", function(){

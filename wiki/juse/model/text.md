@@ -7,7 +7,7 @@ Binder that manages text tile:
 Example:
 
 ```html
-<link href="http://metal-juse.github.io/css/example.css" rel="stylesheet"/>
+<link rel="stylesheet" href="http://metal-juse.github.io/css/example.css"/>
 <script data-main="example.model@app;" src="http://metal-juse.github.io/juse-up.min.js"></script>
 <script>juse.import("juse/model").define("app.context");</script>
 
@@ -20,7 +20,7 @@ Example:
 Live result:
 
 <section>
-<link href="http://metal-juse.github.io/css/example.css" rel="stylesheet"/>
+<link rel="stylesheet" href="http://metal-juse.github.io/css/example.css"/>
 <script data-main="example.model@app;" src="http://metal-juse.github.io/juse-up.min.js"></script>
 <script>juse.import("juse/model").define("app.context");</script>
 
