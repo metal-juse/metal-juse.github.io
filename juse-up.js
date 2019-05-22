@@ -59,7 +59,7 @@
 			impOrt(spec(main.context, ".context")).then(function(){
 				copy(getContext(main).scope.cacheEntry("properties"), properties);
 				log("--load--");
-				juse.import.call(this, main, "onload").then(function($main, $onload){
+				impOrt(main, "onload").then(function($main, $onload){
 					var value = typeOf($main, "function") ? $main() : $main;
 					$onload.fire("load", value);
 					if (!$onload.fire("done", main)) {
@@ -309,21 +309,16 @@
 	}
 
 	/** @member define */
-	function then(value) {
-		var flow = currentFlow(this);
-		var def = resolveDef(currentSpec(flow), flow, {value:value});
-		defineModule(def, flow).scope = this;
-		delete flow.importer;
-		return flow;
-	}
-
-	/** @member define */
 	function define(spec, value) {
 		var flow = currentFlow(this);
 		var def = resolveDef(currentSpec(flow), flow, getDefArgs([spec, value], arguments.length));
 		defineModule(def, flow);
 		delete flow.importer;
 		return flow;
+	}
+
+	function then(value) {
+		return this.define(null, value);
 	}
 
 	function expOrt(value) {
