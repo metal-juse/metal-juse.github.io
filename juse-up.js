@@ -103,12 +103,12 @@
 				assign(this, { init:init });
 
 				function init() {
-					getModule(this.spec).cache = {};
 					assign(this, {cacheInit:cacheInit, cacheEntry:cacheEntry, cacheValue:cacheValue});
+					getModule(this.spec).cache = {};
 				}
 
 				function cacheInit(value) {
-					if (!getModule(this.spec).cache) init.call(this);
+					if (!this.cacheInit) init.call(this);
 					return copy(getModule(this.spec).cache, value);
 				}
 
@@ -131,8 +131,8 @@
 					roots: [ "juse", "jx" ]
 				}));
 				expOrt(function context(value){
-					copy(this.cacheEntry("properties"), member(value, "properties"));
 					this.cacheInit(initContext(value));
+					copy(this.cacheEntry("properties"), member(value, "properties"));
 					return {};
 				});
 				assign(this, {init:init});
@@ -330,7 +330,7 @@
 	}
 
 	function currentSpec(flow) {
-		return ($boot.doc && flow) ? ("currentSpec" in flow) ? flow.currentSpec : getSpec(currentScript()) : $boot.currentSpec;
+		return (flow && "currentSpec" in flow) ? flow.currentSpec : $boot.doc ? getSpec(currentScript()) : $boot.currentSpec;
 	}
 
 	/** @member define */
