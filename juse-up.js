@@ -25,16 +25,15 @@
 		$boot.global.juse = {};
 		if ($boot.global.document) {
 			copy($boot, {doc:$boot.global.document, script:currentScript(), async:!!$boot.global.document.currentScript});
-			copy($boot, {main:spec($boot.script.getAttribute("data-main")||""), jusePath:slicePath($boot.script.getAttribute("src"), -1)});
+			copy($boot, {main:spec($boot.script.getAttribute("data-main")||""), debug:$boot.script.getAttribute("data-debug"), jusePath:slicePath($boot.script.getAttribute("src"), -1)});
 			if ($boot.doc.head != $boot.script.parentNode) {
 				$boot.doc.head.appendChild($boot.script);
 			}
-			loadRoot();
+			loadRoot().import("juse/core");
 			juse.follow($boot.global, {"load":loadMain, "hashchange":loadMain});
 		} else {
 			copy($boot, {main:spec(process.argv[2]||""), jusePath:__dirname});
-			loadRoot();
-			loadMain();
+			loadRoot().import("juse/core").then(loadMain);
 		}
 	};
 
@@ -47,32 +46,27 @@
 
 	/** @member boot */
 	function loadMain() {
-		if (!$boot.map) {
-			impOrt("juse/core").import("map").then(function($map){$boot.map = $map; loadMain();});
-		} else {
-			var main = spec(currentHash(), currentMain());
-			var context = spec(main.context||"");
-			var properties = $boot.map(main.value);
-			$boot.mainPath = context.kind || spec($boot.main.context||"").kind;
-			copy(main, {context:(context.name||main.context||""), value:""}, null, true, true);
-			currentMain(main);
-			impOrt(spec(main.context, ".context")).then(function(){
-				copy(getContext(main).scope.cacheEntry("properties"), properties);
-				log("--load--");
-				impOrt(main, "onload").then(function($main, $onload){
-					var value = typeOf($main, "function") ? $main() : $main;
-					$onload.fire("load", value);
-					if (!$onload.fire("done", main)) {
-						setTimeout(done);
-					}
-				});
+		var main = spec(currentHash(), currentMain());
+		var context = spec(main.context||$boot.main.context||"");
+		$boot.mainPath = context.kind;
+		main.context = context.name||main.context||"";
+		currentMain(main);
+		log("--load--");
+		impOrt(spec(main.context, ".context")).then(function(){
+			impOrt(main, "onload").then(function($main, $onload){
+				if (!$onload.fire("load", main)) {
+					typeOf($main, "function") && $main();
+				}
+				if (!$onload.fire("done", main)) {
+					setTimeout(done);
+				}
 			});
-		}
+		});
 	}
 
 	/** @member boot */
 	function loadRoot() {
-		define(".context", function(){
+		return define(".context", function(){
 
 			define("juse", function(){
 				$boot.global.juse = expOrt({
@@ -897,11 +891,7 @@
 
 	/** @member util */
 	function log(value) {
-		if (typeof(console) == "undefined") return;
-		var context = getContext(currentMain());
-		var property = member(context, ["scope", "property"]);
-		var dev = property && context.scope.property("app-mode") == "dev";
-		if (!dev) return;
+		if (!$boot.debug || typeof(console) == "undefined") return;
 		if (typeof(value) == "string") {
 			var i = $logKeys.indexOf(value);
 			var log = (i<0) ? console.log : console[$logKeys[i]];
@@ -1331,9 +1321,9 @@ juse.import("juse/resource", "juse/text", "juse/core").define("juse/ui.context",
 			$scope.context.cacheValue("views", this.spec.name, this.spec);
 		});
 
-		function load(value) {
+		function load(main) {
 			$view = $view || juse.global.document.body.querySelector("[data-view]") || juse.global.document.body;
-			value = $html(value);
+			var value = $html(juse.lookup(main));
 			if ($dom.closest(value, $view)) {
 			} else if ($view.lastElementChild) {
 				$view.replaceChild(value, $view.lastElementChild);
