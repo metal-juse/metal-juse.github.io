@@ -9,7 +9,6 @@
 	var $specFormatKeys = [""].concat($specKeys);
 	var $specFormat = /(?:\s*([^.#@|;\s]*)\s*=)?(?:\s*([^.#@|;\s]*)\s*:)?\s*([^.#@|;]*)(?:\.([^#@|;\s]*))?(?:#([^@|;\s]*))?(?:@([^|;\s]*))?(?:\s*\|\s*([^;\s]*))?(?:\s*;\s*([\S\s]*))?/;
 	var $specDelims = ["=", ":", "", ".", "#", "@", "|", ";"];
-	var $fnFormatKeys = ["", "name", "value"];
 	var $fnFormat = /function\s*(\S*)\s*\([^)]*\)\s*{\s*((?:\/\*+!(?:[^*]|\*(?!\/))*\*+\/\s*)*)/;
 	var $propFormat = /\/\*+!\s*(?:@((?:[^\s*]|\*(?!\/))+))?\s*((?:[^*]|\*(?!\/))*)\*+\/\s*/;
 	var $flushStates = enums(["BUFFER", "LOAD", "DEFINE", "RESOLVE", "FLUSH", "DONE", "FAIL"]);
@@ -41,17 +40,13 @@
 	function done() {
 		if ($boot.doc) log($boot);
 		else log($boot.jusePath, $boot.main);
-		log("--done--");
+		log("--done:", currentMain());
 	}
 
 	/** @member boot */
 	function loadMain() {
-		var main = spec(currentHash(), currentMain());
-		var context = spec(main.context||$boot.main.context||"");
-		$boot.mainPath = context.kind;
-		main.context = context.name||main.context||"";
-		currentMain(main);
-		log("--load--");
+		var main = currentMain(spec(currentHash(), currentMain()));
+		log("--load:", main);
 		impOrt(spec(main.context, ".context")).then(function(){
 			impOrt(main, "onload").then(function($main, $onload){
 				if (!$onload.fire("load", main)) {
@@ -285,7 +280,7 @@
 					var name = getModuleName(ref, "js");
 					name = context.kind ? [context.name, name].join("/") : name;
 					var base = (juseRoot(name) || $boot.doc) ? "" : ".";
-					path = juseRoot(name) ? $boot.jusePath : $boot.mainPath;
+					path = juseRoot(name) ? $boot.jusePath : getContext(currentMain()).kind;
 					path = [base, path, ref.kind, name].filter(member).join("/");
 				}
 				return path;
@@ -761,8 +756,7 @@
 
 	/** @member request */
 	function currentMain(main) {
-		$boot.currentMain = main||$boot.currentMain;
-		return $boot.currentMain||$boot.main;
+		return ($boot.currentMain = main||$boot.currentMain) || $boot.main;
 	}
 
 	function juseRoot(name) {
