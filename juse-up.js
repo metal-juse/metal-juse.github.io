@@ -14,7 +14,7 @@
 	var $flushStates = enums(["BUFFER", "LOAD", "DEFINE", "RESOLVE", "FLUSH", "DONE", "FAIL"]);
 	var $logKeys = enums(["error", "warn", "info", "debug"]);
 	var $boot = {
-		buffer:[], errors:[], flushCount:0, moduleCount:0,
+		args:{}, buffer:[], errors:[], flushCount:0, moduleCount:0,
 		global: $scope.document ? $scope : global
 	};
 
@@ -24,14 +24,14 @@
 		$boot.global.juse = {};
 		if ($boot.global.document) {
 			copy($boot, {doc:$boot.global.document, script:currentScript(), async:!!$boot.global.document.currentScript});
-			copy($boot, {main:spec($boot.script.getAttribute("data-main")||""), debug:$boot.script.getAttribute("data-debug"), jusePath:slicePath($boot.script.getAttribute("src"), -1)});
+			copy($boot.args, {main:spec($boot.script.getAttribute("data-main")||""), verbose:$boot.script.hasAttribute("data-verbose"), jusePath:slicePath($boot.script.getAttribute("src"), -1)});
 			if ($boot.doc.head != $boot.script.parentNode) {
 				$boot.doc.head.appendChild($boot.script);
 			}
 			loadRoot().import("juse/core");
 			juse.follow($boot.global, {"load":loadMain, "hashchange":loadMain});
 		} else {
-			copy($boot, {main:spec(process.argv[2]||""), jusePath:__dirname});
+			copy($boot.args, {main:spec(process.argv[2]||""), verbose:(process.argv[3]=="-verbose"), jusePath:__dirname});
 			loadRoot().import("juse/core").then(loadMain);
 		}
 	};
@@ -39,7 +39,7 @@
 	/** @member boot */
 	function done() {
 		if ($boot.doc) log($boot);
-		else log($boot.jusePath, $boot.main);
+		else log($boot.args);
 		log("--done:", currentMain());
 	}
 
@@ -280,7 +280,7 @@
 					var name = getModuleName(ref, "js");
 					name = context.kind ? [context.name, name].join("/") : name;
 					var base = (juseRoot(name) || $boot.doc) ? "" : ".";
-					path = juseRoot(name) ? $boot.jusePath : getContext(currentMain()).kind;
+					path = juseRoot(name) ? $boot.args.jusePath : getContext(currentMain()).kind;
 					path = [base, path, ref.kind, name].filter(member).join("/");
 				}
 				return path;
@@ -514,10 +514,10 @@
 	function resolveRefMap(ref, def, remapOnly) {
 		var refKey = typeOf(ref, "object") ? getModuleName(ref, ref.type) : ref;
 		var moduleKey = getModuleName(def, def.type);
-		var remap = moduleKey && (member(getContext($boot.main), ["cache", "remap", moduleKey, refKey])
+		var remap = moduleKey && (member(getContext($boot.args.main), ["cache", "remap", moduleKey, refKey])
 			|| member(getContext(def), ["cache", "remap", moduleKey, refKey]));
 		return remapOnly ? remap : remap
-			|| member(getContext($boot.main), ["cache", "map", refKey])
+			|| member(getContext($boot.args.main), ["cache", "map", refKey])
 			|| member(getContext(def), ["cache", "map", refKey])
 			|| member(getContext(), ["cache", "map", refKey])
 			|| findRefMap(def, refKey);
@@ -756,7 +756,7 @@
 
 	/** @member request */
 	function currentMain(main) {
-		return ($boot.currentMain = main||$boot.currentMain) || $boot.main;
+		return ($boot.currentMain = main||$boot.currentMain) || $boot.args.main;
 	}
 
 	function juseRoot(name) {
@@ -885,7 +885,7 @@
 
 	/** @member util */
 	function log(value) {
-		if (!$boot.debug || typeof(console) == "undefined") return;
+		if (!$boot.args.verbose || typeof(console) == "undefined") return;
 		if (typeof(value) == "string") {
 			var i = $logKeys.indexOf(value);
 			var log = (i<0) ? console.log : console[$logKeys[i]];
