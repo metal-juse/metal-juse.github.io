@@ -3,6 +3,7 @@
  */
 (function boot($scope){
 	"use strict";
+	var $bootArgKeys = ["main", "base", "verbose"];
 	var $defArgKeys = ["spec", "value"];
 	var $refKeys = ["key", "kind", "name", "type", "member", "context"];
 	var $specKeys = $refKeys.concat("pipe", "value");
@@ -14,7 +15,7 @@
 	var $flushStates = enums(["BUFFER", "LOAD", "DEFINE", "RESOLVE", "FLUSH", "DONE", "FAIL"]);
 	var $logKeys = enums(["error", "warn", "info", "debug"]);
 	var $boot = {
-		args:{}, buffer:[], errors:[], flushCount:0, moduleCount:0,
+		buffer:[], errors:[], flushCount:0, moduleCount:0,
 		global: $scope.document ? $scope : global
 	};
 
@@ -24,17 +25,31 @@
 		$boot.global.juse = {};
 		if ($boot.global.document) {
 			copy($boot, {doc:$boot.global.document, script:currentScript(), async:!!$boot.global.document.currentScript});
-			copy($boot.args, {main:spec($boot.script.getAttribute("data-main")||""), verbose:$boot.script.hasAttribute("data-verbose"), jusePath:slicePath($boot.script.getAttribute("src"), -1)});
+			$boot.args = getBootArgs();
+			$boot.args = copy({main:spec($boot.args.main||""), jusePath:slicePath($boot.script.getAttribute("src"), -1)}, $boot.args);
 			if ($boot.doc.head != $boot.script.parentNode) {
 				$boot.doc.head.appendChild($boot.script);
 			}
 			loadRoot().import("juse/core");
 			juse.follow($boot.global, {"load":loadMain, "hashchange":loadMain});
 		} else {
-			copy($boot.args, {main:spec(process.argv[2]||""), verbose:(process.argv[3]=="-verbose"), jusePath:__dirname});
+			$boot.args = getBootArgs();
+			$boot.args = copy({main:spec($boot.args.main||""), jusePath:__dirname}, $boot.args);
 			loadRoot().import("juse/core").then(loadMain);
 		}
 	};
+
+	function getBootArgs() {
+		if ($boot.doc) return $bootArgKeys.reduce(function(args, key){
+			var name = "data-"+key;
+			return (args[key] = $boot.script.getAttribute(name) || $boot.script.hasAttribute(name)), args;
+		}, {});
+		else return process.argv.reduce(function(args, arg, i){
+			if (i < 2 || arg == "-" || arg.charAt(0) != "-") return args;
+			var pair = arg.substring(1).split("=");
+			return (args[pair[0]] = pair[1] || true), args;
+		}, {});
+	}
 
 	/** @member boot */
 	function done() {
@@ -279,7 +294,7 @@
 					var context = getContext(ref);
 					var name = getModuleName(ref, "js");
 					name = context.kind ? [context.name, name].join("/") : name;
-					var base = (juseRoot(name) || $boot.doc) ? "" : ".";
+					var base = juseRoot(name) ? "" : $boot.doc ? $boot.args.base : [".", $boot.args.base].filter(member).join("/");
 					path = juseRoot(name) ? $boot.args.jusePath : getContext(currentMain()).kind;
 					path = [base, path, ref.kind, name].filter(member).join("/");
 				}
