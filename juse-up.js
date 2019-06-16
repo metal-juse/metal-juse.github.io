@@ -3,8 +3,8 @@
  */
 (function boot($scope){
 	"use strict";
-	var $bootArgKeys = ["main", "base", "verbose"];
-	var $defArgKeys = ["spec", "value"];
+	var $bootArgs = ["main", "base", "verbose"];
+	var $defArgs = ["spec", "value"];
 	var $refKeys = ["key", "kind", "name", "type", "member", "context"];
 	var $specKeys = $refKeys.concat("pipe", "value");
 	var $specFormatKeys = [""].concat($specKeys);
@@ -40,7 +40,7 @@
 	};
 
 	function getBootArgs() {
-		if ($boot.doc) return $bootArgKeys.reduce(function(args, key){
+		if ($boot.doc) return $bootArgs.reduce(function(args, key){
 			var name = "data-"+key;
 			return (args[key] = $boot.script.getAttribute(name) || $boot.script.hasAttribute(name)), args;
 		}, {});
@@ -427,10 +427,10 @@
 
 	/** @member define */
 	function getDefArgs(args, count) {
-		if (count < $defArgKeys.length && !typeOf(args[0], "string")) {
+		if (count < $defArgs.length && !typeOf(args[0], "string")) {
 			args.unshift("");
 		}
-		return copy({}, args, $defArgKeys);
+		return copy({}, args, $defArgs);
 	}
 
 	/** @member define */
