@@ -401,7 +401,7 @@
 			module = makeModule(def, $flushStates.DEFINE);
 			module.flow = flow;
 			$boot.context = $boot.context || module;
-			if ($boot.buffer.length == 1) {
+			if (!$boot.buffer.some(isResolved)) {
 				flush();
 			}
 		}
@@ -666,6 +666,7 @@
 		if (module.flushState == $flushStates.DEFINE) {
 			module.imports = module.def.imports ? module.def.imports.map(resolveRef, module) : module.def.importer ? module.def.importer.def.imports.map(resolveRef, module.def.importer) : [];
 			if (!module.imports.every(getModule) && !getContext(module).imports.every(allResolved, module)) return;
+			if (module.imports.length && !$boot.currentMain) return;
 			module.flushState = $flushStates.RESOLVE;
 			if (module.def.imports) {
 				module.def.importer.imports.push.apply(module.def.importer.imports, module.imports.filter(diffRef, module.def.importer));
