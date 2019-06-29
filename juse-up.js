@@ -606,11 +606,11 @@
 			$boot.flushTimeout = setTimeout(flushPending, 1000);
 		} else {
 			$boot.buffer = $boot.buffer.filter(isFlushing);
-			if ($boot.buffer.length && !$boot.buffer.some(isLoading)) {
+			if (!$boot.buffer.length) {
+				$boot.flushCount = 0;
+			} else if ($boot.currentMain && !$boot.buffer.some(isLoading)) {
 				$boot.flushCount++;
 				flush();
-			} else if (!$boot.buffer.length) {
-				$boot.flushCount = 0;
 			}
 		}
 	}
