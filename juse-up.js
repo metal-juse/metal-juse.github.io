@@ -3,7 +3,7 @@
  */
 (function boot($scope){
 	"use strict";
-	var $bootArgs = ["main", "base", "verbose"];
+	var $bootArgs = ["main", "base", "verbose", "import"];
 	var $defArgs = ["spec", "value"];
 	var $refKeys = ["key", "kind", "name", "type", "member", "context"];
 	var $specKeys = $refKeys.concat("pipe", "value");
@@ -30,12 +30,12 @@
 			if ($boot.doc.head != $boot.script.parentNode) {
 				$boot.doc.head.appendChild($boot.script);
 			}
-			loadRoot().import("juse/core");
+			loadRoot().import("juse/core", $boot.args["import"]);
 			juse.follow($boot.global, {"load":loadMain, "hashchange":loadMain});
 		} else {
 			$boot.args = getBootArgs();
 			$boot.args = copy({main:spec($boot.args.main||""), jusePath:__dirname}, $boot.args);
-			loadRoot().import("juse/core").then(loadMain);
+			loadRoot().import("juse/core", $boot.args["import"]).then(loadMain);
 		}
 	};
 
@@ -306,7 +306,7 @@
 	/** @member define */
 	function impOrt(spec) {
 		var flow = currentFlow(this);
-		flow.imports = $boot.buffer.slice.call(arguments);
+		flow.imports = $boot.buffer.slice.call(arguments).filter(member);
 		var def = resolveDef(currentSpec(flow), flow);
 		flow.importer = defineModule(def, flow);
 		return flow;
@@ -334,7 +334,7 @@
 	}
 
 	function currentSpec(flow) {
-		return (flow && "currentSpec" in flow) ? flow.currentSpec : $boot.doc ? getSpec(currentScript()) : $boot.currentSpec;
+		return (flow && "currentSpec" in flow) ? flow.currentSpec : ($boot.doc && flow) ? getSpec(currentScript()) : $boot.currentSpec;
 	}
 
 	/** @member define */
@@ -735,9 +735,9 @@
 
 	/** @member flush */
 	function initModule(module) {
+		module.value = (typeOf(module.def.args.value, "function") ? module.def.properties.value : module.def.args.value) || external(module, true);
 		applyFilters(module.value, module.def, "type", module, "scope#init");
 		applyFilters(module.value, module.def, "pipe", module, "scope#init");
-		module.value = (typeOf(module.def.args.value, "function") ? module.def.properties.value : module.def.args.value) || external(module, true);
 		delete $boot.exports;
 		if (typeOf(module.def.args.value, "function")) {
 			var values = module.imports.map(filterRefValue, module);
@@ -1343,7 +1343,7 @@ juse.import("juse/resource", "juse/text", "juse/core").define("juse/ui.context",
 		}
 	});
 
-	juse.import("html", "replace@juse/text").define("dom", function($html, $replace){
+	juse.import("html").define("dom", function($html){
 		$dom = juse.export(function dom(value, clone){
 			return juse.typeOf(value, "string") ? $html.call(this, value) : clone ? value.cloneNode(true) : value;
 		}, {
@@ -1352,7 +1352,6 @@ juse.import("juse/resource", "juse/text", "juse/core").define("juse/ui.context",
 			ATTRIBUTE_NODE: juse.global.document.ATTRIBUTE_NODE,
 			moveContent:moveContent,
 			replaceContent:replaceContent,
-			replaceText:replaceText,
 			removeContent:removeContent,
 			childNodes:childNodes,
 			forNodes:forNodes,
@@ -1453,11 +1452,13 @@ juse.import("juse/resource", "juse/text", "juse/core").define("juse/ui.context",
 		}
 
 		function values(node) {
-			return $array.reduce.call(node.attributes, attrValue, {});
+			return $array.reduce.call(node.attributes, dataValue, {});
 		}
 
-		function attrValue(value, attr) {
-			value[attr.name] = attr.value;
+		function dataValue(value, attr) {
+			if (!attr.name.indexOf("data-")) {
+				value[attr.name.substring(5)] = attr.value;
+			}
 			return value;
 		}
 
@@ -1499,10 +1500,22 @@ juse.import("juse/resource", "juse/text", "juse/core").define("juse/ui.context",
 		function hasClass(node, name) {
 			return node.className && node.className.split(" ").indexOf(name) >= 0;
 		}
+	});
+
+	juse.import("dom", "replace@juse/text").define("template", function($dom, $replace){
+		var $array = [];
+
+		juse.export(function template(node, dataset){
+			return replaceText(node, dataset, this);
+		});
+
+		juse.assign(this, {init:function init(node){
+			juse.copy(this.properties, $dom.values(node));
+		}});
 
 		function replaceText(node, dataset, scope) {
 			var args = {dataset:dataset, scope:scope};
-			selectNodes(node).forEach(replaceTexts, args);
+			$dom.selectNodes(node).forEach(replaceTexts, args);
 			replaceTexts.call(args, node);
 			return node;
 		}
@@ -1528,7 +1541,6 @@ juse.import("juse/resource", "juse/text", "juse/core").define("juse/ui.context",
 		});
 
 		function makeTile(node, tiles, dataset, scope, outertag) {
-			$dom.replaceText(node, dataset, scope);
 			replaceTags(node, tiles, dataset, scope, outertag);
 			return node;
 		}
