@@ -15,27 +15,26 @@
 	var $flushStates = enums(["BUFFER", "LOAD", "DEFINE", "RESOLVE", "FLUSH", "DONE", "FAIL"]);
 	var $logKeys = enums(["error", "warn", "info", "debug"]);
 	var $boot = {
-		buffer:[], errors:[], flushCount:0, moduleCount:0,
+		pending:{}, buffer:[], errors:[], flushCount:0, moduleCount:0,
 		global: $scope.document ? $scope : global
 	};
 
-	/** @member boot */
+	/*--boot--*/
 	return function boot(){
 		if ($boot.global.juse) return;
 		$boot.global.juse = {};
 		if ($boot.global.document) {
 			copy($boot, {doc:$boot.global.document, script:currentScript(), async:!!$boot.global.document.currentScript});
+			if ($boot.doc.head != $boot.script.parentNode) $boot.doc.head.appendChild($boot.script);
 			$boot.args = getBootArgs();
 			$boot.args = copy({main:spec($boot.args.main||""), jusePath:slicePath($boot.script.getAttribute("src"), -1)}, $boot.args);
-			if ($boot.doc.head != $boot.script.parentNode) {
-				$boot.doc.head.appendChild($boot.script);
-			}
 			loadRoot().import("juse/core", $boot.args["import"]);
 			juse.follow($boot.global, {"load":loadMain, "hashchange":loadMain});
 		} else {
 			$boot.args = getBootArgs();
 			$boot.args = copy({main:spec($boot.args.main||""), jusePath:__dirname}, $boot.args);
-			loadRoot().import("juse/core", $boot.args["import"]).then(loadMain);
+			loadRoot().import("juse/core", $boot.args["import"]);
+			loadMain();
 		}
 	};
 
@@ -51,14 +50,12 @@
 		}, {});
 	}
 
-	/** @member boot */
 	function done() {
 		if ($boot.doc) log($boot);
 		else log($boot.args);
 		log("--done:", currentMain());
 	}
 
-	/** @member boot */
 	function loadMain() {
 		var main = currentMain(spec(currentHash(), currentMain()));
 		log("--load:", main);
@@ -74,10 +71,8 @@
 		});
 	}
 
-	/** @member boot */
 	function loadRoot() {
 		return define(".context", function(){
-
 			define("juse", function(){
 				$boot.global.juse = expOrt({
 					global:$boot.global,
@@ -134,12 +129,13 @@
 					map: { "*": "modules:", "context": "juse/context@", "cache": "juse/cache@", "juse": "juse@" },
 					roots: [ "juse", "jx" ]
 				}));
+
+				assign(this, {init:init});
 				expOrt(function context(value){
 					this.cacheInit(initContext(value));
 					copy(this.cacheEntry("properties"), member(value, "properties"));
 					return {};
 				});
-				assign(this, {init:init});
 
 				function init() {
 					assign(this, {property:property});
@@ -279,7 +275,7 @@
 				if (!ref) return;
 				var module = getModule(scope && scope.spec || currentMain());
 				if (value === undefined) {
-					value = filterRefValue.call(module, resolve(ref, scope));
+					value = filterValue.call(module, resolve(ref, scope));
 				} else {
 					value = applyFilters(value, ref, "type", module);
 					value = applyFilters(member(value, [ref.member]), ref, "pipe", module);
@@ -303,7 +299,7 @@
 		});
 	}
 
-	/** @member define */
+	/*--define--*/
 	function impOrt(spec) {
 		var flow = currentFlow(this);
 		flow.imports = $boot.buffer.slice.call(arguments).filter(member);
@@ -312,7 +308,6 @@
 		return flow;
 	}
 
-	/** @member define */
 	function define(spec, value) {
 		var flow = currentFlow(this);
 		var def = resolveDef(currentSpec(flow), flow, getDefArgs([spec, value], arguments.length));
@@ -337,7 +332,22 @@
 		return (flow && "currentSpec" in flow) ? flow.currentSpec : ($boot.doc && flow) ? getSpec(currentScript()) : $boot.currentSpec;
 	}
 
-	/** @member define */
+	function currentScript(nodes) {
+		return $boot.global.document.currentScript || ($boot.script && $boot.script.previousElementSibling) || (nodes = $boot.global.document.getElementsByTagName("script"), nodes[nodes.length-1]);
+	}
+
+	function currentHash() {
+		return $boot.doc ? $boot.global.location.hash.substring(1) : "";
+	}
+
+	function currentMain(main) {
+		return ($boot.currentMain = main||$boot.currentMain) || $boot.args.main;
+	}
+
+	function getSpec(node) {
+		return spec(node.getAttribute("data-import"));
+	}
+
 	function resolveDef(ref, flow, args) {
 		var def;
 		if (args) {
@@ -367,15 +377,36 @@
 		return def;
 	}
 
+	function getDefArgs(args, count) {
+		if (count < $defArgs.length && !typeOf(args[0], "string")) {
+			args.unshift("");
+		}
+		return copy({}, args, $defArgs);
+	}
+
+	function getDefProperties(value) {
+		var values = typeOf(value, "function") && $fnFormat.exec(done.toString.call(value));
+		var def = {name:values[1], properties:{}};
+		value = values[2] || "";
+		if (value) while (values = $propFormat.exec(value)) {
+			var name = values[1]||"value", val = values[2]||"";
+			def.properties[name] = val.trim();
+			value = value.substring(values.index + values[0].length);
+		}
+		return def;
+	}
+
+	/*--module--*/
 	function bufferModule(ref) {
-		if (ref && !getModule(ref)) {
+		if (ref && (ref.def || !getModule(ref))) {
 			log("buffer:", specs(ref));
-			if (external(ref)) {
+			if (!ref.def && external(ref)) {
 				defineModule(resolveDef(ref));
 			} else {
-				var module = makeModule(resolveDef(ref), $flushStates.BUFFER);
+				var module = ref.def ? ref : makeModule(resolveDef(ref));
+				module.flushState = $flushStates.BUFFER;
 				if (module) {
-					$boot.buffer[specs(ref)] = module;
+					$boot.pending[specs(module.def)] = module;
 				} else {
 					log("warn", "fail to buffer", specs(ref), "by", specs(this));
 				}
@@ -383,15 +414,13 @@
 		}
 	}
 
-	/** @member define */
 	function unbufferModule(ref) {
 		var spec = specs(ref);
-		var module = $boot.buffer[spec];
-		if (module) delete $boot.buffer[spec];
+		var module = $boot.pending[spec];
+		if (module) delete $boot.pending[spec];
 		return module;
 	}
 
-	/** @member define */
 	function defineModule(def, flow) {
 		var module = getModule(def);
 		if (module && isFailed(module)) setModule(def);
@@ -408,7 +437,6 @@
 		return module;
 	}
 
-	/** @member define */
 	function makeModule(def, flushState) {
 		var module = copy({}, def, $specKeys);
 		if (!setModule(def, module)) return;
@@ -425,46 +453,21 @@
 		return module;
 	}
 
-	/** @member define */
-	function getDefArgs(args, count) {
-		if (count < $defArgs.length && !typeOf(args[0], "string")) {
-			args.unshift("");
-		}
-		return copy({}, args, $defArgs);
-	}
-
-	/** @member define */
-	function getDefProperties(value) {
-		var values = typeOf(value, "function") && $fnFormat.exec(done.toString.call(value));
-		var def = {name:values[1], properties:{}};
-		value = values[2] || "";
-		if (value) while (values = $propFormat.exec(value)) {
-			var name = values[1]||"value", val = values[2]||"";
-			def.properties[name] = val.trim();
-			value = value.substring(values.index + values[0].length);
-		}
-		return def;
-	}
-
-	/** @member module */
-	function getContext(ref, context) {
-		var name = typeOf(ref, "object") ? ref.context||context : ref;
+	function getContext(ref) {
+		var name = typeOf(ref, "object") ? ref.context : ref;
 		return name ? member($boot.context, ["modules", name]) : $boot.context;
 	}
 
-	/** @member module */
 	function getModule(ref) {
 		return ref && (isContext(ref) ? getContext(ref.name) : typeOf(getModuleName(ref), "string") && member(getContext(ref), ["modules", getModuleName(ref)]));
 	}
 
-	/** @member module */
 	function getModuleName(ref, type) {
 		var name = typeOf(ref, "object") ? ref.name : ref;
-		type = (ref.type && ref.type != "context" && ref.type != "js") ? ref.type : type;
+		type = (typeOf(ref, "object") && ref.type && ref.type != "context" && ref.type != "js") ? ref.type : type;
 		return type ? [name, type].join(".") : name;
 	}
 
-	/** @member module */
 	function setModule(ref, module) {
 		if (ref.name) {
 			var context = getContext(ref);
@@ -477,7 +480,7 @@
 		return module;
 	}
 
-	/** @member resolve */
+	/*--resolve--*/
 	function resolveRef(spec) {
 		var ref = refmap(spec, this.def.currentSpec||this);
 		if (ref.value) {
@@ -486,31 +489,28 @@
 		return ref;
 	}
 
-	/** @member resolve */
 	function remapRef(spec) {
 		return refmap(spec, this, true);
 	}
 
-	/** @member resolve */
 	function refmap(ref, module, mapOnly) {
 		ref = spec({}, ref);
 		if (!ref.name || !module) return ref;
 		var map = resolveRefMap(ref, module);
 		if (mapOnly && !map) return;
 		copy(ref, map, $specKeys, true, true);
-		if (!map) {
-			ref.name = getRefName(ref, module);
-		}
-		if (ref.type) {
-			copy(ref, resolveRefMap(getModuleName("*", ref.type), module));
-		}
+		if (!map) ref.name = getRefName(ref, module);
+		if (ref.type) copy(ref, resolveRefMap(getModuleName("*", ref.type), module));
 		if (ref.context || module.context || isContext(module) || juseRoot(ref.name)) {
 			copy(ref, resolveRefMap("*", module));
 		}
 		return copy(ref, {kind:module.kind||getContext(module).kind, context:module.context});
 	}
 
-	/** @member resolve */
+	function juseRoot(name) {
+		return !$boot.context.cache || $boot.context.cache.roots.indexOf(name.split("/")[0]) >= 0;
+	}
+
 	function getRefName(ref, spec) {
 		var absolute = "context" in ref || ref.name.indexOf("/") >= 0;
 		var base = absolute ? null : slicePath(spec.name, -1);
@@ -525,7 +525,6 @@
 		return !sameRef.call(this, ref);
 	}
 
-	/** @member resolve */
 	function resolveRefMap(ref, def, remapOnly) {
 		var refKey = typeOf(ref, "object") ? getModuleName(ref, ref.type) : ref;
 		var moduleKey = getModuleName(def, def.type);
@@ -538,21 +537,19 @@
 			|| findRefMap(def, refKey);
 	}
 
-	/** @member resolve */
 	function findRefMap(module, refKey) {
 		if (!("context" in module)) return;
 		var args = {refKey:refKey}, context = getContext(module);
 		return (getRefMap.call(args, context) || context.imports.some(getRefMap, args)) && args.spec;
 	}
 
-	/** @member resolve */
 	function getRefMap(ref) {
 		var module = getModule(ref);
 		return this.spec = isContext(module) && member(module, ["modules", this.refKey, "scope", "spec"]);
 	}
 
-	/** @member filter */
-	function filterRefValue(ref) {
+	/*--filter--*/
+	function filterValue(ref) {
 		var module = ref && getModule(ref);
 		if (!module) return;
 		var value = module.value;
@@ -562,19 +559,16 @@
 		return applyFilters(value, ref, "pipe", this);
 	}
 
-	/** @member filter */
 	function resolveFilters(ref, key, module) {
 		var delim = (key == "type") ? "." : "|";
 		var mapper = (key == "type") ? remapRef : resolveRef;
 		return (ref && ref[key]) ? ref[key].split(delim).map(mapper, module).filter(member) : [];
 	}
 
-	/** @member filter */
 	function applyFilters(value, ref, key, module, filter) {
 		return resolveFilters(ref, key, module).map(getModule).reduce(applyFilter, {module:module, filter:spec(filter), value:value}).value;
 	}
 
-	/** @member filter */
 	function applyFilter(args, filter) {
 		var filterDef = filter.def;
 		filter = args.filter ? member(filter, [args.filter.name, args.filter.member]) : member(filter, "value");
@@ -585,7 +579,7 @@
 		return args;
 	}
 
-	/** @member flush */
+	/*--flush--*/
 	function flush() {
 		clearTimeout($boot.flushTimeout);
 		$boot.buffer.filter(isContext).forEach(resolveImports);
@@ -615,53 +609,43 @@
 		}
 	}
 
-	/** @member flush */
 	function isPending(module) {
 		return module.flushState < $flushStates.DEFINE;
 	}
 
-	/** @member flush */
 	function isLoading(module) {
 		return module.flushState == $flushStates.LOAD;
 	}
 
-	/** @member flush */
 	function isFailed(module) {
 		return module.flushState == $flushStates.FAIL;
 	}
 
-	/** @member flush */
 	function isResolved(module) {
 		return module.flushState >= $flushStates.RESOLVE;
 	}
 
-	/** @member flush */
 	function isFlushing(module) {
 		return module.flushState < $flushStates.DONE;
 	}
 
-	/** @member flush */
 	function isFlushed(module) {
 		return module.flushState >= $flushStates.FLUSH;
 	}
 
-	/** @member flush */
 	function isContext(module) {
 		return module.type == "context";
 	}
 
-	/** @member flush */
 	function isContextResolved(module) {
 		return isContext(module) && isResolved(module);
 	}
 
-	/** @member flush */
 	function allResolved(ref) {
 		var module = ref.def ? ref : getModule(ref);
 		return !module || module == this || (isContextResolved(module) ? juse.values(module.modules).every(isResolved) : !this.imports.some(sameRef, ref));
 	}
 
-	/** @member flush */
 	function resolveImports(module) {
 		if (module.flushState == $flushStates.DEFINE) {
 			module.imports = module.def.imports ? module.def.imports.map(resolveRef, module) : module.def.importer ? module.def.importer.def.imports.map(resolveRef, module.def.importer) : [];
@@ -678,13 +662,11 @@
 			if (module.def.imports) {
 				module.flushState = $flushStates.DONE;
 			} else if ((typeOf(module.value, "string") && module.value || module.def.kind == "static" && !module.def.args.value) && !external(module)) {
-				module.flushState = $flushStates.BUFFER;
-				$boot.buffer[specs(module.def)] = module;
+				bufferModule(module);
 			}
 		}
 	}
 
-	/** @member flush */
 	function loadModule(module) {
 		if (module.flushState == $flushStates.BUFFER) {
 			module.flushState = $flushStates.LOAD;
@@ -693,7 +675,6 @@
 		}
 	}
 
-	/** @member flush */
 	function failModule(module, i, a, error) {
 		if (error || isPending(module)) {
 			module.flushState = $flushStates.FAIL;
@@ -703,13 +684,11 @@
 		}
 	}
 
-	/** @member flush */
 	function flushPending() {
 		$boot.buffer.forEach(failModule);
 		flush();
 	}
 
-	/** @member flush */
 	function flushModule(module) {
 		if (module.flushState == $flushStates.RESOLVE || module.flushState == $flushStates.FLUSH) {
 			var imports = module.imports.map(getModule).filter(member);
@@ -733,14 +712,13 @@
 		}
 	}
 
-	/** @member flush */
 	function initModule(module) {
 		module.value = (typeOf(module.def.args.value, "function") ? module.def.properties.value : module.def.args.value) || external(module, true);
 		applyFilters(module.value, module.def, "type", module, "scope#init");
 		applyFilters(module.value, module.def, "pipe", module, "scope#init");
 		delete $boot.exports;
 		if (typeOf(module.def.args.value, "function")) {
-			var values = module.imports.map(filterRefValue, module);
+			var values = module.imports.map(filterValue, module);
 			if (!values.length && "exports" in module.flow) values.push(module.flow.exports);
 			values.push(module.scope);
 			module.scope.value = module.value;
@@ -755,31 +733,7 @@
 		module.value = applyFilters(module.value, module.def, "pipe", module);
 	}
 
-	/** @member request */
-	function getSpec(node) {
-		return spec(node.getAttribute("data-import"));
-	}
-
-	/** @member request */
-	function currentScript(nodes) {
-		return $boot.global.document.currentScript || ($boot.script && $boot.script.previousElementSibling) || (nodes = $boot.global.document.getElementsByTagName("script"), nodes[nodes.length-1]);
-	}
-
-	/** @member request */
-	function currentHash() {
-		return $boot.doc ? $boot.global.location.hash.substring(1) : "";
-	}
-
-	/** @member request */
-	function currentMain(main) {
-		return ($boot.currentMain = main||$boot.currentMain) || $boot.args.main;
-	}
-
-	function juseRoot(name) {
-		return !$boot.context.cache || $boot.context.cache.roots.indexOf(name.split("/")[0]) >= 0;
-	}
-
-	/** @member ref */
+	/*--util--*/
 	function spec(spec, base, keys) {
 		if (typeOf(spec, "string")) spec = copy({}, $specFormat.exec(spec), $specFormatKeys);
 		if (typeOf(base, "string")) base = copy({}, $specFormat.exec(base), $specFormatKeys);
@@ -790,7 +744,6 @@
 		return spec;
 	}
 
-	/** @member ref */
 	function specs(ref) {
 		var parts = [];
 		for (var i = 0; i < $specKeys.length; i++) {
@@ -804,7 +757,6 @@
 		return parts.join("");
 	}
 
-	/** @member ref */
 	function slicePath(path, index, count, delim) {
 		if (!path) return path;
 		index = index || 0;
@@ -817,7 +769,6 @@
 		return (retain ? selected : parts).join(delim);
 	}
 
-	/** @member util */
 	function enums(names) {
 		for (var i = 0; i < names.length; i++) {
 			names[names[i]] = i;
@@ -825,12 +776,10 @@
 		return seal(names);
 	}
 
-	/** @member util */
 	function seal(to, from) {
 		return Object.freeze(assign.apply(this, arguments));
 	}
 
-	/** @member util */
 	function assign(to, from) {
 		if (!to || !from) return to;
 		for (var i = 1; i < arguments.length; i++) {
@@ -858,7 +807,6 @@
 		return to;
 	}
 
-	/** @member util */
 	function copyValue(to, name, value, names, override, positive) {
 		if (!name) return;
 		if (names && names.indexOf(name) < 0) return;
@@ -868,7 +816,6 @@
 		to[name] = value;
 	}
 
-	/** @member util */
 	function typeOf(value, expected, prefix) {
 		var type = typeof(value);
 		if (type == "object") {
@@ -878,14 +825,12 @@
 		return expected ? prefix ? type.indexOf(expected) == 0 : $boot.buffer.constructor === expected.constructor ? expected.indexOf(type) >= 0 : expected == type : type;
 	}
 
-	/** @member util */
 	function external(ref, remove) {
 		var value = $boot.doc && $boot.doc.getElementById(getModuleName(ref));
 		if (remove && value) value.parentNode.removeChild(value);
 		return value || member($boot.global, ref.member||ref.name);
 	}
 
-	/** @member util */
 	function member(value, names, nameOnly) {
 		var name;
 		names = typeOf(names, "string") ? names.split(".") : names;
@@ -899,7 +844,6 @@
 		return (nameOnly===true) ? typeOf(name, "string") && name : value;
 	}
 
-	/** @member util */
 	function log(value) {
 		if (!$boot.args.verbose || typeof(console) == "undefined") return;
 		if (typeof(value) == "string") {
